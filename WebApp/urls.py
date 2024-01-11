@@ -17,7 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-
+# add register, login, profile, logout paths. 
+# If authenticated -> login, else register. 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('users.urls'))

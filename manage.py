@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+#never touch this file. 
+# list of commands we use frequently
 """Django's command-line utility for administrative tasks."""
 import os
 import sys

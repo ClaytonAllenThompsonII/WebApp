@@ -21,6 +21,7 @@ from django.urls import path, include
 # If authenticated -> login, else register. 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('users.urls'))
+    path('', include('users.urls')),
+    
    
 ]

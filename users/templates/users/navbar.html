@@ -1,4 +1,14 @@
 {% load static %}
+<style>
+  .hello-msg{
+    font-size:18px;
+    color: #fff;
+    margin-left: 20px;
+
+
+  }
+</style>
+
 <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
     <a class="navbar-brand font-weight-bold" href="{% url 'dashboard' %}"> CostCurve.ai</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" 
@@ -12,9 +22,6 @@
           <a class="nav-link" href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard > <span class="sr-only">(current)</span>
         </a>
         </li>
-
-        
-
         <li class="nav-item">
             <a class="nav-link" href="{% url 'inventory' %}"><i class="far fa-lemon"></i> Inventory</a>
         </li>
@@ -25,12 +32,8 @@
             <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i> Analytics</a>
         </li>
       
-        <li class="nav-item">
-            <a class="nav-link" href="#"><i class="fas fa-user"></i> {{ user.username }} </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#"><i class="fas fa-sign-out-alt"></i> Log Out</a>
-      </li>
+       
+        
       
       <li class="nav-item">
         <a class="nav-link" href="{% url 'loginPage' %}"><i class="fas fa-user-tie"></i> Log In</a>
@@ -39,10 +42,16 @@
       <a class="nav-link" href="{% url 'register' %}"><i class="fas fa-sign-in-alt"></i> Sign Up</a>
   </li>
 
-
-
-
     </div>
+
+
+    <span class = "hello-msg"> Hello, <i class="fas fa-user"></i> {{ request.user }} </span>
+      
+  
+  <span class = "hello-msg">
+    <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+  </span>
+
 </nav> 
 
 

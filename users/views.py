@@ -13,10 +13,6 @@ def home(request):
     return render(request, 'users/dashboard.html')
 
 @login_required(login_url='loginPage')
-def inventory(request):
-    return render(request, 'users/inventory.html')
-
-@login_required(login_url='loginPage')
 def invoices(request):
     return HttpResponse('invoices')
 

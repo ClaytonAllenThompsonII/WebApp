@@ -1,6 +1,6 @@
 {% extends 'users/main.html' %}
 {% block content %}
-{% load static %}
+
 
 <!DOCTYPE html>
 
@@ -102,27 +102,27 @@ main {
     <header>
 
         <!--This header needs to be the same style as NAV bar-->
-        <h5>Inventory image & label upload</h5>
+        <h5>Inventory image 📸 & label 🏷️ upload</h5>
         
     </header>
   <p> The inventory application simplifies the <b>collection and labeling</b> of image training data. </p>
-  <p> This tool enables users (restaurants) to generate high-quality training datasets for developing and improving image classification and label detection models.  </p>
+  <p> This tool enables users (restaurants 🥩🍸) to generate high-quality training datasets for developing and improving image classification and label detection models.  </p>
   
   <br>
   <p> To add training data, follow the steps below:</p>
 
   <main>
     <div class="grid-container">
-    <div> <p> <b>Step 1.</b> Take a photo of the inventory iteration using a smart phone 📲.</p> </div>
-    <div> <p> <b>Step 2.</b> Select the data label from the Inventory Classification section that matches the inventory product.</p>
+    <div> <p> <b>Step 1.</b> Take a photo of the inventory iteration using a smart phone. 📲</p> </div>
+    <div> <p> <b>Step 2.</b> Select the data label from the Inventory Classification section that matches the inventory product. 🏷️</p>
     <br>
     <form id="upload-form">
            
-            <label for="type">Inventory Classification:</label>
+            <label for="type">⌖Inventory Classification:</label>
             <br>
             <select id="type" name="type">
                 <option value="">-- Select a Label --</option>
-                <option value="grouper">Grouper</option>
+                <option value="grouper">Grouper 🎣</option>
                 <option value="salmon">Salmon</option>
                 <option value="trout">Trout</option>
                 <option value="mussels">Mussels</option>
@@ -147,15 +147,15 @@ main {
   
             <div>
             <br>
-            <p> <b>Step 3.</b> Upload product image by chooseing a file<P> 
+            <p> <b>Step 3.</b> Upload product image by chooseing a file. 📂<P> 
             <br>
-            <label for="image">Upload Image:</label>
+            <label for="image">🤳🏽Upload Image:</label>
             <input type="file" id="image" name="image" accept="image/*">
             <br>
             </div>
    <div>
     <br>
-  <p> <b>Step 4.</b> Press the upload button.</p>
+  <p> <b>Step 4.</b> Press the upload button. ↙️</p>
   <br>
   <button type="submit">Upload</button></div>         
   

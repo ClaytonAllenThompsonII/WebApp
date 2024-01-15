@@ -1,7 +1,7 @@
 from django import forms
-from .models import inventory_training
+from .models import InventoryItem
 
 class inventoryDataCollectionForm(forms.ModelForm):
     class Meta:
-        model = inventory_training
+        model = InventoryItem
         fields = ['type', 'image']

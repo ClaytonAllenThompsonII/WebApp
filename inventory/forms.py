@@ -23,7 +23,7 @@ Note:
 from django import forms
 from .models import InventoryItem
 
-class inventoryDataCollectionForm(forms.ModelForm):
+class InventoryDataCollectionForm(forms.ModelForm):
     """A form class for collecting and validating data related to the
     InventoryItem model. It specifies the model and fields to include
     in the form.
@@ -34,4 +34,3 @@ class inventoryDataCollectionForm(forms.ModelForm):
             - fields (list): Included fields from the InventoryItem model."""
         model = InventoryItem
         fields = ['type', 'image']
-        

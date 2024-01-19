@@ -1,3 +1,33 @@
+"""Django models for inventory items.
+
+This module defines a Django model, `InventoryItem`, representing an
+inventory item with its associated image, label, timestamp, and user.
+
+Imported Modules:
+    - django.db.models: Provides tools for defining database models.
+    - django.contrib.auth: Provides tools for handling user authentication.
+    - get_user_model: A function for dynamically retrieving the User model
+      configured for the current Django project.
+
+Usage:
+    1. Import this module in your Django project's models.py file.
+    2. Use the `InventoryItem` model to represent inventory items in the
+       application's database.
+
+Model `InventoryItem`:
+    Represents an inventory item with the following fields:
+    - user (ForeignKey): The user associated with the uploaded inventory item.
+    - image (ImageField): The image file associated with the inventory item.
+    - type (CharField): The type or label of the inventory item.
+    - filename (CharField): The filename of the image file stored in S3.
+    - timestamp (DateTimeField): Auto-generated timestamp indicating when
+      the inventory item was added.
+
+    Methods:
+        - __str__(): Returns a string representation of the inventory item,
+          including the username, type, and timestamp."""
+
+
 from django.db import models
 from django.contrib.auth import get_user_model
 # Create your models here.
@@ -16,3 +46,4 @@ class InventoryItem(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.type} ({self.timestamp})'
+    

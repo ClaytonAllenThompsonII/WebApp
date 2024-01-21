@@ -26,8 +26,6 @@ Model `InventoryItem`:
     Methods:
         - __str__(): Returns a string representation of the inventory item,
           including the username, type, and timestamp."""
-
-
 from django.db import models
 from django.contrib.auth import get_user_model
 # Create your models here.
@@ -37,10 +35,17 @@ from django.contrib.auth import get_user_model
 class InventoryItem(models.Model):
     """
     Represents an inventory item with its associated image, label, timestamp, and user.
+    
+    Fields:
+        - user (ForeignKey): The user who uploaded the inventory item. Indexed for faster query performance.
+        - image (ImageField): The image file of the inventory item, stored in AWS S3.
+        - type (CharField): The category or type of the inventory item. Indexed for faster query performance.
+        - filename (CharField): The filename of the image in S3.
+        - timestamp (DateTimeField): The time when the inventory item was added to the database.
     """
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE) # try User instead of get_user_model if needed. 
-    image = models.ImageField(upload_to='inventory_images/')
-    type = models.CharField(max_length=255) # had to change this from Label. Need to figure out what was up with that. I think I can give the HTML class an ID to rename it from type to label. 
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, db_index=True) # try User instead of get_user_model if needed.
+    image = models.ImageField(upload_to='inventory_images/') #keep this to test, but get rid of after AWS works.
+    type = models.CharField(max_length=255, db_index=True) # had to change this from Label. Need to figure out what was up with that. I think I can give the HTML class an ID to rename it from type to label.
     filename = models.CharField(max_length=255) # to store the image filename in S3.
     timestamp = models.DateTimeField(auto_now_add=True)  # Add timestamp
 

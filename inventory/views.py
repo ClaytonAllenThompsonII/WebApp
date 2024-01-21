@@ -36,8 +36,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import InventoryDataCollectionForm
-
-
+from .storage_backends import AWSStorageBackend
 # Create your views here.
 
 #@login_required(login_url='loginPage')
@@ -47,22 +46,36 @@ from .forms import InventoryDataCollectionForm
 
 @login_required(login_url='loginPage')
 def inventory_view(request):
-    """
-    Handles inventory data collection and submission.
-
-    - Renders the inventory data collection form.
-    - Processes POST requests with form data.
-    - Saves valid form data to the database.
-    - Displays success messages upon successful submission.
-    """
+    """ Handles inventory data collection and submission. """
     if request.method == 'POST':
         form = InventoryDataCollectionForm(request.POST, request.FILES) #Include request.FILES for image handling
         if form.is_valid():
-            form.save()  # Save form data to model
-            messages.success(request, 'Yay success')
-            # Handle successful submission (e.g., redirect, show success message)
+            storage_backend = AWSStorageBackend() # instantiate storage backend.
+            inventory_item = form.save(commit=False) # Create model instance without saving.
+
+            try:
+                # Upload image to S3 and get filename
+                filename = storage_backend.upload_file(form.cleaned_data['image'])
+                inventory_item.filename = filename
+
+                # Prepare and store metadata in DynamoDB
+                item_data = {
+                    'filename': {'S': filename},
+                    'label': {'S': inventory_item.type},
+                    'timestamp': {'S': inventory_item.timestamp.strftime('%Y-%m-%d %H:%M:%S')},
+                    'user_id': {'N': str(inventory_item.user.id)}  # Assuming user ID is a number
+                }
+                storage_backend.create_inventory_item(item_data)
+
+                inventory_item.save()  # Save model instance with S3 filename
+                messages.success(request, 'Inventory item uploaded successfully!')
+            except Exception as e:
+                messages.error(request, f'Error uploading inventory item: {e}')
+                # Implement more specific error handling here
+        else:
+            messages.error(request, 'Invalid form submission. Please correct the errors.')  # Handle invalid form
     else:
         form = InventoryDataCollectionForm()
-    # Render the template with the form
+
     context = {'form': form}
     return render(request, 'inventory/training_data.html', context)

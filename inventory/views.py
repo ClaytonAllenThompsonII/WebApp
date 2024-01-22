@@ -48,8 +48,10 @@ from .storage_backends import AWSStorageBackend
 def inventory_view(request):
     """ Handles inventory data collection and submission. """
     if request.method == 'POST':
+        print("POST request received")
         form = InventoryDataCollectionForm(request.POST, request.FILES) #Include request.FILES for image handling
         if form.is_valid():
+            print("Form is valid")
             storage_backend = AWSStorageBackend() # instantiate storage backend.
             inventory_item = form.save(commit=False) # Create model instance without saving.
 
@@ -73,6 +75,7 @@ def inventory_view(request):
                 messages.error(request, f'Error uploading inventory item: {e}')
                 # Implement more specific error handling here
         else:
+            print("Form is invalid")
             messages.error(request, 'Invalid form submission. Please correct the errors.')  # Handle invalid form
     else:
         form = InventoryDataCollectionForm()

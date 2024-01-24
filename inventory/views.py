@@ -32,6 +32,7 @@ Function `inventory_view`:
           authenticated users can access the view. Redirects to the
           login page if the user is not authenticated.
  """
+import logging
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -47,6 +48,7 @@ from .storage_backends import AWSStorageBackend
 @login_required(login_url='loginPage')
 def inventory_view(request):
     """ Handles inventory data collection and submission. """
+    print("Entered inventory_view function")  # Debug print
     if request.method == 'POST':
         print("POST request received")
         form = InventoryDataCollectionForm(request.POST, request.FILES) #Include request.FILES for image handling
@@ -54,6 +56,8 @@ def inventory_view(request):
             print("Form is valid")
             storage_backend = AWSStorageBackend() # instantiate storage backend.
             inventory_item = form.save(commit=False) # Create model instance without saving.
+            inventory_item.user = request.user # set the user here
+            inventory_item.save()
 
             try:
                 # Upload image to S3 and get filename
@@ -67,11 +71,16 @@ def inventory_view(request):
                     'timestamp': {'S': inventory_item.timestamp.strftime('%Y-%m-%d %H:%M:%S')},
                     'user_id': {'N': str(inventory_item.user.id)}  # Assuming user ID is a number
                 }
+                print("Attempting to create inventory item in DynamoDB")  # Debug print
                 storage_backend.create_inventory_item(item_data)
 
                 inventory_item.save()  # Save model instance with S3 filename
+                print("Inventory item created and saved")  # Debug print
+
                 messages.success(request, 'Inventory item uploaded successfully!')
+                #logger.info("file upload successful: %s", filename)
             except Exception as e:
+                print(f"Error occurred: {e}")  # Debug print to log the exception
                 messages.error(request, f'Error uploading inventory item: {e}')
                 # Implement more specific error handling here
         else:

@@ -6,6 +6,7 @@ from django.conf import settings
 import boto3
 import logging
 
+# logger instance
 logger = logging.getLogger(__name__)
 
 
@@ -21,11 +22,13 @@ class AWSStorageBackend:
                 region_name=settings.AWS_REGION,
                 config=Config(signature_version='s3v4')
                 )
+            logger.debug(f"Initialized S3 client with region: {settings.AWS_REGION}")
             
             self.dynamodb_client = boto3.client(
                 'dynamodb',
                 region_name=settings.AWS_REGION
-        )
+                )
+            logger.debug(f"Initialized DynamoDB client with region: {settings.AWS_REGION}")
 
             #set bucket and table names from environment variables
             self.bucket_name = os.environ['S3_BUCKET_NAME'] # user image upload bucket  

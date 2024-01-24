@@ -41,13 +41,18 @@ class AWSStorageBackend:
         """Uploads a file to S3 and returns the generated filename"""
         filename = f'imagees/{uuid.uuid4()}{os.path.splitext(file.name)[1]}'
 
-        print("Attempting to upload file to S3:", filename) # Debug print 
+        logger.debug(f"Attempting to upload file {filename} to S3")
 
+        print("Attempting to upload file to S3:", filename) # Debug print
+    
         try:
             self.s3_client.upload_fileobj(file, self.bucket_name, filename)
+            # Logging successful upload
+            logger.info(f"File {filename} successfully uploaded to S3")
             print("File successfully uploaded to S3:", filename) # Debug Print
             return filename
         except Exception as e:
+            logger.error(f"Error occurred during file upload to S3: {e}")
             print("Error occured during file upload to S3:", e) # Debug print
             raise Exception(f'Error uploading file to S3: {e}') from e 
             #will add less generic exception handling eventually. 

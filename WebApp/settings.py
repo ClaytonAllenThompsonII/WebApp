@@ -12,24 +12,31 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-from dotenv import load_dotenv # pylint: disable=E0401
+import logging
+from dotenv import load_dotenv
 from django.core.management.utils import get_random_secret_key
 
-
+# logger instance
+logger = logging.getLogger(__name__)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 env_path = BASE_DIR/ '.env' # Path to your .env file
 
+load_dotenv(dotenv_path=env_path)  # Load variables from .env file
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-load_dotenv(dotenv_path=env_path)  # Load variables from .env file
+
 
 # AWS Configuration 
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-AWS_REGION = os.environ.get('AWS_REGION')
+AWS_REGION = os.environ.get('AWS_REGION_NAME')
+print("AWS Region:", AWS_REGION)
 
+# settings.py
+logger.debug(f"AWS_REGION: {AWS_REGION}")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY')

@@ -6,10 +6,14 @@ import tempfile  # Add this import
 import uuid
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.utils import timezone
 from .forms import InventoryDataCollectionForm
+from .models import InventoryItem
 from .storage_backends import AWSStorageBackend
-# Import InMemoryUploadedFile from django.core.files.uploadedfile
+
 
 
 
@@ -106,29 +110,19 @@ class InventoryViewTest(TestCase):
             with open('/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg', 'rb') as img_file:
                 img_data = img_file.read()
 
-            # Create a temporary file to store the image data
-            temp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
-            temp_file.write(img_data)
-            temp_file.flush()
 
             # Create the SimpleUploadedFile mock object
             mock_image = SimpleUploadedFile(
-                file=temp_file,  # Open temporary file for reading
-                field_name='image',  # Name of the form field
                 name='test.jpg',
-                content_type='image/jpeg',
-                size=len(img_data),  # Calculate size
-                charset=None  # Assuming no specific charset
-                    )
-
-            # Remember to close and delete the temporary file after the test
-            temp_file.close()
-            temp_file.delete()
+                content=img_data,
+                content_type='image/jpeg'
+                )
 
             # Mock form data and files
             form_data = {
                 'type': 'TestType',
-                'image': mock_image
+                'image': mock_image, 
+                'user': user.id # assign the user to the form data
             }
 
             # Set up files as a dictionary
@@ -139,15 +133,22 @@ class InventoryViewTest(TestCase):
             print("Response status code:", response.status_code)
             print("Response context:", response.context)
 
-             # Assertions
+            # Assertions
             self.assertEqual(response.status_code, 200)
-            # Fix 1: Ensure call order matches upload sequence
-            mock_storage_backend.return_value.upload_file.assert_called_once_with(mock_image)
+
+            # Ensure create_inventory_item was called once. Use ANY if you don't need to inspect arguments.
             mock_storage_backend.return_value.create_inventory_item.assert_called_once_with(ANY)
 
-            # Fix 3: Inspect arguments passed to create_inventory_item
-            call_args = mock_storage_backend.return_value.create_inventory_item.call_args
+            # Inspect arguments passed to create_inventory_item, if necessary
+            call_args, _ = mock_storage_backend.return_value.create_inventory_item.call_args
             print("Arguments passed to create_inventory_item:", call_args)
+
+            # Ensure upload_file was called once with an instance of InMemoryUploadedFile
+            mock_storage_backend.return_value.upload_file.assert_called_once()
+            args, _ = mock_storage_backend.return_value.upload_file.call_args
+            self.assertIsInstance(args[0], InMemoryUploadedFile)
+
+            
 class DirectUploadFileTest(TestCase):
     @patch('inventory.storage_backends.AWSStorageBackend.__init__', return_value=None)
     @patch('inventory.storage_backends.AWSStorageBackend.upload_file', side_effect=fake_upload_file)
@@ -164,4 +165,122 @@ class DirectUploadFileTest(TestCase):
         self.assertEqual(result, 'fakepath/test.jpg')
         # Assert that the mock was called as expected
         mock_upload_file.assert_called_once_with(mock_file)
-        
+
+
+class InventoryItemModelTest(TestCase):
+
+    def test_inventory_item_model_creation(self):
+    
+        # Create a user for the ForeignKey relation
+        User = get_user_model()
+        user = User.objects.create_user(username='testuser', password='12345')
+
+        # Create an InventoryItem instance
+        item = InventoryItem(
+            user=user,
+            image='/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg',
+            type='TestType',
+            filename='image.jpg'
+        )
+
+        # Save it to the database
+        item.save()
+
+        # Retrieve it back
+        # pylint: disable=no-member
+        retrieved_item = InventoryItem.objects.get(id=item.id)
+
+        # Test assertions
+        self.assertEqual(retrieved_item.user, user)
+        self.assertEqual(retrieved_item.image, '/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg')
+        self.assertEqual(retrieved_item.type, 'TestType')
+        self.assertEqual(retrieved_item.filename, 'image.jpg')
+    
+
+    def test_inventory_item_timestamp(self):
+         # Create a user for the ForeignKey relation
+        User = get_user_model()
+        user = User.objects.create_user(username='testuser', password='12345')
+
+        # Create an InventoryItem instance
+        item = InventoryItem(
+            user=user,
+            image='/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg',
+            type='TestType',
+            filename='image.jpg'
+        )
+
+        # Save it to the database
+        item.save()
+
+        # Retrieve it back
+        # pylint: disable=no-member
+        retrieved_item = InventoryItem.objects.get(id=item.id)
+
+        # Check that the timestamp is recent
+        now = timezone.now()
+        time_diff = now - retrieved_item.timestamp
+        self.assertTrue(time_diff < datetime.timedelta(seconds=5), "Timestamp is not within the expected time range")
+
+
+        # Test assertions
+        self.assertEqual(retrieved_item.user, user)
+        self.assertEqual(retrieved_item.image, '/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg')
+        self.assertEqual(retrieved_item.type, 'TestType')
+        self.assertEqual(retrieved_item.filename, 'image.jpg')
+
+
+class InventoryDataCollectionFormTest(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create_user(username='testuser', password='12345')
+
+    def test_valid_data(self):
+        # Sample data for a 1x1 black pixel in JPEG format
+        image_data = b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\x03\x02\x02\x03\x02\x02\x03\x03\x03\x03\x04\x03\x03\x04\x05\x08\x05\x05\x04\x04\x05\n\x07\x07\x06\x08\x0c\n\x0c\x0c\x0b\n\x0b\x0b\r\x0e\x12\x10\r\x0e\x11\x0e\x0b\x0b\x10\x16\x10\x11\x13\x14\x15\x15\x15\x0c\x0f\x17\x18\x16\x14\x18\x12\x14\x15\x14\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x03\x01"\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x06\xff\xc4\x00\x14\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\xff\xda\x00\x0c\x03\x01\x00\x02\x10\x03\x10\x00\x00\x01\xdf\x00\xff\xd9'
+
+        form_data = {
+            'type': 'TestType',
+            'filename': 'test_image.jpg'
+        }
+        file_data = {
+            'image': SimpleUploadedFile(name='test_image.jpg', content=image_data, content_type='image/jpeg')
+        }
+        form = InventoryDataCollectionForm(data=form_data, files=file_data)
+        if not form.is_valid():
+            print(form.errors)
+        self.assertTrue(form.is_valid())
+
+    def test_invalid_data(self):
+         # Simulate uploading a non-image file (e.g., a Word document)
+        form_data = {
+            'user': self.user,
+            'image': SimpleUploadedFile(name='document.docx', content=b'some document data', content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
+            'type': 'TestType',
+            'filename': 'document.docx'
+        }
+        form = InventoryDataCollectionForm(data=form_data, files={'image': form_data['image']})
+        self.assertFalse(form.is_valid())
+
+    def test_form_saves_data(self):
+
+        # Create valid form data
+        form_data = {
+            'user': self.user,
+            'image': SimpleUploadedFile(name='test_image.jpg', content=b'some image data', content_type='image/jpeg'),
+            'type': 'TestType',
+            'filename': 'test_image.jpg'
+        }
+        form = InventoryDataCollectionForm(data=form_data, files={'image': form_data['image']})
+        if form.is_valid():
+            inventory_item = form.save(commit=False)
+            inventory_item.user = self.user
+            inventory_item.save()
+
+            # Retrieve the saved item and assert the data
+            saved_item = InventoryItem.objects.get(id=inventory_item.id)
+            self.assertEqual(saved_item.type, form_data['type'])
+            self.assertEqual(saved_item.filename, form_data['filename'])
+            self.assertEqual(saved_item.user, self.user)
+

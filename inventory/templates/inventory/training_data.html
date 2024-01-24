@@ -116,7 +116,8 @@ main {
     <div> <p> <b>Step 1.</b> Take a photo of the inventory iteration using a smart phone. 📲</p> </div>
     <div> <p> <b>Step 2.</b> Select the data label from the Inventory Classification section that matches the inventory product. 🏷️</p>
     <br>
-    <form id="upload-form">
+    <form id="upload-form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
            
             <label for="type">⌖Inventory Classification:</label>
             <br>

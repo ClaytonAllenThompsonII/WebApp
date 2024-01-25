@@ -14,18 +14,19 @@ urlpatterns = [
     path('logout/', views.logoutUser, name='logout'),
  
    
-
+# https://stackoverflow.com/questions/67545932/how-can-i-send-a-reset-password-email-on-django
+# Starting place reference. 
    path('reset_password/',
     auth_views.PasswordResetView.as_view(template_name="users/password_reset.html"),
     name="reset_password"),
 
    path('reset_password_sent/',
     auth_views.PasswordResetDoneView.as_view(template_name="users/password_reset_sent.html"),
-    name="password_reset_done"),
+    name="password_reset_done"), #FIX ME - only direct the user here if we successfully send an email. 
 
-   path('reset/<uibd64>/<token>/', 
+   path('reset/<uibd64>/<token>/',
     auth_views.PasswordResetConfirmView.as_view(), 
-    name="password_reset_confirm"),
+    name="password_reset_confirm"), # FIX ME - 
 
    path('reset_password_complete/', 
     auth_views.PasswordResetCompleteView.as_view(),

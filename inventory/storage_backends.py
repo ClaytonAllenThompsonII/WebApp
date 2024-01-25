@@ -1,10 +1,11 @@
 """ Add Module Doc String"""
 import os
 import uuid
+import logging
 from botocore.config import Config
 from django.conf import settings
 import boto3
-import logging
+
 
 # logger instance
 logger = logging.getLogger(__name__)

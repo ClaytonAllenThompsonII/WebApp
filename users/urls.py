@@ -24,12 +24,12 @@ urlpatterns = [
     auth_views.PasswordResetDoneView.as_view(template_name="users/password_reset_sent.html"),
     name="password_reset_done"), #FIX ME - only direct the user here if we successfully send an email. 
 
-   path('reset/<uibd64>/<token>/',
-    auth_views.PasswordResetConfirmView.as_view(), 
+   path('reset/<uidb64>/<token>/',
+    auth_views.PasswordResetConfirmView.as_view(template_name="users/password_reset_form.html"), 
     name="password_reset_confirm"), # FIX ME - 
 
-   path('reset_password_complete/', 
-    auth_views.PasswordResetCompleteView.as_view(),
+   path('reset_password_complete/',
+    auth_views.PasswordResetCompleteView.as_view(template_name="users/password_reset_done.html"),
     name="password_reset_complete"),
 ]
 

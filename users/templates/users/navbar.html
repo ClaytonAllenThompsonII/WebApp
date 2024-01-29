@@ -23,8 +23,8 @@
         </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="http://127.0.0.1:8000/inventory/"><i class="far fa-lemon"></i> Inventory</a>
-        </li>
+            <a class="nav-link" href="{% url 'inventory_app' %}"><i class="far fa-lemon"></i> Inventory</a>
+        </li> <!-- FIXME: we want a relative as oppposed to an abosulte link to inventory-->
         <li class="nav-item">
             <a class="nav-link" href="#"><i class="fas fa-folder-open"></i> Invoices</a>
         </li>

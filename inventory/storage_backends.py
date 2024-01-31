@@ -44,6 +44,8 @@ class AWSStorageBackend:
     def upload_file(self, file):
         """Uploads a file to S3 and returns the generated filename"""
         filename = f'imagees/{uuid.uuid4()}{os.path.splitext(file.name)[1]}'
+        # DEBUG Consider coming up with functional naming convention
+        # would need to rename uploaded files using a identifiable convention - Group/User/imagees
 
         logger.debug(f"Attempting to upload file {filename} to S3")
 

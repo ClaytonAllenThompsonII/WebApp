@@ -108,5 +108,62 @@ def inventory_view(request):
     else:
         form = InventoryDataCollectionForm()
 
-    context = {'form': form}
+    # Query all GL Level 1 instances to pass to the template
+    gl_level1_objects = GLLevel1.objects.all()
+
+    # Update the context to include GL Level 1 objects along with the form
+    context = {'form': form, 'gl_level1_objects': gl_level1_objects}
     return render(request, 'inventory/training_data.html', context)
+
+
+@login_required(login_url='loginPage')
+def get_gl_level_2(request):
+    """
+    Responds to AJAX requests with GL Level 2 options filtered by the selected GL Level 1 ID.
+    
+    Args:
+        request: HttpRequest object containing GL Level 1 ID ('gl1_id') in GET parameters.
+    
+    Returns:
+        JsonResponse containing a list of GL Level 2 items (id and name) related to the given GL Level 1.
+    """
+    gl1_id = request.GET.get('gl1_id')
+    gl2_items = GLLevel2.objects.filter(parent_id=gl1_id) # pylint: disable=no-member
+    gl2_data = [{'id': item.id, 'name': item.name} for item in gl2_items]
+    return JsonResponse(gl2_data, safe=False)
+
+
+@login_required(login_url='loginPage')
+def get_gl_level_3(request):
+    """
+    Fetches and returns GL Level 3 options via AJAX, based on a selected GL Level 2 ID.
+    
+    Args:
+        request: HttpRequest object with GL Level 2 ID ('gl2_id') provided in GET parameters.
+    
+    Returns:
+        JsonResponse with a list of GL Level 3 items (id and name) associated with the specified GL Level 2.
+    """
+    gl2_id = request.GET.get('gl2_id')
+    gl3_items = GLLevel3.objects.filter(parent_id=gl2_id) # pylint: disable=no-member
+    gl3_data = [{'id': item.id, 'name': item.name} for item in gl3_items]
+    return JsonResponse(gl3_data, safe=False)
+
+
+
+@login_required(login_url='loginPage')
+def get_products(request):
+    """
+    Provides AJAX functionality to retrieve products based on the selected GL Level 3 ID.
+    
+    Args:
+        request: HttpRequest object that includes GL Level 3 ID ('gl3_id') in GET query parameters.
+    
+    Returns:
+        JsonResponse with a list of products (id and name) under the chosen GL Level 3 category.
+    """
+    gl3_id = request.GET.get('gl3_id')
+    products = Product.objects.filter(parent_id=gl3_id) # pylint: disable=no-member
+    product_data = [{'id': product.id, 'name': product.name} for product in products]
+    return JsonResponse(product_data, safe=False)
+

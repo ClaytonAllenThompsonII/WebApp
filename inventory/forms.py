@@ -10,27 +10,29 @@ Imported Modules:
     - .models.InventoryItem: The InventoryItem model.
 
 Usage:
-    1. Import this module in your Django project's forms.py file.
-    2. Ensure the InventoryItem model is defined in models.py of
-       the same application.
-    3. Use the `inventoryDataCollectionForm` class in views or
-       templates to handle inventory data collection forms.
-Note:
-    Ensure the InventoryItem model is properly defined in models.py
-    and includes the specified fields in the form.
+    - Import this module within a Django project's views to instantiate the form with request data.
+    - Render the `InventoryDataCollectionForm` in templates to capture inventory data from users.
+
+Requirements:
+    - The InventoryItem model, as well as related GL level models, must be defined within the models.py file of the application.
 """
 
 from django import forms
-from .models import InventoryItem
+from .models import InventoryItem, GLLevel1, GLLevel2, GLLevel3, Product
 
 class InventoryDataCollectionForm(forms.ModelForm):
     """A form class for collecting and validating data related to the
     InventoryItem model. It specifies the model and fields to include
     in the form.
+    The form includes ModelChoiceField dropdowns for selecting General Ledger (GL) levels 
+    and associated products, which are dynamically populated and constrained based on the 
+    hierarchical relationships defined in the models.
  """
+    gl_level_1 = forms.ModelChoiceField(queryset=GLLevel1.objects.all(), empty_label=None) # pylint: disable=no-member
     class Meta:
         """ Attributes:
-            - model (InventoryItem): The associated InventoryItem model.
-            - fields (list): Included fields from the InventoryItem model."""
+        - gl_level_1 (ModelChoiceField): Dropdown field for selecting an instance of GLLevel1.
+        - Meta.model (InventoryItem): The associated InventoryItem model.
+        - Meta.fields (list): List of fields included in the form, corresponding to model attributes."""
         model = InventoryItem
-        fields = ['type', 'image']
+        fields = ['image', 'filename', 'gl_level_1', 'gl_level_2', 'gl_level_3', 'product']

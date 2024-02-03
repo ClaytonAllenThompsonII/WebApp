@@ -1,4 +1,7 @@
+
+<!-- Rough draft of dynamic drop down that allows users to select a label by filtering GL codes -->
 {% extends 'users/main.html' %}
+{% load static %}
 {% block content %}
 
 
@@ -9,9 +12,13 @@
 
 
 <head>
+    <!-- Meta tags required for responsive design and character encoding -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Upload with Inventory Product Classification</title>
+
+    <!-- Include jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         body {
     font-family: sans-serif;
@@ -99,83 +106,115 @@ main {
 </head>
 
 <body>
+    <!-- Header Section -->
     <header>
-
-        <!--This header needs to be the same style as NAV bar-->
-        <h5>Inventory image 📸 & label 🏷️ upload</h5>
-        
+        <h5>Inventory image upload 📷 & label selection 🏷️</h5>
     </header>
-  <p> The inventory application simplifies the <b>collection and labeling</b> of image training data. </p>
-  <p> This tool enables users (restaurants 🥩🍸) to generate high-quality training datasets for developing and improving image classification and label detection models.  </p>
-  
-  <br>
-  <p> To add training data, follow the steps below:</p>
 
-  <main>
-    <div class="grid-container">
-    <div> <p> <b>Step 1.</b> Take a photo of the inventory iteration using a smart phone. 📲</p> </div>
-    <div> <p> <b>Step 2.</b> Select the data label from the Inventory Classification section that matches the inventory product. 🏷️</p>
-    <br>
-    <form id="upload-form" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-           
-            <label for="type">⌖Inventory Classification:</label>
-            <br>
-            <select id="type" name="type">
-                <option value="">-- Select a Label --</option>
-                <option value="grouper">Grouper 🎣</option>
-                <option value="salmon">Salmon</option>
-                <option value="trout">Trout</option>
-                <option value="mussels">Mussels</option>
-                <option value="sea-scallops">Sea Scallops</option>
-                <option value="crab">Crab</option>
-                <option value="squid">Squid</option>
-                <option value="mahi">Mahi</option>
-                <option value="shrimp">Shrimp</option>
-                <option value="anchovies">Anchovies</option>
-                <option value="clams">Clams</option>
-                <option value="seafood-base">Seafood Base</option>
-                <option value="sea-bass">Sea Bass (Bronzino)</option>
-                <option value="cobia">Cobia</option>
-                <option value="snapper">Snapper</option>
-                <option value="halibut">Halibut</option>
-                <option value="red-fish">Red Fish</option>
-                <option value="swordfish">Swordfish</option>
-                <option value="flounder">Flounder</option>
-            </select>
-            <br></div>
+    <!-- Main Content Section -->
+    <main>
+        <!-- Display messages from Django's messaging framework -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-  
-            <div>
-            <br>
-            <p> <b>Step 3.</b> Upload product image by chooseing a file. 📂<P> 
-            <br>
-            <label for="image">🤳🏽Upload Image:</label>
-            <input type="file" id="image" name="image" accept="image/*">
-            <br>
-            </div>
-   <div>
-    <br>
-  <p> <b>Step 4.</b> Press the upload button. ↙️</p>
-  <br>
-  <button type="submit">Upload</button></div>         
-  
-  <div>
-        </form>
-        <div></div>
+        <p> The inventory application streamlines the <b>collection and labeling</b> of image training data. </p>
+        <p> This internal tool 🔧 will help generate high-quality training 🛤️ datasets for developing and improving image classification and label detection models.  </p>
+        <p> The end goal is to allow a user to predict 🪄 a product label by uploading an image of the product. </p>
+
         <br>
-        <img id="uploaded-image" src="" alt="Uploaded image preview"></div>
-    
-</div>
-   
-    </main>
-    
-    
-   
-  
-</body>
-<br>
+        <p> To add training data, follow the steps below:</p>
 
+        <!-- Grid Container for Form and Instructions -->
+        <div class="grid-container">
+            <div> <p> <b>Step 1.</b> Take a photo of the inventory iteration using a smart phone. 📲 </p> </div>
+
+            <!-- Form for Uploading Images and Selecting Categories -->
+            <form id="upload-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Dropdown for GL Level 1 Selection -->
+                <!-- Populated server-side with all GL Level 1 options -->
+                <div> 
+                    <p> <b>Step 2.</b> Select the appropriate GL Level 1 Category.</p>
+                    <select id="gl-level-1" name="gl_level_1">
+                        <option value="">-- Select GL Level 1 --</option>
+                        <!-- Options for GL Level 1 (to be populated dynamically or server-side) -->
+                        {% for gl1 in gl_level1_objects %}
+                            <option value="{{ gl1.id }}">{{ gl1.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Dropdown for GL Level 2 Selection (Disabled until GL Level 1 is selected) -->
+                <!-- Dynamically populated based on GL Level 1 selection via AJAX -->
+                <div> 
+                    <p> <b>Step 3.</b> Select the appropriate GL Level 2 Category.</p>
+                    <select id="gl-level-2" name="gl_level_2" disabled>
+                        <option value="">-- Select GL Level 2 --</option>
+                        {% for gl2 in gl_level2_objects %}
+                            <option value="{{ gl2.id }}">{{ gl2.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Dropdown for GL Level 3 Selection (Disabled until GL Level 2 is selected) -->
+                <!-- Dynamically populated based on GL Level 2 selection via AJAX -->
+                <div> 
+                    <p> <b>Step 4.</b> Select the appropriate GL Level 3 Category.</p>
+                    <select id="gl-level-3" name="gl_level_3" disabled>
+                        <option value="">-- Select GL Level 3 --</option>
+                    </select>
+                </div>
+
+                <!-- Dropdown for Product Selection (Disabled until GL Level 3 is selected) -->
+                <!-- Dynamically populated based on GL Level 3 selection via AJAX -->
+                <div> 
+                    <p> <b>Step 5.</b> Select the Inventory Product Classification that matches the inventory product.</p>
+                    <select id="product" name="product" disabled>
+                        <option value="">-- Select a Product --</option>
+                        <!-- Options for Products (to be populated dynamically based on GL Level 3 selection) -->
+                    </select>
+                </div>
+
+                <!-- Image Upload Field -->
+                <!-- User can upload an image file to be associated with the inventory item -->
+                <div>
+                    <p> <b>Step 6.</b> Upload product image by choosing a file. 📂</p>
+                    <label for="image">🤳🏽Upload Image:</label>
+                    <input type="file" id="image" name="image" accept="image/*">
+                </div>
+
+                <!-- Submit Button -->
+                <div>
+                    <p> <b>Step 7.</b> Press the upload button. ↙️</p>
+                    <button type="submit">Upload</button>
+                </div>
+            </form>
+
+            <!-- Section for Displaying Uploaded Image Preview -->
+            <div>
+                <br>
+                <img id="uploaded-image" src="" alt="Uploaded image preview">
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <!-- Footer content -->
+    </footer>
+
+
+<!-- Your existing JavaScript file reference if any -->
+<script src="{% static 'inventory/inventory.js' %}"></script>
+</body>
 </html>
 {% endblock %}
-        
+  

@@ -1,26 +1,30 @@
 """Django URL patterns for the inventory app.
 
-This module defines URL patterns for the inventory app in a Django
-project. It includes a single URL pattern for the 'inventory/' endpoint,
-mapped to the `inventory_view` function in the views module.
+Defines URL patterns for managing inventory data collection in a Django project. This includes
+the main view for inventory data submission and additional AJAX endpoints for dynamic dropdown
+population based on user selections.
 
 Imported Modules:
-    - django.urls: Provides tools for defining URL patterns.
-    - .views.inventory_view: The view function handling inventory data
-      collection and submission.
+- django.urls: Tools for URL definitions.
+- .views: Inventory app view functions for data handling.
 
 Usage:
-    1. Import this module in your Django project's urls.py file.
-    2. Include the patterns defined in this module in the project's main
-       urlpatterns.
+1. Import in the project's urls.py.
+2. Use `include()` to add these patterns to the project's urlpatterns.
 
 URL Patterns:
-    - 'inventory/': Maps to the `inventory_view` function, handling
-      inventory data collection and submission. Named as 'inventory_app'."""
+- 'inventory/': Main endpoint for inventory data submission.
+- 'get_gl_level_2/': AJAX endpoint for GL Level 2 options.
+- 'get_gl_level_3/': AJAX endpoint for GL Level 3 options.
+- 'get_products/': AJAX endpoint for product options.
+"""
 
 from django.urls import path
 from . import views
 
 urlpatterns = [
     path('inventory/', views.inventory_view, name='inventory_app'),
+    path('get_gl_level_2/', views.get_gl_level_2, name='get_gl_level_2'),
+    path('get_gl_level_3/', views.get_gl_level_3, name='get_gl_level_3'),
+    path('get_products/', views.get_products, name='get_products'),
 ]

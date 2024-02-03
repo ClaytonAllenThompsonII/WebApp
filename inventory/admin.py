@@ -16,8 +16,11 @@ Usage:
 """
 
 from django.contrib import admin
-from .models import InventoryItem
+from .models import InventoryItem, GLLevel1, GLLevel2, GLLevel3
 # Register your models here.
 
 
 admin.site.register(InventoryItem)
+admin.site.register(GLLevel1)
+admin.site.register(GLLevel2)
+admin.site.register(GLLevel3)

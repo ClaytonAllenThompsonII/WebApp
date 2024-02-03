@@ -11,7 +11,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils import timezone
 from .forms import InventoryDataCollectionForm
-from .models import InventoryItem
+from .models import InventoryItem, GLLevel1, GLLevel2, GLLevel3, Product
 from .storage_backends import AWSStorageBackend
 
 
@@ -48,10 +48,10 @@ class AWSStorageBackendTest(TestCase):
             mock_file.read.return_value = b'file content'
 
             # Test upload_file method
-            filename = storage.upload_file(mock_file)
+            filename = storage.upload_file(mock_file, user_id='1')
 
             # Assertions
-            self.assertTrue(filename.startswith('imagees/'))
+            self.assertTrue(filename.startswith('images/'))
             mock_s3_client.return_value.upload_fileobj.assert_called_with(mock_file, storage.bucket_name, filename)
 
     @patch('boto3.client')
@@ -169,17 +169,27 @@ class DirectUploadFileTest(TestCase):
 
 class InventoryItemModelTest(TestCase):
 
+    def setUp(self):
+        # Create user for ForeignKey relation
+            self.user = get_user_model().objects.create_user(username='testuser', password='12345')
+
+            # Assuming GLLevel and Product models exist and have a 'name' field
+            self.gl_level_1 = GLLevel1.objects.create(name="GL1 Test")
+            self.gl_level_2 = GLLevel2.objects.create(name="GL2 Test", parent=self.gl_level_1)
+            self.gl_level_3 = GLLevel3.objects.create(name="GL3 Test", parent=self.gl_level_2)
+            self.product = Product.objects.create(name="Product Test")
+
     def test_inventory_item_model_creation(self):
     
-        # Create a user for the ForeignKey relation
-        User = get_user_model()
-        user = User.objects.create_user(username='testuser', password='12345')
-
         # Create an InventoryItem instance
-        item = InventoryItem(
-            user=user,
+        # Assuming 'image' and 'filename' are valid fields on InventoryItem
+        item = InventoryItem.objects.create(
+            user=self.user,
+            gl_level_1=self.gl_level_1,
+            gl_level_2=self.gl_level_2,
+            gl_level_3=self.gl_level_3,
+            product=self.product,
             image='/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg',
-            type='TestType',
             filename='image.jpg'
         )
 
@@ -191,9 +201,13 @@ class InventoryItemModelTest(TestCase):
         retrieved_item = InventoryItem.objects.get(id=item.id)
 
         # Test assertions
-        self.assertEqual(retrieved_item.user, user)
+        self.assertEqual(retrieved_item.user, self.user)
+        self.assertEqual(retrieved_item.gl_level_1, self.gl_level_1)
+        self.assertEqual(retrieved_item.gl_level_2, self.gl_level_2)
+        self.assertEqual(retrieved_item.gl_level_3, self.gl_level_3)
+        self.assertEqual(retrieved_item.product, self.product)
         self.assertEqual(retrieved_item.image, '/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg')
-        self.assertEqual(retrieved_item.type, 'TestType')
+        
         self.assertEqual(retrieved_item.filename, 'image.jpg')
     
 

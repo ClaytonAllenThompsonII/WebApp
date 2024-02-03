@@ -72,13 +72,20 @@ def inventory_view(request):
 
             try:
                 # Upload image to S3 and get filename
-                filename = storage_backend.upload_file(form.cleaned_data['image'])
+                filename = storage_backend.upload_file(form.cleaned_data['image'], user_id=request.user.id)
                 inventory_item.filename = filename
 
                 # Prepare and store metadata in DynamoDB
                 item_data = {
                     'filename': {'S': filename},
-                    'label': {'S': inventory_item.type},
+                    'gl_level_1_id': {'S': str(inventory_item.gl_level_1.id)},
+                    'gl_level_1_name': {'S': inventory_item.gl_level_1.name},
+                    'gl_level_2_id': {'S': str(inventory_item.gl_level_2.id)},
+                    'gl_level_2_name': {'S': inventory_item.gl_level_2.name},
+                    'gl_level_3_id': {'S': str(inventory_item.gl_level_3.id)},
+                    'gl_level_3_name': {'S': inventory_item.gl_level_3.name},
+                    'product_id': {'S': str(inventory_item.product.id)},
+                    'product_name': {'S': inventory_item.product.name},
                     'timestamp': {'S': inventory_item.timestamp.strftime('%Y-%m-%d %H:%M:%S')},
                     'user_id': {'N': str(inventory_item.user.id)}  # Assuming user ID is a number
                 }
@@ -89,6 +96,7 @@ def inventory_view(request):
                 print("Inventory item created and saved")  # Debug print
 
                 messages.success(request, 'Inventory item uploaded successfully!')
+                return redirect('inventory_view')  # Redirect back to the form
                 #logger.info("file upload successful: %s", filename)
             except Exception as e:
                 print(f"Error occurred: {e}")  # Debug print to log the exception

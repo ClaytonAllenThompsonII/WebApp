@@ -1,4 +1,4 @@
-"""Django models for inventory items.
+"""Django models for inventory items. NEED TO REDO
 
 This module defines a Django model, `InventoryItem`, representing an
 inventory item with its associated image, label, timestamp, and user.
@@ -31,9 +31,48 @@ from django.contrib.auth import get_user_model
 # Create your models here.
 # from django.contrib.auth.models import User use if I switch from get_user_model()
 
+
+  
+# Model for GL Level 1
+class GLLevel1(models.Model):
+    """ Add Docstring """
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'{self.name}'
+
+# Model for GL Level 2
+class GLLevel2(models.Model):
+    """ Add Docstring """
+    parent = models.ForeignKey(GLLevel1, related_name='gl_level2', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'{self.name}'
+
+# Model for GL Level 3
+class GLLevel3(models.Model):
+    """ Add Docstring """
+    parent = models.ForeignKey(GLLevel2, related_name='gl_level3', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'{self.name}'
+
+# Model for Product (could be directly linked to GL Level 3 or independent if needed)
+class Product(models.Model):
+    """ Add Docstring """
+    parent = models.ForeignKey(GLLevel3, related_name='products', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+
 # Create your models here.
 class InventoryItem(models.Model):
-    """
+    """ NEED TO UPDATE DOC STRINGS
     Represents an inventory item with its associated image, label, timestamp, and user.
     
     Fields:

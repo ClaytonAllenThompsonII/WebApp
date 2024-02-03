@@ -1,4 +1,5 @@
 """ Add Module Doc String"""
+from datetime import datetime
 import os
 import uuid
 import logging
@@ -41,11 +42,14 @@ class AWSStorageBackend:
             raise
 
 
-    def upload_file(self, file):
+    def upload_file(self, file, user_id):
         """Uploads a file to S3 and returns the generated filename"""
-        filename = f'imagees/{uuid.uuid4()}{os.path.splitext(file.name)[1]}'
-        # DEBUG Consider coming up with functional naming convention
-        # would need to rename uploaded files using a identifiable convention - Group/User/imagees
+        # Format the current timestamp
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        # Extract the file extension
+        file_extension = os.path.splitext(file.name)[1]
+        # Construct the filename string
+        filename = f"images/user_{user_id}_{timestamp}_{uuid.uuid4()}{file_extension}"
 
         logger.debug(f"Attempting to upload file {filename} to S3")
 

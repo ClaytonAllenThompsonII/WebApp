@@ -1,0 +1,182 @@
+{% extends 'users/main.html' %}
+{% block content %}
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload with Inventory Product Classification</title>
+    <style>
+        body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f2f2f2;
+}
+
+header {
+  background-color: #f2f2f2;
+  background: #007bff;
+  color: #f2f2f2;
+  padding: 1rem;
+  display: block;
+  animation: pulse 1s infinite;
+}
+
+nav {
+    background-color: rgba(0, 47, 167, 0.6);
+    background: linear-gradient(
+    to right,
+    rgba(0, 47, 167, 0.8) 0%,
+    rgba(26, 89, 180, 0.8) 50%,
+    rgba(0, 47, 167, 0.8) 100%
+  );
+    color: #007FFF;
+    padding: 1rem;
+    display: block;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0% {
+      background-color: rgba(0, 47, 167, 0.7);
+    }
+    50% {
+      background-color: rgba(26, 89, 180, 0.8);
+    }
+    100% {
+      background-color: rgba(0, 47, 167, 0.7);
+    }
+
+}
+  
+
+
+main {
+    padding: 2rem;
+}
+
+#upload-form {
+    max-width: 100%;
+    
+    flex-direction: column;
+    align-items: left;
+}
+
+#image {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+#uploaded-image {
+    max-width: 100%;
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    margin-top: 1rem;
+}
+
+#type {
+    margin-bottom: 1rem;
+}
+
+
+  
+
+  footer {
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #002FA7;
+    text-align:center;
+    padding: 1rem;
+}
+    </style>
+    
+</head>
+
+<body>
+    <header>
+
+        <!--This header needs to be the same style as NAV bar-->
+        <h5>Inventory image upload 📷 & label selection 🏷️</h5>
+        
+    </header>
+  <p> The inventory application streamlines the <b>collection and labeling</b> of image training data. </p>
+  <p> This internal tool 🔧 will help generate high-quality training 🛤️ datasets for developing and improving image classification and label detection models.  </p>
+  <p> The end goal is to allow a user to predict 🪄 a product label by uploading an image of the product. </p>
+  
+  <br>
+  <p> To add training data, follow the steps below:</p>
+
+  <main>
+    <div class="grid-container">
+    <div> <p> <b>Step 1.</b> Take a photo of the inventory iteration using a smart phone. 📲</p> </div>
+    <div> <p> <b>Step 2.</b> Select the data label from the Inventory Classification section that matches the inventory product. 🏷️</p>
+    <br>
+    <form id="upload-form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+           
+            <label for="type">⌖Inventory Classification:</label>
+            <br>
+            <select id="type" name="type">
+                <option value="">-- Select a Label --</option>
+                <option value="grouper">Grouper 🎣</option>
+                <option value="salmon">Salmon</option>
+                <option value="trout">Trout</option>
+                <option value="mussels">Mussels</option>
+                <option value="sea-scallops">Sea Scallops</option>
+                <option value="crab">Crab</option>
+                <option value="squid">Squid</option>
+                <option value="mahi">Mahi</option>
+                <option value="shrimp">Shrimp</option>
+                <option value="anchovies">Anchovies</option>
+                <option value="clams">Clams</option>
+                <option value="seafood-base">Seafood Base</option>
+                <option value="sea-bass">Sea Bass (Bronzino)</option>
+                <option value="cobia">Cobia</option>
+                <option value="snapper">Snapper</option>
+                <option value="halibut">Halibut</option>
+                <option value="red-fish">Red Fish</option>
+                <option value="swordfish">Swordfish</option>
+                <option value="flounder">Flounder</option>
+            </select>
+            <br></div>
+
+  
+            <div>
+            <br>
+            <p> <b>Step 3.</b> Upload product image by chooseing a file. 📂<P> 
+            <br>
+            <label for="image">🤳🏽Upload Image:</label>
+            <input type="file" id="image" name="image" accept="image/*">
+            <br>
+            </div>
+   <div>
+    <br>
+  <p> <b>Step 4.</b> Press the upload button. ↙️</p>
+  <br>
+  <button type="submit">Upload</button></div>         
+  
+  <div>
+        </form>
+        <div></div>
+        <br>
+        <img id="uploaded-image" src="" alt="Uploaded image preview"></div>
+    
+</div>
+   
+    </main>
+    
+    
+   
+  
+</body>
+<br>
+
+</html>
+{% endblock %}
+        

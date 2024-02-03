@@ -1,31 +1,34 @@
-"""Django views for handling inventory data collection.
+"""
+Django Views for Inventory Data Collection.
 
-This module defines views for inventory data collection in a Django
-application. It includes a view function, `inventory_view`, which
-handles the rendering of the inventory data collection form, processing
-of form submissions, and saving valid form data to the database.
+This module provides a suite of views to support inventory data collection within a Django web
+application. It facilitates the inventory management process from data input by users to backend
+processing and storage.
 
-Imported Modules:
-    - django.shortcuts: Provides shortcuts for common Django patterns.
-    - django.contrib.auth.decorators: Provides decorators for handling
-      authentication-related functionalities.
-    - django.contrib.messages: Enables messages framework for displaying
-      notifications to users.
-    - .forms.inventoryDataCollectionForm: The form for collecting
-      inventory data.
+Key Components:
+- `inventory_view`: Renders the inventory data collection form. It handles GET and POST requests,
+  processing form data for submissions and saving it to the database. User success notifications
+  are managed through this view, secured with `@login_required` to ensure only authenticated users
+  can submit data.
 
-Usage:
-    1. Import this module in your Django project's views.py file.
-    2. Use the `inventory_view` function as a view for handling inventory
-       data collection in the application.
+- AJAX Views (`get_gl_level_2`, `get_gl_level_3`, `get_products`): Enhance user experience by
+  dynamically updating dropdown fields based on previous selections. They provide JSON data for
+  cascading dropdown options, facilitating a hierarchical selection process.
 
-Function `inventory_view`:
-    Handles inventory data collection and submission.
+Modules and Frameworks Utilized:
+- `django.shortcuts`: Facilitates rendering templates and redirecting URLs.
+- `django.contrib.auth.decorators`: Contains `@login_required` for access control.
+- `django.contrib.messages`: Enables queuing and displaying messages to users.
+- `forms.inventoryDataCollectionForm`: Custom form class specifying the structure and validation
+  criteria for the data collection form.
 
-    - Renders the inventory data collection form.
-    - Processes POST requests with form data.
-    - Saves valid form data to the database.
-    - Displays success messages upon successful submission.
+Usage Guidelines:
+1. Incorporate into your project's `views.py` to use the defined views for inventory management.
+2. Map `inventory_view` to a URL pattern in `urls.py` for the form endpoint.
+3. Map AJAX views similarly and utilize with JavaScript for dynamic form field population.
+
+This module aims to streamline inventory item management, ensuring data integrity, enhancing user
+experience, and maintaining secure access to functionalities.
 
     Decorators:
         - @login_required(login_url='loginPage'): Ensures that only
@@ -33,11 +36,19 @@ Function `inventory_view`:
           login page if the user is not authenticated.
  """
 import logging
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import InventoryDataCollectionForm
 from .storage_backends import AWSStorageBackend
+
+from django.http import JsonResponse
+from .models import GLLevel1
+from .models import GLLevel2
+from .models import GLLevel3
+from .models import Product
+
+logger = logging.getLogger(__name__)
 # Create your views here.
 
 #@login_required(login_url='loginPage')

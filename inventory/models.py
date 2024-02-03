@@ -84,10 +84,15 @@ class InventoryItem(models.Model):
     """
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, db_index=True) # try User instead of get_user_model if needed.
     image = models.ImageField(upload_to='inventory_images/') #keep this to test, but get rid of after AWS works.
-    type = models.CharField(max_length=255, db_index=True) # had to change this from Label. Need to figure out what was up with that. I think I can give the HTML class an ID to rename it from type to label.
     filename = models.CharField(max_length=255) # to store the image filename in S3.
     timestamp = models.DateTimeField(auto_now_add=True)  # Add timestamp
+    gl_level_1 = models.ForeignKey(GLLevel1, on_delete=models.CASCADE, null=True, blank=True)
+    gl_level_2 = models.ForeignKey(GLLevel2, on_delete=models.CASCADE, null=True, blank=True)
+    gl_level_3 = models.ForeignKey(GLLevel3, on_delete=models.CASCADE, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return f'{self.user.username} - {self.type} ({self.timestamp})'
+        # Adjusted to handle cases where GL levels or product might be null
+        product_name = self.product.name if self.product else 'No Product'
+        return f'{self.user.username} - {product_name} ({self.timestamp})'
     

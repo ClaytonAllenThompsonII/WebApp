@@ -36,7 +36,7 @@ from django.contrib.auth import get_user_model
 # Model for GL Level 1
 class GLLevel1(models.Model):
     """ Add Docstring """
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return f'{self.name}'
@@ -45,7 +45,7 @@ class GLLevel1(models.Model):
 class GLLevel2(models.Model):
     """ Add Docstring """
     parent = models.ForeignKey(GLLevel1, related_name='gl_level2', on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return f'{self.name}'
@@ -54,7 +54,7 @@ class GLLevel2(models.Model):
 class GLLevel3(models.Model):
     """ Add Docstring """
     parent = models.ForeignKey(GLLevel2, related_name='gl_level3', on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return f'{self.name}'
@@ -63,7 +63,7 @@ class GLLevel3(models.Model):
 class Product(models.Model):
     """ Add Docstring """
     parent = models.ForeignKey(GLLevel3, related_name='products', on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return f'{self.name}'
@@ -81,6 +81,9 @@ class InventoryItem(models.Model):
         - type (CharField): The category or type of the inventory item. Indexed for faster query performance.
         - filename (CharField): The filename of the image in S3.
         - timestamp (DateTimeField): The time when the inventory item was added to the database.
+        - gl_level_1
+        - gl_level_2
+        - gl_level_3
     """
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, db_index=True) # try User instead of get_user_model if needed.
     image = models.ImageField(upload_to='inventory_images/') #keep this to test, but get rid of after AWS works.

@@ -268,6 +268,29 @@ class InventoryItemModelTest(TestCase):
 
 
 class InventoryDataCollectionFormTest(TestCase):
+    """
+    Provides a suite of tests for the InventoryDataCollectionForm to ensure it accurately
+    validates data, handles invalid inputs appropriately, and successfully saves valid
+    data to the database.
+
+    The setUp method prepares a comprehensive test environment by creating essential
+    database records such as a User, General Ledger (GL) levels, and a Product. It also
+    sets up both valid and invalid form and file data to simulate various user submission
+    scenarios.
+
+    Tests included:
+    - test_form_with_valid_data: Verifies the form validates correctly with appropriate
+      GL level selections, a product selection, and a valid image file.
+    - test_form_with_invalid_data: Checks the form's response to invalid data, such as
+      submitting a non-image file, ensuring robust data validation.
+    - test_form_saves_data: Confirms that upon submission of valid data, the form
+      correctly creates an InventoryItem instance, capturing all the provided details
+      including associated user, GL levels, product, and image file.
+
+    These tests collectively ensure the InventoryDataCollectionForm's reliability in
+    processing user submissions, enforcing data integrity, and facilitating correct
+    data storage within the application's database.
+    """
 
     def setUp(self):
         """
@@ -311,39 +334,83 @@ class InventoryDataCollectionFormTest(TestCase):
         }
 
     def test_form_with_valid_data(self):
-        
+        """
+    Verifies that the InventoryDataCollectionForm correctly validates when provided
+    with valid data and files.
+
+    This test simulates submitting a form with valid General Ledger (GL) level selections,
+    a product selection, and a valid image file. It ensures that the form is considered
+    valid by Django's form validation system, which indicates that the form fields are
+    correctly configured and the form can successfully process valid data as expected.
+
+    The test initializes the form with prepared valid data and file in `setUp` and asserts
+    the form's validity. If the form is not valid, the test prints the form errors for
+    debugging purposes.
+    """
+        # Initialize the form with predefined valid data and file
         form = InventoryDataCollectionForm(data=self.form_data, files=self.file_data)
+        # Debugging aid: Print form errors if the form is not valid
         if not form.is_valid():
             print(form.errors)
+        # Assert that the form is valid with the given valid inputs
         self.assertTrue(form.is_valid())
 
     def test_form_with_invalid_data(self):
-        # Simulate uploading a non-image file (e.g., a Word document)
-         # Modify the file data for an invalid test case, e.g., non-image file
+        """
+    Tests the InventoryDataCollectionForm's ability to reject invalid data. Specifically,
+    this test verifies that the form correctly identifies and invalidates submissions where
+    the file uploaded is not an image.
+
+    This scenario is common in ensuring the integrity of data, especially for applications
+    requiring specific types of file uploads. The test simulates an attempt to upload a
+    non-image file (e.g., a Word document) as an image, which should not be valid per the
+    form's configuration.
+
+    Asserts that the form is not valid when provided with a non-image file, ensuring the
+    form's validation logic is correctly implemented to prevent inappropriate file types
+    from being processed as valid inputs.
+    """
+        # Simulate uploading a non-image file (e.g., a Word document) to test form validation against invalid file types
+        # Modify the file data for an invalid test case, e.g., non-image file
         invalid_file_data = {
             'image': SimpleUploadedFile(name='document.docx', content=b'some document data', content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
         }
+        # Initialize the form with valid data but an invalid file type for 'image'
         form = InventoryDataCollectionForm(data=self.form_data, files=invalid_file_data)
+        # Assert that the form is invalid when provided with a non-image file
         self.assertFalse(form.is_valid())
 
     def test_form_saves_data(self):
+        """
+    Tests that InventoryDataCollectionForm correctly saves data to the database upon
+    submission of valid data. This test ensures the form not only validates user input
+    but also correctly instantiates and persists an InventoryItem object with the provided
+    data, including setting the correct user, file, and associated GL levels and product.
 
-        # Create valid form data
+    The process involves creating a form instance with predetermined valid data and file,
+    saving the form with commit=False to obtain the model instance (without immediate
+    database persistence), manually setting additional required fields (like user), and
+    finally saving the model instance to the database. This test then retrieves the saved
+    instance from the database to verify that all attributes were correctly saved and
+    match the input data.
+    """
+        # Initialize the form with predefined valid data and files
         form = InventoryDataCollectionForm(data=self.form_data, files=self.file_data)
+
+        # Validate the form and save the data if valid
         if form.is_valid():
             item = form.save(commit=False)
             item.user = self.user
             item.save()
 
-            # Retrieve the saved item and assert the data
-            # Ensure you reference the saved `item` correctly
+            # Retrieve the saved item from the database for verification
             saved_item = InventoryItem.objects.get(id=item.id)
+
             # Use self.form_data to access the test's form data
-            # Adjust the assertions to match your model's fields
+            # Assert that the saved item's data matches the expected input data
             self.assertEqual(saved_item.filename, self.form_data['filename'])
             self.assertEqual(saved_item.user, self.user)
-            # Additional assertions can be made here based on the fields of InventoryItem
-            # For example, if you want to check the GL levels and product:
+            # Validate that GL levels and product were correctly associated
             self.assertEqual(saved_item.gl_level_1.id, self.form_data['gl_level_1'])
             self.assertEqual(saved_item.gl_level_2.id, self.form_data['gl_level_2'])
             self.assertEqual(saved_item.gl_level_3.id, self.form_data['gl_level_3'])

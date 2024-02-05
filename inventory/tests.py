@@ -170,78 +170,77 @@ class DirectUploadFileTest(TestCase):
 class InventoryItemModelTest(TestCase):
 
     def setUp(self):
-        # Create user for ForeignKey relation
-            self.user = get_user_model().objects.create_user(username='testuser', password='12345')
+        """
+    Prepares the environment for inventory item model tests by creating necessary database
+    entries. This includes a test user, General Ledger (GL) Level instances (1 to 3), a
+    product instance tied to a GL Level 3, and a dummy inventory item with an image.
+    """   
+        # Create a user for ForeignKey relation to simulate an actual user environment.
+        self.user = get_user_model().objects.create_user(username='testuser', password='12345')
 
-            # Assuming GLLevel and Product models exist and have a 'name' field
-            self.gl_level_1 = GLLevel1.objects.create(name="GL1 Test")
-            self.gl_level_2 = GLLevel2.objects.create(name="GL2 Test", parent=self.gl_level_1)
-            self.gl_level_3 = GLLevel3.objects.create(name="GL3 Test", parent=self.gl_level_2)
-            self.product = Product.objects.create(name="Product Test")
+        # Initialize GL Level instances, each subsequent level referencing its parent.
+        self.gl_level_1 = GLLevel1.objects.create(name="GL1 Test")
+        self.gl_level_2 = GLLevel2.objects.create(name="GL2 Test", parent=self.gl_level_1)
+        self.gl_level_3 = GLLevel3.objects.create(name="GL3 Test", parent=self.gl_level_2)
 
-    def test_inventory_item_model_creation(self):
-    
-        # Create an InventoryItem instance
-        # Assuming 'image' and 'filename' are valid fields on InventoryItem
-        item = InventoryItem.objects.create(
+        # Create a Product instance, ensuring it's associated with a GL Level 3 instance.
+        self.product = Product.objects.create(name="Product Test", parent=self.gl_level_3)
+
+        # Prepare a dummy image file for testing image upload and storage.
+        image_data = io.BytesIO(b"dummy image data")
+        image_file = SimpleUploadedFile("test.jpg", image_data.getvalue())
+
+        # Generate an InventoryItem instance to be used in various test scenarios.
+        self.item = InventoryItem.objects.create(
             user=self.user,
             gl_level_1=self.gl_level_1,
             gl_level_2=self.gl_level_2,
             gl_level_3=self.gl_level_3,
             product=self.product,
-            image='/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg',
+            image=image_file,
             filename='image.jpg'
         )
 
-        # Save it to the database
-        item.save()
 
-        # Retrieve it back
+    def test_inventory_item_model_creation(self):
+        """
+    Validates the successful creation and accurate field assignment of an InventoryItem instance.
+    This test ensures that all relational fields (user, GL levels, and product) and the filename
+    are correctly assigned. It also verifies the string representation (__str__) of the model.
+    """
+        # Retrieve the previously created inventory item for validation.
         # pylint: disable=no-member
-        retrieved_item = InventoryItem.objects.get(id=item.id)
+        retrieved_item = InventoryItem.objects.get(id=self.item.id)
 
         # Test assertions
+        # Assert each field matches the expected value set in the setUp method.
         self.assertEqual(retrieved_item.user, self.user)
         self.assertEqual(retrieved_item.gl_level_1, self.gl_level_1)
         self.assertEqual(retrieved_item.gl_level_2, self.gl_level_2)
         self.assertEqual(retrieved_item.gl_level_3, self.gl_level_3)
         self.assertEqual(retrieved_item.product, self.product)
-        self.assertEqual(retrieved_item.image, '/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg')
-        
         self.assertEqual(retrieved_item.filename, 'image.jpg')
-    
+
+        # Test __str__ method
+        # Validate the string representation of the InventoryItem instance.
+        expected_str = f'{self.user.username} - {self.product.name} ({self.item.timestamp})'
+        self.assertEqual(str(retrieved_item), expected_str)
 
     def test_inventory_item_timestamp(self):
-         # Create a user for the ForeignKey relation
-        User = get_user_model()
-        user = User.objects.create_user(username='testuser', password='12345')
-
-        # Create an InventoryItem instance
-        item = InventoryItem(
-            user=user,
-            image='/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg',
-            type='TestType',
-            filename='image.jpg'
-        )
-
-        # Save it to the database
-        item.save()
-
-        # Retrieve it back
+        """
+    Verifies that the timestamp of the InventoryItem instance is within a reasonable range
+    of the current time, ensuring the auto_now_add attribute functionality.
+    """
+        # Retrieve the inventory item to validate the timestamp.
         # pylint: disable=no-member
-        retrieved_item = InventoryItem.objects.get(id=item.id)
+        retrieved_item = InventoryItem.objects.get(id=self.item.id)
 
         # Check that the timestamp is recent
+        # Calculate the time difference between now and the item's timestamp.
         now = timezone.now()
         time_diff = now - retrieved_item.timestamp
+        # Assert the timestamp is recent (within 5 seconds of the current time).
         self.assertTrue(time_diff < datetime.timedelta(seconds=5), "Timestamp is not within the expected time range")
-
-
-        # Test assertions
-        self.assertEqual(retrieved_item.user, user)
-        self.assertEqual(retrieved_item.image, '/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg')
-        self.assertEqual(retrieved_item.type, 'TestType')
-        self.assertEqual(retrieved_item.filename, 'image.jpg')
 
 
 class InventoryDataCollectionFormTest(TestCase):

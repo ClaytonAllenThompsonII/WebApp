@@ -175,6 +175,23 @@ class DirectUploadFileTest(TestCase):
 
 
 class InventoryItemModelTest(TestCase):
+    """
+    Test suite for the InventoryItem model.
+
+    This class covers tests for the creation and timestamp validation of InventoryItem instances.
+    It ensures that InventoryItem instances can be successfully created with all required fields,
+    including relational fields to the user, GL levels, and products. Additionally, it verifies
+    the auto-generated timestamp is accurate to the time of instance creation. The setUp method
+    prepares the necessary database entities for testing, including a test user, hierarchical GL
+    levels, a product associated with a GL level, and a dummy inventory item complete with an
+    uploaded image.
+
+    Tests included:
+    - test_inventory_item_model_creation: Validates that InventoryItem instances are created
+      accurately with all required relational fields and the filename.
+    - test_inventory_item_timestamp: Checks the auto_now_add functionality of the timestamp field
+      to ensure it reflects the creation time of the InventoryItem instance accurately.
+    """
 
     def setUp(self):
         """
@@ -253,54 +270,85 @@ class InventoryItemModelTest(TestCase):
 class InventoryDataCollectionFormTest(TestCase):
 
     def setUp(self):
-        User = get_user_model()
-        self.user = User.objects.create_user(username='testuser', password='12345')
+        """
+    Initializes the test environment for InventoryDataCollectionForm tests by setting up
+    necessary database entries and preparing form data.
 
-    def test_valid_data(self):
+    It creates a test user and instances for each GL level and a product, simulating a real-world
+    scenario where form data would include selections for these entities. Additionally, it prepares
+    a sample image file and form data to be used in various form validation tests.
+
+    Attributes set:
+    - self.user: A User instance for form submissions.
+    - self.gl_level_1, self.gl_level_2, self.gl_level_3: Instances of GLLevel1, GLLevel2, and GLLevel3.
+    - self.product: A Product instance linked to GLLevel3.
+    - self.image_data: Binary data representing a 1x1 black pixel JPEG image.
+    - self.form_data: A dictionary containing initial data for the form, including GL level IDs,
+      product ID, and a filename for the image.
+    - self.file_data: A dictionary containing the sample image file to simulate file upload in form submissions.
+    """
+        # Create user for associating with form submissions
+        self.user = get_user_model().objects.create_user(username='testuser', password='12345')
+
+        # Create GL Levels and Product instances
+        self.gl_level_1 = GLLevel1.objects.create(name="GL1 Name")
+        self.gl_level_2 = GLLevel2.objects.create(name="GL2 Name", parent=self.gl_level_1)
+        self.gl_level_3 = GLLevel3.objects.create(name="GL3 Name", parent=self.gl_level_2)
+        self.product = Product.objects.create(name="Product Name", parent=self.gl_level_3)
+
         # Sample data for a 1x1 black pixel in JPEG format
-        image_data = b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\x03\x02\x02\x03\x02\x02\x03\x03\x03\x03\x04\x03\x03\x04\x05\x08\x05\x05\x04\x04\x05\n\x07\x07\x06\x08\x0c\n\x0c\x0c\x0b\n\x0b\x0b\r\x0e\x12\x10\r\x0e\x11\x0e\x0b\x0b\x10\x16\x10\x11\x13\x14\x15\x15\x15\x0c\x0f\x17\x18\x16\x14\x18\x12\x14\x15\x14\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x03\x01"\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x06\xff\xc4\x00\x14\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\xff\xda\x00\x0c\x03\x01\x00\x02\x10\x03\x10\x00\x00\x01\xdf\x00\xff\xd9'
+        self.image_data = b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\x03\x02\x02\x03\x02\x02\x03\x03\x03\x03\x04\x03\x03\x04\x05\x08\x05\x05\x04\x04\x05\n\x07\x07\x06\x08\x0c\n\x0c\x0c\x0b\n\x0b\x0b\r\x0e\x12\x10\r\x0e\x11\x0e\x0b\x0b\x10\x16\x10\x11\x13\x14\x15\x15\x15\x0c\x0f\x17\x18\x16\x14\x18\x12\x14\x15\x14\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x03\x01"\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x06\xff\xc4\x00\x14\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\xff\xda\x00\x0c\x03\x01\x00\x02\x10\x03\x10\x00\x00\x01\xdf\x00\xff\xd9'
 
-        form_data = {
-            'type': 'TestType',
-            'filename': 'test_image.jpg'
+        self.form_data = {
+            'gl_level_1': self.gl_level_1.id,
+            'gl_level_2': self.gl_level_2.id,
+            'gl_level_3': self.gl_level_3.id,
+            'product': self.product.id,
+            'filename': 'test_file.jpg'
         }
-        file_data = {
-            'image': SimpleUploadedFile(name='test_image.jpg', content=image_data, content_type='image/jpeg')
+        self.file_data = {
+            'image': SimpleUploadedFile(name='test_image.jpg', content=self.image_data, content_type='image/jpeg')
         }
-        form = InventoryDataCollectionForm(data=form_data, files=file_data)
+
+    def test_form_with_valid_data(self):
+        
+        form = InventoryDataCollectionForm(data=self.form_data, files=self.file_data)
         if not form.is_valid():
             print(form.errors)
         self.assertTrue(form.is_valid())
 
-    def test_invalid_data(self):
-         # Simulate uploading a non-image file (e.g., a Word document)
-        form_data = {
-            'user': self.user,
-            'image': SimpleUploadedFile(name='document.docx', content=b'some document data', content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
-            'type': 'TestType',
-            'filename': 'document.docx'
+    def test_form_with_invalid_data(self):
+        # Simulate uploading a non-image file (e.g., a Word document)
+         # Modify the file data for an invalid test case, e.g., non-image file
+        invalid_file_data = {
+            'image': SimpleUploadedFile(name='document.docx', content=b'some document data', content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
         }
-        form = InventoryDataCollectionForm(data=form_data, files={'image': form_data['image']})
+        form = InventoryDataCollectionForm(data=self.form_data, files=invalid_file_data)
         self.assertFalse(form.is_valid())
 
     def test_form_saves_data(self):
 
         # Create valid form data
-        form_data = {
-            'user': self.user,
-            'image': SimpleUploadedFile(name='test_image.jpg', content=b'some image data', content_type='image/jpeg'),
-            'type': 'TestType',
-            'filename': 'test_image.jpg'
-        }
-        form = InventoryDataCollectionForm(data=form_data, files={'image': form_data['image']})
+        form = InventoryDataCollectionForm(data=self.form_data, files=self.file_data)
         if form.is_valid():
-            inventory_item = form.save(commit=False)
-            inventory_item.user = self.user
-            inventory_item.save()
+            item = form.save(commit=False)
+            item.user = self.user
+            item.save()
 
             # Retrieve the saved item and assert the data
-            saved_item = InventoryItem.objects.get(id=inventory_item.id)
-            self.assertEqual(saved_item.type, form_data['type'])
-            self.assertEqual(saved_item.filename, form_data['filename'])
+            # Ensure you reference the saved `item` correctly
+            saved_item = InventoryItem.objects.get(id=item.id)
+            # Use self.form_data to access the test's form data
+            # Adjust the assertions to match your model's fields
+            self.assertEqual(saved_item.filename, self.form_data['filename'])
             self.assertEqual(saved_item.user, self.user)
+            # Additional assertions can be made here based on the fields of InventoryItem
+            # For example, if you want to check the GL levels and product:
+            self.assertEqual(saved_item.gl_level_1.id, self.form_data['gl_level_1'])
+            self.assertEqual(saved_item.gl_level_2.id, self.form_data['gl_level_2'])
+            self.assertEqual(saved_item.gl_level_3.id, self.form_data['gl_level_3'])
+            self.assertEqual(saved_item.product.id, self.form_data['product'])
+        else:
+            # If form is not valid, fail the test with form errors
+            self.fail(f'Form did not validate: {form.errors}')
 

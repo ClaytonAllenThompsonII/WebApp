@@ -72,7 +72,14 @@ class AWSStorageBackendTest(TestCase):
             # Mock item data
             item_data = {
                 'filename': {'S': 'test.jpg'},
-                'label': {'S': 'TestLabel'},
+                'gl_level_1_id': {'S': 'GL1ID123'},  # Example GL level 1 ID
+                'gl_level_1_name': {'S': 'Food'},  # Example GL level 1 Name
+                'gl_level_2_id': {'S': 'GL2ID456'},  # Example GL level 2 ID
+                'gl_level_2_name': {'S': 'Meat'},  # Example GL level 2 Name
+                'gl_level_3_id': {'S': 'GL3ID789'},  # Example GL level 3 ID
+                'gl_level_3_name': {'S': 'Beef Short Rib'},  # Example GL level 3 Name
+                'product_id': {'S': 'ProductID101'},  # Example Product ID
+                'product_name': {'S': 'Beef Short Rib BNL'},  # Example Product Name
                 'timestamp': {'S': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')},
                 'user_id': {'N': '1'}
             }

@@ -213,7 +213,6 @@ class DirectUploadFileTest(TestCase):
         # Assert that the mock was called as expected
         mock_upload_file.assert_called_once_with(mock_file)
 
-
 class InventoryItemModelTest(TestCase):
     """
     Test suite for the InventoryItem model.
@@ -459,3 +458,48 @@ class InventoryDataCollectionFormTest(TestCase):
             # If form is not valid, fail the test with form errors
             self.fail(f'Form did not validate: {form.errors}')
 
+
+
+
+
+
+
+@override_settings(MEDIA_ROOT='/tmp/django_test')
+class FileUploadTests(TestCase):
+    def setUp(self):
+        # Create a test user
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.gl_level_1 = GLLevel1.objects.create(name="Test GL Level 1")
+        self.gl_level_2 = GLLevel2.objects.create(name="Test GL Level 2", parent=self.gl_level_1)
+        self.gl_level_3 = GLLevel3.objects.create(name="Test GL Level 3", parent=self.gl_level_2)
+        self.product = Product.objects.create(name="Test Product", parent=self.gl_level_3)
+
+    @patch('inventory.views.AWSStorageBackend.upload_file', side_effect=ClientError({}, "operation_name"))
+    def test_upload_file_error(self, mock_upload):
+        # Log in the test user
+        self.client.login(username='testuser', password='testpassword')
+
+        # Prepare a dummy file (consider using an actual small image file here)
+        with open('/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg', 'rb') as img:
+            dummy_file = SimpleUploadedFile('test_file.jpg', img.read(), content_type='image/jpeg')
+
+        # Prepare POST data including the required fields
+        post_data = {
+            'image': dummy_file,
+            'gl_level_1': self.gl_level_1.id,
+            'gl_level_2': self.gl_level_2.id,
+            'gl_level_3': self.gl_level_3.id,
+            'product': self.product.id,
+        }
+
+        response = self.client.post(reverse('inventory_app'), post_data, follow=True)
+
+        # Check that the user was redirected correctly
+        self.assertEqual(response.status_code, 200)
+        print(response.request['PATH_INFO'])
+        self.assertTrue('/inventory/' in response.request['PATH_INFO'])
+
+        # Check for error message in the response context
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertIn('There was a problem with the file upload', str(messages[0]))

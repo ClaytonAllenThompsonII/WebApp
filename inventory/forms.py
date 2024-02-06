@@ -35,4 +35,4 @@ class InventoryDataCollectionForm(forms.ModelForm):
         - Meta.model (InventoryItem): The associated InventoryItem model.
         - Meta.fields (list): List of fields included in the form, corresponding to model attributes."""
         model = InventoryItem
-        fields = ['image', 'filename', 'gl_level_1', 'gl_level_2', 'gl_level_3', 'product']
+        fields = ['image', 'gl_level_1', 'gl_level_2', 'gl_level_3', 'product']

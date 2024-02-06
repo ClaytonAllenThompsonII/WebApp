@@ -1,5 +1,5 @@
 import csv
-from inventory.models import GLLevel1, GLLevel2, GLLevel3
+from inventory.models import GLLevel1, GLLevel2, GLLevel3, Product
 
 # Execute the function to import GL Level 1 data
 def import_gl_level_1():
@@ -18,62 +18,83 @@ def import_gl_level_1():
         print(f"Total new GL Level 1 added: {count}")
 
 # Remember to replace '/path/to/your/GLLevel1.csv' with the actual path to your CSV file.
-        
+
 def import_gl_level_2():
-    file_path = '/Users/claytonthompson/Desktop/Django GL and Product CSV/GLLevel2.csv'  # Update this path accordingly
-    with open(file_path, newline='', encoding='utf-8') as csvfile:
+    with open('/Users/claytonthompson/Desktop/Django GL and Product CSV/GLLevel2.csv', newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
-        count = 0
         for row in reader:
-            # Skip the header row with column names or empty rows
-            if row['name'].lower() == 'name' or not row['name'].strip():
-                continue
-
-            # Get or create the GL Level 1 parent
             parent_name = row['parent'].strip()
-            parent, _ = GLLevel1.objects.get_or_create(name=parent_name)
-
-            # Get or create the GL Level 2 item
-            _, created = GLLevel2.objects.get_or_create(
+            gl1_parent = GLLevel1.objects.get(name=parent_name)
+            GLLevel2.objects.get_or_create(
                 name=row['name'].strip(),
-                parent=parent
+                parent=gl1_parent
             )
-            if created:
-                count += 1
-                print(f"Added new GL Level 2: {row['name']} under {parent_name}")
-            else:
-                print(f"GL Level 2 already exists: {row['name']} under {parent_name}")
-        print(f"Total new GL Level 2 added: {count}")
-
-# Call this function from the Django shell        
-        
+    print("GLLevel2 data imported successfully.")
 
 def import_gl_level_3():
-    file_path = '/Users/claytonthompson/Desktop/Django GL and Product CSV/GLLevel3.csv'  # Update this path accordingly
-    with open(file_path, newline='', encoding='utf-8') as csvfile:
+    with open('/Users/claytonthompson/Desktop/Django GL and Product CSV/GLLevel3.csv', newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
-        count = 0
         for row in reader:
-            # Skip the header row with column names or empty rows
-            if row['name'].lower() == 'name' or not row['name'].strip():
-                continue
+            # Assuming `row` is a dictionary representing a row read from the CSV
+            # Clean the BOM from the keys of the row
+            cleaned_row = {key.lstrip('\ufeff'): value for key, value in row.items()}
 
-            # Get or create the GL Level 2 parent
-            parent_name = row['parent'].strip()
-            parent, _ = GLLevel2.objects.get_or_create(name=parent_name)
+            # Use `cleaned_row` instead of `row` for further processing
+            print(cleaned_row)  # Print the entire row to inspect its structure
+            print(cleaned_row.keys())  # Print all keys in the cleaned row
+            parent_name = cleaned_row['parent'].strip()
+            try:
+                gl2_parent = GLLevel2.objects.get(name=parent_name)
+                GLLevel3.objects.get_or_create(
+                    name=cleaned_row['name'].strip(),
+                    parent=gl2_parent
+                )
+            except KeyError as e:
+                print(f"KeyError encountered: {e}")
+                print(f"Problematic row: {cleaned_row}")
+            except GLLevel2.DoesNotExist:
+                print(f"GLLevel2 parent not found for: {parent_name}")
+    print("GLLevel3 data imported successfully.")
 
-            # Get or create the GL Level 3 item
-            _, created = GLLevel3.objects.get_or_create(
-                name=row['name'].strip(),
-                parent=parent
-            )
-            if created:
-                count += 1
-                print(f"Added new GL Level 3: {row['name']} under {parent_name}")
-            else:
-                print(f"GL Level 3 already exists: {row['name']} under {parent_name}")
-        print(f"Total new GL Level 3 added: {count}")
 
-   
+def import_products():
+    filepath = '/Users/claytonthompson/Desktop/Django GL and Product CSV/Products.csv'  # Adjust the path as necessary
+    with open(filepath, newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            # Clean the BOM from the keys of the row and strip spaces
+            cleaned_row = {key.lstrip('\ufeff').strip(): value.strip() for key, value in row.items()}
 
-# Call this function from the Django shell
+            # Extract parent_name and product_name using cleaned_row
+            parent_name = cleaned_row['parent']
+            product_name = cleaned_row['name']
+
+            # Try to get the GLLevel3 parent and create the Product
+            try:
+                gl3_parent = GLLevel3.objects.get(name=parent_name)
+                product, created = Product.objects.get_or_create(
+                    name=product_name,
+                    parent=gl3_parent
+                )
+                if created:
+                    print(f"Created new product: {product_name} under GLLevel3: {parent_name}")
+                else:
+                    print(f"Product already exists: {product_name} under GLLevel3: {parent_name}")
+            except KeyError as e:
+                print(f"KeyError encountered: {e}. Problematic row: {cleaned_row}")
+            except GLLevel3.DoesNotExist:
+                print(f"GLLevel3 parent not found for: {parent_name}")
+
+    print("Products data imported successfully.")
+
+
+def test_csv_read():
+    with open('/Users/claytonthompson/Desktop/Django GL and Product CSV/GLLevel3.csv', newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        headers = reader.fieldnames
+        print("Headers:", headers)
+        first_row = next(reader, None)
+        print("First row:", first_row)
+
+# Invoke the debugging function
+test_csv_read()

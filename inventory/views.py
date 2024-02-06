@@ -36,11 +36,14 @@ experience, and maintaining secure access to functionalities.
           login page if the user is not authenticated.
  """
 import logging
+from django.db import IntegrityError, DatabaseError
+from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import InventoryDataCollectionForm
 from .storage_backends import AWSStorageBackend
+from botocore.exceptions import BotoCoreError, ClientError
 
 from django.http import JsonResponse
 from .models import GLLevel1
@@ -64,7 +67,7 @@ def inventory_view(request):
         print("POST request received")
         form = InventoryDataCollectionForm(request.POST, request.FILES) #Include request.FILES for image handling
         if form.is_valid():
-            print("Form is valid")
+            print("Form is valid. Processing the form")
             storage_backend = AWSStorageBackend() # instantiate storage backend.
             inventory_item = form.save(commit=False) # Create model instance without saving.
             inventory_item.user = request.user # set the user here
@@ -92,18 +95,41 @@ def inventory_view(request):
                 print("Attempting to create inventory item in DynamoDB")  # Debug print
                 storage_backend.create_inventory_item(item_data)
 
-                inventory_item.save()  # Save model instance with S3 filename
-                print("Inventory item created and saved")  # Debug print
+                try:
+                    inventory_item.save()  # Save model instance with S3 filename
+                    print("Inventory item created and saved")  # Debug print
+                except IntegrityError:
+                    # This might happen if there's a duplicate entry, for instance
+                    messages.error(request, "This item already exists.")
+                    return redirect('inventory_app')  # Redirect to a safe page
+                except DatabaseError:
+                    # For other database-related issues
+                    messages.error(request, "There was a problem saving the item. Please try again.")
+                    return redirect('inventory_app')  # Redirect to a safe page    
 
-                messages.success(request, 'Inventory item uploaded successfully!')
-                return redirect('inventory_view')  # Redirect back to the form
+                messages.success(request, f'Inventory item uploaded successfully on {timezone.localtime().strftime("%Y-%m-%d %H:%M:%S")}.')
+                return redirect('inventory_app')  # Redirect back to the form
                 #logger.info("file upload successful: %s", filename)
+            
+            except BotoCoreError as e:
+                # Handle low-level exceptions from botocore
+                logger.error(f"Botocore error during file upload to S3: {e}")
+                messages.error(request, "There was a problem with the file upload. Please try again.")
+                return redirect('inventory_app')  # Redirect back to the inventory form
+
+            except ClientError as e:
+                # Handle client errors from boto3's client methods
+                logger.error(f"Client error during file upload to S3: {e}")
+                messages.error(request, "There was a problem with the file upload service. Please try again.")
+                return redirect('inventory_app')  # Redirect back to the inventory form
+
             except Exception as e:
                 print(f"Error occurred: {e}")  # Debug print to log the exception
                 messages.error(request, f'Error uploading inventory item: {e}')
-                # Implement more specific error handling here
+                return redirect('inventory_app')  # Redirect back to the inventory form
         else:
             print("Form is invalid")
+            print(form.errors)  # Print errors to debug
             messages.error(request, 'Invalid form submission. Please correct the errors.')  # Handle invalid form
     else:
         form = InventoryDataCollectionForm()

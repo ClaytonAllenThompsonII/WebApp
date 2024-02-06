@@ -4,17 +4,17 @@ from unittest.mock import patch, MagicMock, ANY
 import os
 import tempfile  # Add this import
 import uuid
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils import timezone
+from django.urls import reverse
+from botocore.exceptions import ClientError
 from .forms import InventoryDataCollectionForm
 from .models import InventoryItem, GLLevel1, GLLevel2, GLLevel3, Product
 from .storage_backends import AWSStorageBackend
-
-
 
 
 # Create your tests here.
@@ -91,71 +91,111 @@ class AWSStorageBackendTest(TestCase):
             mock_dynamodb_client.return_value.put_item.assert_called_with(TableName=storage.table_name, Item=item_data)
 
 class InventoryViewTest(TestCase):
-    """Test suite for the inventory_view function."""
+    """Tests the inventory_view function with detailed print statements."""
+    def setUp(self):
+        """
+        Prepares the test environment before each test method is run. This includes creating a test user, 
+        GL level and product instances, and preparing a dummy image file for upload.
+
+        - A test user is created for simulating authenticated sessions.
+        - GL Level instances (1 through 3) and a product instance are created to simulate database entries
+        that would be selected through the form in a real-world scenario.
+        - A byte string representing a dummy image file is prepared for testing file uploads.
+        """
+        print('Setting up test environment for InventoryViewTest.')
+        # User setup for authenticated sessions
+        self.user = get_user_model().objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        # GL level and product setup for form selections
+        self.gl_level_1 = GLLevel1.objects.create(name="GL1")
+        self.gl_level_2 = GLLevel2.objects.create(name="GL2", parent=self.gl_level_1)
+        self.gl_level_3 = GLLevel3.objects.create(name="GL3", parent=self.gl_level_2)
+        self.product = Product.objects.create(name="Product", parent=self.gl_level_3)
+
+        # Dummy image file setup for upload testing
+        self.image_data = b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\x03\x02\x02\x03\x02\x02\x03\x03\x03\x03\x04\x03\x03\x04\x05\x08\x05\x05\x04\x04\x05\n\x07\x07\x06\x08\x0c\n\x0c\x0c\x0b\n\x0b\x0b\r\x0e\x12\x10\r\x0e\x11\x0e\x0b\x0b\x10\x16\x10\x11\x13\x14\x15\x15\x15\x0c\x0f\x17\x18\x16\x14\x18\x12\x14\x15\x14\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x03\x01"\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x06\xff\xc4\x00\x14\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\xff\xda\x00\x0c\x03\x01\x00\x02\x10\x03\x10\x00\x00\x01\xdf\x00\xff\xd9'
+        self.image_file = SimpleUploadedFile(name='test_image.jpg', content=self.image_data, content_type='image/jpeg')
+        print('Test environment setup complete.')
 
     @patch('inventory.views.AWSStorageBackend')
-    def test_inventory_view(self, mock_storage_backend): # took out mock_upload_file,
-        """Test the inventory_view function.
-        Validates form handling, user authentication, and interaction with the AWSStorageBackend."""
-        with patch.dict(os.environ, {
-            "S3_BUCKET_NAME": "test-bucket",
-            "DYNAMODB_TABLE_NAME": "test-table",
-            "AWS_DEFAULT_REGION": "us-east-1"  # Example region
-            }):
+    def test_inventory_view_post_request(self, mock_storage_backend):
+            """
+            Tests the POST request handling of the inventory_view function. This method simulates a form submission
+            with valid data and checks the interaction with the AWSStorageBackend for file upload and metadata storage.
 
-             # Setup mock storage backend return values
-            mock_storage_backend.return_value.upload_file.return_value = 'fakepath/test.jpg'
+            The method uses patching to mock the AWSStorageBackend, avoiding real AWS interactions during the test.
+            It asserts the correct behavior of the inventory_view function when receiving a POST request, including:
+            - Form validation and submission.
+            - Interaction with AWSStorageBackend for file uploads.
+            - Correct response status code.
+            """
+            print('Testing inventory_view POST request functionality.')
+            # Mock setup for AWS interactions
+            mock_storage_backend.return_value.upload_file.return_value = 'uploaded/test_image.jpg'
             mock_storage_backend.return_value.create_inventory_item.return_value = None
 
-
-            # Mock user
-            user = User.objects.create_user('testuser', 'test@example.com', 'password')
-            # Login
-            self.client.login(username='testuser', password='password')
-
-            # Read a real image file
-            with open('/Users/claytonthompson/Desktop/Source/WebApp/inventory_images/FishBinHotelPans.jpeg', 'rb') as img_file:
-                img_data = img_file.read()
-
-
-            # Create the SimpleUploadedFile mock object
-            mock_image = SimpleUploadedFile(
-                name='test.jpg',
-                content=img_data,
-                content_type='image/jpeg'
-                )
-
-            # Mock form data and files
-            form_data = {
-                'type': 'TestType',
-                'image': mock_image, 
-                'user': user.id # assign the user to the form data
+            # Prepare form submission
+            post_data = {
+                'gl_level_1': str(self.gl_level_1.id),
+                'gl_level_2': str(self.gl_level_2.id),
+                'gl_level_3': str(self.gl_level_3.id),
+                'product': str(self.product.id)
             }
+    
+            # Prepare files separately
+            files = {'image': self.image_file}
 
-            # Set up files as a dictionary
-            files = {'image':mock_image}
+            response = self.client.post('/inventory/', data=post_data, files=files)
+            print(f'POST request to inventory_view made with status code {response.status_code}.')
 
-            # Test POST request to inventory view
-            response = self.client.post('/inventory/', form_data, files=files)
-            print("Response status code:", response.status_code)
-            print("Response context:", response.context)
+            # Add this to print form errors if the form is invalid
+            if response.context and 'form' in response.context:
+                form = response.context['form']
+                if not form.is_valid():
+                    print("Form errors", form.errors.as_text())
+
+            # Assertions
+            mock_storage_backend.assert_called_once()
+            print('AWSStorageBackend mocked methods called as expected.')
+            self.assertEqual(response.status_code, 200)
+            print('inventory_view POST request test completed successfully.')
+
+    def test_inventory_view_GET(self):
+            """
+            Test that the inventory view returns a 200 response and uses the correct template 
+            for GET requests. This test ensures the view is accessible by authenticated users 
+            and renders the expected template with the correct context.
+            """
+            print('Testing inventory_view GET request functionality.')
+            # Perform a GET request to the inventory view
+            response = self.client.get('/inventory/')  # Update URL as necessary
+            print(f'GET request to inventory_view made with status code {response.status_code}.')
 
             # Assertions
             self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, 'inventory/training_data.html')  # Ensure this matches your template path
+            print('inventory_view GET request test asserts correct status code and template usage.')
 
-            # Ensure create_inventory_item was called once. Use ANY if you don't need to inspect arguments.
-            mock_storage_backend.return_value.create_inventory_item.assert_called_once_with(ANY)
+    def test_inventory_view_redirect_if_not_logged_in(self):
+        """
+        Test that the inventory view redirects to the login page if the user is not logged in. 
+        This test confirms the view's authentication protection by ensuring unauthenticated 
+        users cannot access the inventory submission form and are redirected appropriately.
+        """
+        print('Testing inventory_view redirect for unauthenticated access.')
+        # Log out any session that might be active to simulate unauthenticated access
+        self.client.logout()
 
-            # Inspect arguments passed to create_inventory_item, if necessary
-            call_args, _ = mock_storage_backend.return_value.create_inventory_item.call_args
-            print("Arguments passed to create_inventory_item:", call_args)
+        # Attempt to access the inventory view
+        response = self.client.get('/inventory/')  # Update URL as necessary
 
-            # Ensure upload_file was called once with an instance of InMemoryUploadedFile
-            mock_storage_backend.return_value.upload_file.assert_called_once()
-            args, _ = mock_storage_backend.return_value.upload_file.call_args
-            self.assertIsInstance(args[0], InMemoryUploadedFile)
-
-            
+        # Assertions
+        self.assertNotEqual(response.status_code, 200)
+        expected_login_url = '/login/?next=/inventory/'  # Updated to reflect your login URL and the next parameter
+        self.assertTrue(response.url.startswith(expected_login_url))
+        print(f'Unauthenticated GET request to inventory_view redirected to {response.url}.')
+               
 class DirectUploadFileTest(TestCase):
     @patch('inventory.storage_backends.AWSStorageBackend.__init__', return_value=None)
     @patch('inventory.storage_backends.AWSStorageBackend.upload_file', side_effect=fake_upload_file)

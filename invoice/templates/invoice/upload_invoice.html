@@ -1,0 +1,122 @@
+{% extends 'users/main.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Custom styles */
+    .card {
+        border-radius: 15px;
+    }
+
+    .custom-file-input::-webkit-file-upload-button {
+        visibility: hidden;
+    }
+
+    .custom-file-input::before {
+        content: 'Select PDF';
+        display: inline-block;
+        background: linear-gradient(top, #f9f9f9, #e3e3e3);
+        border: 1px solid #999;
+        border-radius: 5px;
+        padding: 5px 8px;
+        outline: none;
+        white-space: nowrap;
+        cursor: pointer;
+        text-shadow: 1px 1px #fff;
+        font-weight: 700;
+        font-size: 10pt;
+    }
+
+    .custom-file-input:hover::before {
+        border-color: black;
+    }
+
+    .custom-file-input:active::before {
+        background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
+    }
+
+    .custom-file-input::after {
+        content: 'Choose File';
+        display: inline-block;
+        background: linear-gradient(top, #f9f9f9, #e3e3e3);
+        border: 1px solid #999;
+        border-radius: 5px;
+        padding: 5px 8px;
+        outline: none;
+        white-space: nowrap;
+        cursor: pointer;
+        text-shadow: 1px 1px #fff;
+        font-weight: 700;
+        font-size: 10pt;
+    }
+
+    .custom-file-input:hover::after {
+        border-color: black;
+    }
+
+    .custom-file-input:active::after {
+        background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
+    }
+
+    .custom-file-label {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .btn-upload {
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        padding: 8px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-upload:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <!-- Add messages here -->
+                    {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} mb-4">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <h1 class="card-title text-center mb-4">Upload Invoice</h1>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="input-group mb-3">
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="pdf_file" name="pdf_file">
+                                <label class="custom-file-label" for="pdf_file">Select Invoice PDF</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-upload btn-block mt-4">Upload</button>
+                    </form>
+                    <div class="mt-4">
+                        <p>This form allows you to upload an invoice PDF file. Once uploaded, the PDF is securely stored in an Amazon S3 bucket. We will orchestrate a data pipeline daily to batch process the S3 bucket with a Lambda function. The Lambda function will retrieve the PDF and call the AWS Textract AnalyzeExpense API, which extracts key data such as invoice number, date, and total amount from the document. The AnalyzeExpense response returns a structured JSON with line item details and summary fields to a staging S3 bucket. The lambda function loads the JSON file into a PostgreSQL database, where it is then transformed and modeled into usable relational data.</p>
+                        <p>Once the data is in the database, it can be queried and analyzed to generate reports, visualize spending trends, and perform other analytics tasks.</p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+<br>
+{% endblock %}

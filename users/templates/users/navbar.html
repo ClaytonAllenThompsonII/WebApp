@@ -21,19 +21,22 @@
   
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
+
+        {% if request.user.is_authenticated %}
         <li class="nav-item active">
           <a class="nav-link" href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard > <span class="sr-only">(current)</span>
         </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="{% url 'inventory_app' %}"><i class="far fa-lemon"></i> Inventory</a>
-        </li> <!-- FIXME: we want a relative as oppposed to an abosulte link to inventory-->
+        </li>
         <li class="nav-item">
-            <a class="nav-link" href="#"><i class="fas fa-folder-open"></i> Invoices</a>
+            <a class="nav-link" href="{% url 'upload_invoice'%}"><i class="fas fa-folder-open"></i> Invoices</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i> Analytics</a>
         </li>
+        {% endif %}
       
        
         
@@ -47,13 +50,14 @@
 
     </div>
 
-
+    {% if request.user.is_authenticated %}
     <span class = "hello-msg"> Hello, <i class="fas fa-user"></i> {{ request.user }} </span>
-      
+    
   
   <span class = "hello-msg">
     <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Log Out</a>
   </span>
+  {% endif %}
 
 </nav> 
 

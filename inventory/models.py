@@ -72,18 +72,22 @@ class Product(models.Model):
 
 # Create your models here.
 class InventoryItem(models.Model):
-    """ NEED TO UPDATE DOC STRINGS
-    Represents an inventory item with its associated image, label, timestamp, and user.
-    
+    """ 
+    Represents an inventory item in the database associated with a user. 
+    Each item includes an image (expected to be replaced after AWS integration), 
+    a filename for AWS storage, a timestamp marking the creation of the record, 
+    and optional General Ledger (GL) levels for categorization. Additionally, 
+    each item can be linked to a specific product.
+
     Fields:
-        - user (ForeignKey): The user who uploaded the inventory item. Indexed for faster query performance.
-        - image (ImageField): The image file of the inventory item, stored in AWS S3.
-        - type (CharField): The category or type of the inventory item. Indexed for faster query performance.
-        - filename (CharField): The filename of the image in S3.
-        - timestamp (DateTimeField): The time when the inventory item was added to the database.
-        - gl_level_1
-        - gl_level_2
-        - gl_level_3
+    - user: ForeignKey to the user model. Links the inventory item to a user.
+    - image: ImageField storing the path to an image file. Temporary field until AWS is configured.
+    - filename: CharField storing the filename in S3. Used for AWS integration.
+    - timestamp: DateTimeField capturing the time the inventory item was added.
+    - gl_level_1: ForeignKey linking to the first level of General Ledger. Optional.
+    - gl_level_2: ForeignKey linking to the second level of General Ledger. Optional.
+    - gl_level_3: ForeignKey linking to the third level of General Ledger. Optional.
+    - product: ForeignKey linking the inventory item to a specific product. Optional.
     """
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, db_index=True) # try User instead of get_user_model if needed.
     image = models.ImageField(upload_to='inventory_images/') #keep this to test, but get rid of after AWS works.

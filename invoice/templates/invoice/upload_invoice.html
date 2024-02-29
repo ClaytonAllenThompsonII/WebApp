@@ -96,7 +96,9 @@
                         {% endfor %}
                     </div>
                     {% endif %}
-                    <h1 class="card-title text-center mb-4">Upload Invoice</h1>
+                    <h1 class="card-title text-center mb-4">
+                        <img src="{% static 'users/Cost Curve Logo.png' %}" alt="Logo" style="height: 50px; margin-right: 10px;">  
+                        Upload Invoice</h1>
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="input-group mb-3">
@@ -108,8 +110,7 @@
                         <button type="submit" class="btn btn-upload btn-block mt-4">Upload</button>
                     </form>
                     <div class="mt-4">
-                        <p>This form allows you to upload an invoice PDF file. Once uploaded, the PDF is securely stored in an Amazon S3 bucket. We will orchestrate a data pipeline daily to batch process the S3 bucket with a Lambda function. The Lambda function will retrieve the PDF and call the AWS Textract AnalyzeExpense API, which extracts key data such as invoice number, date, and total amount from the document. The AnalyzeExpense response returns a structured JSON with line item details and summary fields to a staging S3 bucket. The lambda function loads the JSON file into a PostgreSQL database, where it is then transformed and modeled into usable relational data.</p>
-                        <p>Once the data is in the database, it can be queried and analyzed to generate reports, visualize spending trends, and perform other analytics tasks.</p>
+                        <p>Upload your invoice PDF here for fast and secure processing. Once uploaded, we'll automatically extract essential line item and summary field details like the invoice number, date, and total amount. Your data is securely stored and analyzed to provide you with insightful reports and spending trends. Rest assured, your information is handled with the utmost care to ensure privacy and security.</p>
 
                     </div>
                 </div>

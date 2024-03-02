@@ -1,7 +1,7 @@
 -- Creates a table for storing raw JSON responses from Amazon Textract
 -- alongside metadata about the source file and processing status,
 -- serving as a staging area for further processing of invoice data.
-CREATE TABLE invoice_processing_staging (
+CREATE TABLE in_invoice_processing (
     -- Unique identifier for each entry in the staging area
     id SERIAL PRIMARY KEY,
     
@@ -23,8 +23,8 @@ CREATE TABLE invoice_processing_staging (
 );
 
 -- Optional: Add comments to the table and its columns for further clarification
-COMMENT ON TABLE invoice_processing_staging IS 'Staging area for raw JSON responses from Amazon Textract with metadata.';
-COMMENT ON COLUMN invoice_processing_staging.s3_object_key IS 'S3 object key for the source file.';
-COMMENT ON COLUMN invoice_processing_staging.textract_json IS 'Raw JSON response from Amazon Textract.';
-COMMENT ON COLUMN invoice_processing_staging.received_timestamp IS 'Timestamp when the record was inserted.';
-COMMENT ON COLUMN invoice_processing_staging.processed IS 'Flag indicating if the response has been processed.';
+COMMENT ON TABLE in_invoice_processing IS 'Staging area for raw JSON responses from Amazon Textract with metadata.';
+COMMENT ON COLUMN in_invoice_processing.s3_object_key IS 'S3 object key for the source file.';
+COMMENT ON COLUMN in_invoice_processing.textract_json IS 'Raw JSON response from Amazon Textract.';
+COMMENT ON COLUMN in_invoice_processing.received_timestamp IS 'Timestamp when the record was inserted.';
+COMMENT ON COLUMN in_invoice_processing.processed IS 'Flag indicating if the response has been processed.';

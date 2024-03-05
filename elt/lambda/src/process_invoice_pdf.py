@@ -2,8 +2,10 @@
 Lambda function handler for processing PDF invoices and receipts using Amazon Textract.
 
 This function is triggered by the upload of a PDF invoice or receipt to an S3 bucket. It initiates
-an asynchronous analysis of the document using Amazon Textract's AnalyzeExpense operation. Once the
+an asynchronous analysis of the document using Amazon Textract's Start Expense Analysis operation. Once the
 analysis is complete, the resulting JSON response is saved to another S3 bucket. 
+
+Phase 1 of Lambda Development
 """
 import json
 import time

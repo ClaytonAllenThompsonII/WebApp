@@ -7,7 +7,7 @@ for mocking AWS services and image processing functionalities.
 """
 import unittest
 from unittest.mock import patch, MagicMock
-import image_preprocessor
+import elt.lambda.src.image_preprocessor as image_preprocessor
 
 class TestImagePreprocessorLambda(unittest.TestCase):
 

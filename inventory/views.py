@@ -50,6 +50,8 @@ from .models import GLLevel1
 from .models import GLLevel2
 from .models import GLLevel3
 from .models import Product
+from .models import InventoryItem
+
 
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -134,11 +136,33 @@ def inventory_view(request):
     else:
         form = InventoryDataCollectionForm()
 
+    two_days_ago = timezone.now() - timezone.timedelta(days=2)
+    sort = request.GET.get('sort', '')  # Default to an empty string if not present
+
+    # Determine the sorting
+    if sort == 'timestamp_desc':
+        order_by = '-timestamp'
+    elif sort == 'timestamp_asc':
+        order_by = 'timestamp'
+    else:
+        order_by = '-timestamp'  # Default sorting
+
+    user_uploads = InventoryItem.objects.filter(
+        user=request.user,
+        timestamp__gte=two_days_ago,
+        filename__isnull=False  # Assuming 'filename' being non-null means successfully uploaded to S3
+        ).order_by('-timestamp')
+        
+ 
+
     # Query all GL Level 1 instances to pass to the template
     gl_level1_objects = GLLevel1.objects.all()
 
     # Update the context to include GL Level 1 objects along with the form
-    context = {'form': form, 'gl_level1_objects': gl_level1_objects}
+    context = {'form': form,
+               'user_uploads': user_uploads,
+                'gl_level1_objects': gl_level1_objects,
+                }
     return render(request, 'inventory/training_data.html', context)
 
 

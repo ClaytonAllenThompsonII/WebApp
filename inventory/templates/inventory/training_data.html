@@ -440,6 +440,26 @@ footer {
 
 <!-- Your existing JavaScript file reference if any -->
 <script src="{% static 'inventory/inventory.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var imageInput = document.getElementById('image');
+        var imagePreview = document.getElementById('uploaded-image');
+    
+        imageInput.addEventListener('change', function(event) {
+            var files = event.target.files;
+            if (files && files[0]) {
+                var reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.alt = "Preview of uploaded image";
+                }
+                
+                reader.readAsDataURL(files[0]);
+            }
+        });
+    });
+    </script>
 </body>
 </html>
 {% endblock %}

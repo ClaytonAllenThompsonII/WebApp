@@ -102,4 +102,20 @@ class InventoryItem(models.Model):
         # Adjusted to handle cases where GL levels or product might be null
         product_name = self.product.name if self.product else 'No Product'
         return f'{self.user.username} - {product_name} ({self.timestamp})'
-    
+
+
+
+class WeightReading(models.Model):
+    """
+    Represents a weight reading from the scale.
+
+    Attributes:
+    - weight: Decimal field to store the weight value.
+    - timestamp: DateTime field that automatically records the time when a reading is saved.
+    """
+    weight = models.DecimalField(max_digits=10, decimal_places=2)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        """Return a human-readable representation of the weight reading."""
+        return f"{self.weight} at {self.timestamp}"

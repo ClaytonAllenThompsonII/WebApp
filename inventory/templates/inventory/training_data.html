@@ -20,82 +20,243 @@
     <!-- Include jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
-        body {
-    font-family: sans-serif;
+
+body {
+    font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f2f2f2;
 }
 
 header {
-  background-color: #f2f2f2;
-  background: #007bff;
-  color: #f2f2f2;
-  padding: 1rem;
-  display: block;
-  animation: pulse 1s infinite;
-}
-
-nav {
-    background-color: rgba(0, 47, 167, 0.6);
-    background: linear-gradient(
-    to right,
-    rgba(0, 47, 167, 0.8) 0%,
-    rgba(26, 89, 180, 0.8) 50%,
-    rgba(0, 47, 167, 0.8) 100%
-  );
-    color: #007FFF;
-    padding: 1rem;
+    background-color: #e9ecef; /* Very light gray */
+    color: #333; /* Dark text for readability */
+    padding: 20px 40px;
     display: block;
-    animation: pulse 1s infinite;
-  }
-  @keyframes pulse {
-    0% {
-      background-color: rgba(0, 47, 167, 0.7);
-    }
-    50% {
-      background-color: rgba(26, 89, 180, 0.8);
-    }
-    100% {
-      background-color: rgba(0, 47, 167, 0.7);
-    }
-
 }
-  
 
+header h5 {
+    margin: 0;
+    font-size: 24px; /* Make the header text larger and more prominent */
+    font-weight: normal; /* Adjust based on your design */
+}
 
 main {
-    padding: 2rem;
+    padding: 20px 40px; /* Consistent padding with the header */
 }
+
+main p {
+    font-size: 16px; /* Adjust based on your design */
+    line-height: 1.5;
+    color: #333; /* Dark grey for readability */
+    margin-bottom: 1rem; /* Space between paragraphs */
+}
+
+/* Example of emphasizing keywords */
+main p b {
+    font-weight: bold;
+    color: #007bff; /* Or any color that matches your design */
+}
+.messages {
+    padding: 15px;
+    margin-bottom: 20px; /* Space before the introductory text */
+    background-color: #eef4ff; /* Light background color for message area */
+    border-left: 5px solid #007bff; /* A thematic accent line */
+    border-radius: 5px; /* Soften the corners */
+}
+
+.alert {
+    padding: 10px;
+    margin-bottom: 10px; /* Space between messages */
+    border-radius: 4px; /* Consistent rounded corners */
+    background-color: #bfdebe; /* Example alert background, adjust based on message type */
+    color: #239314; /* Example alert text color, adjust based on message type */
+}
+
+p {
+    line-height: 1.6; /* Improve readability */
+    color: #333; /* Dark grey for better text readability */
+    margin-top: 0;
+    margin-bottom: 1em; /* Consistent bottom margin for paragraphs */
+}
+
+b {
+    font-weight: bold; /* Ensure bold texts stand out */
+}
+
 
 #upload-form {
     max-width: 100%;
-    
     flex-direction: column;
     align-items: left;
 }
-
 #image {
     border: 1px solid #ccc;
     padding: 0.5rem;
     margin-bottom: 1rem;
 }
-
 #uploaded-image {
     max-width: 100%;
     border: 1px solid #ddd;
     padding: 0.5rem;
     margin-top: 1rem;
 }
-
 #type {
     margin-bottom: 1rem;
 }
 
+.grid-container {
+    display: grid;
+    gap: 20px; /* Adjusts space between grid items */
+    padding: 20px; /* Padding around the entire grid container */
+    grid-template-columns: repeat(1, 1fr); /* Single column layout by default */
+}
 
-  
+/* Medium screens (e.g., tablets): 2 columns */
+@media (min-width: 968px) {
+    .grid-container {
+        grid-template-columns: repeat(2, 1fr); /* Adjust if necessary for your design */
+    }
+}
 
-  footer {
+/* Large screens: 3 columns with specific start, center, end positioning */
+@media (min-width: 1024px) {
+    .grid-container {
+        grid-template-columns: 1.5fr 2fr .75fr; /* Creates a 3-column layout with the center column wider */
+    }
+
+    .form-partition:nth-child(1) { /* First partition to the left */
+        justify-self: start;
+    }
+
+    .form-partition:nth-child(2) { /* Second partition to the center */
+        justify-self: center;
+    }
+
+    .form-partition:nth-child(3) { /* Third partition to the right */
+        justify-self: end;
+    }
+}
+
+button {
+    background-color: #007bff; /* Primary Action Color */
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+select, input[type=file] {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.form-partition {
+    font-size: 9px; /* Adjust the font size as needed */
+    margin-bottom: 20px; /* Adds space between partitions */
+    padding: 15px;
+    background-color: #f9f9f9; /* Light background for each partition */
+    border-radius: 8px; /* Optional: rounds corners of each partition */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: adds subtle shadow for depth */
+    border: 3px solid #d6d8db; /* Changing border color to light grey */
+}
+
+.step {
+    margin-bottom: 10px; /* Space between steps within the same partition */
+}
+
+.form-partition h3 {
+    font-family: 'Arial', sans-serif; /* Example font, replace with your choice */
+    font-size: 21px; /* Adjust size as needed */
+    font-weight: bold;
+    margin-bottom: 15px; /* Adds space below the header */
+    color: #333; /* Dark grey for sharp contrast; adjust as needed */
+}
+@media (max-width: 768px) {
+    .form-partition h3 {
+        font-size: 20px; /* Slightly smaller font size for smaller screens */
+        padding: 8px;
+    }
+}
+
+/* Styling for the table within the partition */
+.form-partition table {
+    width: 100%; /* Full width of the partition */
+    border-collapse: collapse; /* Collapses border to avoid double lines */
+    margin-top: 10px; /* Adds some space above the table */
+    table-layout: auto; /* Allows the table to automatically adjust column widths */
+}
+
+.form-partition table, 
+.form-partition th, 
+.form-partition td {
+    border: 1px solid #ddd; /* Light grey border for the table and cells */
+}
+
+.form-partition th, .form-partition td {
+    text-align: left; /* Aligns text to the left */
+    padding: 8px; /* Adds padding inside table cells for better readability */
+}
+
+.form-partition th {
+    background-color: #f2f2f2; /* Light grey for table headers */
+    color: #000; /* Black text color for headers */
+}
+
+/* Hover effect for table rows */
+.form-partition tr:hover {background-color: #e7f2fb;}
+
+.form-partition table a {
+    margin: 0 5px; /* Adds a little space around the sort arrows */
+    color: #007bff; /* Or any color that fits your design */
+}
+.form-partition table th {
+    white-space: nowrap; /* Keeps the header text from wrapping */
+}
+
+.count-list p {
+    font-size: 11px; /* Slightly smaller font size for description or list items */
+    line-height: 1.6; /* Good line height for readability */
+}
+.form-partition .weight-input-section label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-partition .weight-input-section input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #d6d8db;
+    border-radius: 4px;
+    box-sizing: border-box; /* Ensures padding does not affect the input's actual width */
+}
+
+.form-partition .weight-input-section button# getWeightButton {
+    display: inline-block; /* Allows for styling and positioning flexibility */
+    background-color: #007bff; /* Blue background color */
+    color: white; /* White text color */
+    padding: 8px 12px; /* Padding around the text for better appearance */
+    margin-top: 10px; /* Space between the input field and the button */
+    border: none; /* Removes the default border */
+    border-radius: 4px; /* Rounded corners for a modern look */
+    cursor: pointer; /* Changes the cursor on hover for better user feedback */
+}
+
+.form-partition .weight-input-section button# getWeightButton:hover {
+    background-color: #0056b3; /* Darker shade of blue on hover for interaction feedback */
+}
+
+footer {
     background-color: rgba(255, 255, 255, 0.8);
     color: #002FA7;
     text-align:center;
@@ -108,7 +269,7 @@ main {
 <body>
     <!-- Header Section -->
     <header>
-        <h5>Inventory image upload 📷 & label selection 🏷️</h5>
+        <h5> Image Data Collection & Labeling for Model Training 📷 🏷️</h5>
     </header>
 
     <!-- Main Content Section -->
@@ -123,86 +284,151 @@ main {
         {% endfor %}
     </div>
     {% endif %}
-
-        <p> The inventory application streamlines the <b>collection and labeling</b> of image training data. </p>
-        <p> This internal tool 🔧 will help generate high-quality training 🛤️ datasets for developing and improving image classification and label detection models.  </p>
-        <p> The end goal is to allow a user to predict 🪄 a product label by uploading an image of the product. </p>
-
+        <div>
+        <p>Welcome <b>{{ request.user.username }}</b> to <img src="{% static 'users/Cost Curve Logo.png' %}" 
+            alt="CostCurve.ai Logo" style="width: 25px; height: auto;"></a>Cost Curve's Inventory Image Labeling tool, a <b>data annotation platform</b> designed for early adopters. 
+            This platform is engineered for our early users to directly contribute to the <b>enhancement and precision</b> of our image classification and label detection models.
+        </p>
+        <p> This tool is dual-purpose: it aids in refining our Convolutional Neural Networks (CNNs) through direct user contributions and serves as a testing ground for enhancing UI and API functionality in preparation for deployment.</p>
+        <p> You'll be employing this tool to help generate high-quality training datasets for developing and improving image classification and label detection models.  </p>     
+        </div>
         <br>
         <p> To add training data, follow the steps below:</p>
 
         <!-- Grid Container for Form and Instructions -->
         <div class="grid-container">
-            <div> <p> <b>Step 1.</b> Take a photo of the inventory iteration using a smart phone. 📲 </p> </div>
 
-            <!-- Form for Uploading Images and Selecting Categories -->
             <form id="upload-form" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
+            {% csrf_token %}
 
-                <!-- Dropdown for GL Level 1 Selection -->
-                <!-- Populated server-side with all GL Level 1 options -->
-                <div> 
-                    <p> <b>Step 2.</b> Select the appropriate GL Level 1 Category.</p>
+            <!-- Partition 1: Collect Inventory Image -->
+            <div class="form-partition">
+                <h3>Collect Inventory Image</h3> <!-- Title for Partition 1 -->
+                <!-- Step 1: Take a photo of the inventory -->
+                <div class="step">
+                    <p>Step 1. Take a photo of the inventory using a smart phone. 📲</p>
+                </div>
+
+                <!-- Step 2: Image Upload Field -->
+                <div class="step">
+                    <p><b>Step 2.</b> Upload product image by choosing a file. 📂</p>
+                    <label for="image">🤳🏽 Upload Image:</label>
+                    <input type="file" id="image" name="image" accept="image/*">
+                </div>
+
+                <!-- Image Preview Section -->
+                <div class="step">
+                    <p>Image Preview:</p>
+                    <img id="uploaded-image" src="" alt="Uploaded image preview" style="max-width: 100%; height: auto;">
+                </div>
+
+                <!-- New: Weight Input Field After Step 2 -->
+                <div class="step weight-input-section">
+                    <h3>Input Weight Data ⚖️</h3> 
+                    <p> 🚧🔧Under development </p>
+                    <label for="weightInput">Enter Weight (lbs):</label>
+                    <input type="number" id="weightInput" name="weight" step="0.1" placeholder="Enter weight in lbs...">
+                    <!-- Trigger Button to Get Weight from Scale -->
+                    <br>
+                    <button type="button" id="getWeightButton">Get Weight from Scale</button>
+                    
+                </div>
+            </div>
+            
+
+            <!-- Partition 2: Select appropriate GL and Product Labels -->
+            <div class="form-partition">
+                <h3>Select GL & Product Labels</h3> <!-- Title for Partition 2 -->
+                <!-- Step 3: GL Level 1 Selection -->
+                <div class="step">
+                    <p>Step 3. Select the appropriate GL Level 1 Category.</p>
                     <select id="gl-level-1" name="gl_level_1">
                         <option value="">-- Select GL Level 1 --</option>
-                        <!-- Options for GL Level 1 (to be populated dynamically or server-side) -->
                         {% for gl1 in gl_level1_objects %}
-                            <option value="{{ gl1.id }}">{{ gl1.name }}</option>
+                        <option value="{{ gl1.id }}">{{ gl1.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <!-- Dropdown for GL Level 2 Selection (Disabled until GL Level 1 is selected) -->
-                <!-- Dynamically populated based on GL Level 1 selection via AJAX -->
-                <div> 
-                    <p> <b>Step 3.</b> Select the appropriate GL Level 2 Category.</p>
+                <!-- Step 4: GL Level 2 Selection -->
+                <div class="step">
+                    <p>Step 4. Select the appropriate GL Level 2 Category.</p>
                     <select id="gl-level-2" name="gl_level_2" disabled>
                         <option value="">-- Select GL Level 2 --</option>
-                        {% for gl2 in gl_level2_objects %}
-                            <option value="{{ gl2.id }}">{{ gl2.name }}</option>
-                        {% endfor %}
                     </select>
                 </div>
 
-                <!-- Dropdown for GL Level 3 Selection (Disabled until GL Level 2 is selected) -->
-                <!-- Dynamically populated based on GL Level 2 selection via AJAX -->
-                <div> 
-                    <p> <b>Step 4.</b> Select the appropriate GL Level 3 Category.</p>
+                <!-- Step 5: GL Level 3 Selection -->
+                <div class="step">
+                    <p>Step 5. Select the appropriate GL Level 3 Category.</p>
                     <select id="gl-level-3" name="gl_level_3" disabled>
                         <option value="">-- Select GL Level 3 --</option>
                     </select>
                 </div>
 
-                <!-- Dropdown for Product Selection (Disabled until GL Level 3 is selected) -->
-                <!-- Dynamically populated based on GL Level 3 selection via AJAX -->
-                <div> 
-                    <p> <b>Step 5.</b> Select the Inventory Product Classification that matches the inventory product.</p>
+                <!-- Step 6: Product Selection -->
+                <div class="step">
+                    <p><b>Step 6.</b> Select the Inventory Product Classification that matches the inventory product.</p>
                     <select id="product" name="product" disabled>
                         <option value="">-- Select a Product --</option>
-                        <!-- Options for Products (to be populated dynamically based on GL Level 3 selection) -->
                     </select>
                 </div>
+            </div>
 
-                <!-- Image Upload Field -->
-                <!-- User can upload an image file to be associated with the inventory item -->
-                <div>
-                    <p> <b>Step 6.</b> Upload product image by choosing a file. 📂</p>
-                    <label for="image">🤳🏽Upload Image:</label>
-                    <input type="file" id="image" name="image" accept="image/*">
-                </div>
-
-                <!-- Submit Button -->
-                <div>
-                    <p> <b>Step 7.</b> Press the upload button. ↙️</p>
+            <!-- Partition 3: Upload the Image -->
+            <div class="form-partition">
+                <h3>Upload</h3> <!-- Title for Partition 3 -->
+                <div class="step">
+                    <p><b>Step 7.</b> Press the upload button. ↙️</p>
                     <button type="submit">Upload</button>
                 </div>
-            </form>
-
-            <!-- Section for Displaying Uploaded Image Preview -->
-            <div>
-                <br>
-                <img id="uploaded-image" src="" alt="Uploaded image preview">
             </div>
+        </form>
+
+    
+
+        <!-- New Partition/Div for Uploaded Items Table -->
+    <div class="form-partition" style="flex: 1;">
+        <h3>Trailing 2-Day Upload History </h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>GL1</th>
+                    <th>GL2</th>
+                    <th>GL3</th>
+                    <th>Product Label</th>
+                    <th>Image Filename</th>
+                    <th>Date <a href="?sort=timestamp_desc"> ⬇️ </a> | <a href="?sort=timestamp_asc">⬆️</a></th> 
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for upload in user_uploads %}
+                <tr>
+                    <td>{{ upload.gl_level_1.name }}</td>
+                    <td>{{ upload.gl_level_2.name }}</td>
+                    <td>{{ upload.gl_level_3.name }}</td>
+                    <td>{{ upload.product.name }}</td>
+                    <td>{{ upload.filename }}</td>
+                    <td>{{ upload.timestamp|date:"Y-m-d H:i" }}</td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">No uploads found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-partition count-list">
+        <h5>Products to Measure</h5>
+        <p>Coming soon: A dynamic list of items that require counting and/or weighting based on inventory data, invoice data, sales data, and enhanced fields like estimated expiration.</p>
+    </div>
+</div>
+</div>
+
         </div>
     </main>
 
@@ -214,6 +440,26 @@ main {
 
 <!-- Your existing JavaScript file reference if any -->
 <script src="{% static 'inventory/inventory.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var imageInput = document.getElementById('image');
+        var imagePreview = document.getElementById('uploaded-image');
+    
+        imageInput.addEventListener('change', function(event) {
+            var files = event.target.files;
+            if (files && files[0]) {
+                var reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.alt = "Preview of uploaded image";
+                }
+                
+                reader.readAsDataURL(files[0]);
+            }
+        });
+    });
+    </script>
 </body>
 </html>
 {% endblock %}

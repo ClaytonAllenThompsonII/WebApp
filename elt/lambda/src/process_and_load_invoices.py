@@ -48,18 +48,37 @@ def simple_process_and_load(conn, bucket_name):
     """
     Simplified process that transfers all JSON files from the S3 bucket to PostgreSQL.
     """
+    # Logging the start of the S3 bucket listing process
+    logging.info("Listing objects in bucket: {}".format(bucket_name))
     try:
         response = s3_client.list_objects_v2(Bucket=bucket_name)
+        logging.info("Objects listed in bucket: {}".format(bucket_name))
+
         if 'Contents' in response:
             for item in response['Contents']:
                 key = item['Key']
-                obj = s3_client.get_object(Bucket=bucket_name, Key=key)
-                json_data = json.loads(obj['Body'].read())
+                # Log the start of processing for each object
+                logging.info("Processing object: {}".format(key))
+
+                try:
+                    # Log the start of fetching the object from S3
+                    logging.info("Fetching object: {}".format(key))
+                    obj = s3_client.get_object(Bucket=bucket_name, Key=key)
+                    logging.info("Object fetched: {}".format(key))
+
+                    # Decode the JSON data from the object
+                    json_data = json.loads(obj['Body'].read())
+                    logging.info("JSON data processed for key: {}".format(key))
                 
-                # Here, directly load each JSON file's content to PostgreSQL
-                load_json_to_postgres(conn, key, json_data)
+                    # Here, directly load each JSON file's content to PostgreSQL
+                    load_json_to_postgres(conn, key, json_data)
+                    logging.info("JSON data loaded to PostgreSQL for key: {}".format(key))
+                except Exception as e:
+                    logging.error(f"Error processing objects from bucket {bucket_name}: {e}")
+        else:
+            logging.info("No objects found in bucket: {}".format(bucket_name))
     except Exception as e:
-        logging.error(f"Error processing objects from bucket {bucket_name}: {e}")
+        logging.error(f"Error listing objects in bucket {bucket_name}: {e}")
 
 def load_json_to_postgres(conn, key, json_data):
     """
@@ -69,7 +88,9 @@ def load_json_to_postgres(conn, key, json_data):
         cursor = conn.cursor()
         # Assume your table and columns are set up to take JSON data directly.
         # This may need adjustment based on your actual database schema.
-        insert_query = "INSERT INTO your_table_name (s3_key, json_content) VALUES (%s, %s)"
+        insert_query = """ 
+        INSERT INTO in_invoice_processing (s3_object_key, textract_json) VALUES (%s, %s::jsonb)
+        """
         cursor.execute(insert_query, (key, json.dumps(json_data)))
         conn.commit()
         logging.info(f"Inserted JSON from {key} into PostgreSQL.")

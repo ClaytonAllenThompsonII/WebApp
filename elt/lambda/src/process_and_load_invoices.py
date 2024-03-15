@@ -1,8 +1,8 @@
 import os
 import logging
+import json
 import boto3
 import psycopg2
-import json
 
 # Configure logging
 logging.basicConfig(level=logging.INFO,

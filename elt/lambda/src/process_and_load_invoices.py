@@ -46,7 +46,8 @@ def lambda_handler(event, context):
 
 def simple_process_and_load(conn, bucket_name):
     """
-    Simplified process that transfers all JSON files from the S3 bucket to PostgreSQL.
+     This function reads JSON data from files stored in an S3 bucket and writes (loads)
+    this data into a PostgreSQL database. It does not physically move the S3 files but processes their content. 
     """
     # Logging the start of the S3 bucket listing process
     logging.info("Listing objects in bucket: {}".format(bucket_name))
@@ -85,17 +86,16 @@ def load_json_to_postgres(conn, key, json_data):
     Loads a single JSON object's content into the PostgreSQL table.
     """
     try:
-        cursor = conn.cursor()
-        # Assume your table and columns are set up to take JSON data directly.
-        # This may need adjustment based on your actual database schema.
-        insert_query = """ 
-        INSERT INTO in_invoice_processing (s3_object_key, textract_json) VALUES (%s, %s::jsonb)
-        """
-        cursor.execute(insert_query, (key, json.dumps(json_data)))
-        conn.commit()
-        logging.info(f"Inserted JSON from {key} into PostgreSQL.")
+        with conn.cursor() as cursor:
+            # Assume your table and columns are set up to take JSON data directly.
+            # This may need adjustment based on your actual database schema.
+            insert_query = """
+            INSERT INTO public.in_invoice_processing (s3_object_key, textract_json) VALUES (%s, %s::jsonb)
+            """
+            logging.info(f"Preparing to insert JSON from {key} into PostgreSQL.")
+
+            cursor.execute(insert_query, (key, json.dumps(json_data)))
+            conn.commit()
+            logging.info(f"Inserted JSON from {key} into PostgreSQL.")
     except psycopg2.Error as e:
         logging.error(f"Failed to insert JSON from {key}: {e}")
-    finally:
-        cursor.close()
-

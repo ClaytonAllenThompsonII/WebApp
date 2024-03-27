@@ -88,7 +88,7 @@ def load_json_to_postgres(conn, key, json_data):
     try:
         with conn.cursor() as cursor:
             # Assume your table and columns are set up to take JSON data directly.
-            # This may need adjustment based on your actual database schema.
+            # This may need adjustment based on the actual database schema.
             insert_query = """
             INSERT INTO public.in_invoice_processing (s3_object_key, textract_json) VALUES (%s, %s::jsonb)
             """

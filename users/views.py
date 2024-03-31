@@ -1,10 +1,15 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm # ?
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .forms import CreateUserForm
+from .forms import CreateUserForm, UserProfileForm
+
+from .models import Group, Profile
+
+
+
 
 # Create your views here.
 
@@ -25,18 +30,25 @@ def register(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     else:
-        form = CreateUserForm()
+        user_form = CreateUserForm()
+        profile_form = UserProfileForm()
 
         if request.method == 'POST':
-            form = CreateUserForm(request.POST)
-            if form.is_valid():
-                form.save()
-                user = form.cleaned_data.get('username')
-                messages.success(request, 'Account was created for ' + user )
-                return redirect('login')
-        
+            user_form = CreateUserForm(request.POST)
+            profile_form = UserProfileForm(request.POST)
+            if user_form.is_valid() and profile_form.is_valid():
+                user = user_form.save()
 
-        context = {'form': form}
+                profile = profile_form.save(commit=False)
+                profile.user = user
+                # Since `group` is now a CharField, directly save the profile without group object creation
+                profile.save()
+
+                messages.success(request, f'Account was created for {user.username}!' )
+                return redirect('loginPage')
+    
+
+        context = {'user_form': user_form, 'profile_form':profile_form}
         return render(request, 'users/register.html', context)
 
 

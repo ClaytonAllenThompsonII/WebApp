@@ -1,19 +1,31 @@
 CREATE OR REPLACE VIEW ext1_vendor AS
+
+
 SELECT
-    inp.id AS processing_id,
-    inp.s3_object_key,
-    MAX(CASE WHEN sf.value->>'VENDOR_NAME' THEN sf.value->'ValueDetection'->>'Text' END) AS vendor_name,
-    MAX(CASE WHEN sf.value->>'Type' = 'ADDRESS' THEN sf.value->'ValueDetection'->>'Text' END) AS vendor_address,
-    MAX(CASE WHEN sf.value->>'Type' = 'STREET' THEN sf.value->'ValueDetection'->>'Text' END) AS street,
-    -- Add other fields as necessary, following the pattern above
-    MAX(CASE WHEN sf.value->>'Type' = 'CITY' THEN sf.value->'ValueDetection'->>'Text' END) AS city,
-    MAX(CASE WHEN sf.value->>'Type' = 'STATE' THEN sf.value->'ValueDetection'->>'Text' END) AS state,
-    MAX(CASE WHEN sf.value->>'Type' = 'COUNTRY' THEN sf.value->'ValueDetection'->>'Text' END) AS country,
-    MAX(CASE WHEN sf.value->>'Type' = 'ZIP_CODE' THEN sf.value->'ValueDetection'->>'Text' END) AS zip_code,
-    MAX(CASE WHEN sf.value->>'Type' = 'VENDOR_PHONE' THEN sf.value->'ValueDetection'->>'Text' END) AS vendor_phone,
-    MAX(CASE WHEN sf.value->>'Type' = 'VENDOR_URL' THEN sf.value->'ValueDetection'->>'Text' END) AS vendor_url
-FROM
-    in_invoice_processing inp,
-    jsonb_array_elements(inp.textract_json->'ExpenseDocuments'->0->'SummaryFields') AS sf(value)
-GROUP BY
-    inp.id, inp.s3_object_key;
+  inp.id AS processing_id,
+  inp.s3_object_key,
+  (sf->'Type')::jsonb->>'Text' AS type_text,  -- Cast to JSONB before extraction
+  sf->>'Type' AS type,
+
+  (gp->'Types')::jsonb->>0 as group_text,
+  gp->>'Types' AS group_type,
+
+  (sf->'ValueDetection')::jsonb->>'Text' AS vd_text,  -- Cast to JSONB before extraction
+  sf->>'ValueDetection' AS value_detection,
+
+  (sf->'LabelDetection')::jsonb->>'Text' AS ld_text,  -- Cast to JSONB before extraction
+  sf->>'LabelDetection' AS label_detection,
+
+CASE
+    WHEN (gp->'Types')::jsonb->>0 = 'VENDOR' THEN TRUE
+    ELSE FALSE
+END AS is_vendor,
+
+CASE
+    WHEN (gp->'Types')::jsonb->>0 = 'VENDOR_REMIT_TO'  THEN TRUE
+    ELSE FALSE
+END AS is_vendor_remit_to
+
+FROM in_invoice_processing inp,
+  LATERAL jsonb_array_elements(inp.textract_json->'ExpenseDocuments'->0->'SummaryFields') AS sf,
+  LATERAL jsonb_array_elements(sf->'GroupProperties') AS gp;

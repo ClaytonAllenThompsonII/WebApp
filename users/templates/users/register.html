@@ -92,25 +92,74 @@
 							<div class="input-group-append">
 								<span class="input-group-text"><i class="fas fa-user"></i></span>
 							</div>
-							{{form.username}}
+							{{user_form.username}}
 						</div>
 						<div class="input-group mb-2">
 							<div class="input-group-append">
 								<span class="input-group-text"><i class="fas fa-envelope-square"></i></span>
 							</div>
-							{{form.email}}
+							{{user_form.email}}
 						</div>
 						<div class="input-group mb-2">
 							<div class="input-group-append">
 								<span class="input-group-text"><i class="fas fa-key"></i></span>
 							</div>
-							{{form.password1}}
+							{{user_form.password1}}
 						</div>
 						<div class="input-group mb-2">
 							<div class="input-group-append">
 								<span class="input-group-text"><i class="fas fa-key"></i></span>
 							</div>
-							{{form.password2}}
+							{{user_form.password2}}
+						</div>
+
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-landmark"></i></span>
+							</div>
+							{{profile_form.group}}
+						</div>
+
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-phone"></i></span>
+							</div>
+							{{profile_form.phone_number}}
+						</div>
+
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-address-book"></i></span>
+							</div>
+							{{profile_form.address_line_1}}
+						</div>
+
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-address-book"></i></span>
+							</div>
+							{{profile_form.address_line_2}}
+						</div>
+
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fa fa-city"></i></span>
+							</div>
+							{{profile_form.city}}
+						</div>
+
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-flag"></i></span>
+							</div>
+							{{profile_form.state}}
+						</div>
+
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-compass"></i></span>
+							</div>
+							{{profile_form.zip_code}}
 						</div>
 
 				   		<div class="d-flex justify-content-center mt-3 login_container">
@@ -134,10 +183,17 @@
 
 		//Query All input fields
 		var form_fields = document.getElementsByTagName('input')
-		form_fields[1].placeholder='Username..';
-		form_fields[2].placeholder='Email..';
-		form_fields[3].placeholder='Enter password...';
-		form_fields[4].placeholder='Re-enter Password...';
+		form_fields[1].placeholder='Username*';
+		form_fields[2].placeholder='Email*';
+		form_fields[3].placeholder='Enter password*';
+		form_fields[4].placeholder='Re-enter password*';
+		form_fields[5].placeholder='📱Phone number*';
+		form_fields[6].placeholder='📍Address line 1*';
+		form_fields[7].placeholder='📍Address line 2*';
+		form_fields[8].placeholder='📍City*';
+		form_fields[9].placeholder='📍State*';
+		form_fields[10].placeholder='📍Zip code*';
+		form_fields[11].placeholder='📍State*';
 
 
 		for (var field in form_fields){	

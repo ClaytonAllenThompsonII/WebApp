@@ -1,24 +1,31 @@
 {% extends 'users/main.html' %}
-{% block content %}
+
 {% load static %}
-<h4>Cost Curve Dashboard</h4>
-<b></b>
-
-<p> Cost Curve helps restaurants manage their inventory and invoices. 
-</p>
-
-<p>Our technology allows restaurants to :</p>
-<ul>
-    <li> Measure, classify, and process <a href="{% url 'inventory_app' %}">inventory</a> <i>rapidly.</i></li>
-    <li> Extract, model, store, and create journal entries for <a href="{% url 'upload_invoice' %}">invoices</a>.  </li>
-</ul>
-<p> This page will serve as a "finger tip feel" of the users buisness. </p>
-<p> The page will feature key KPIs and dynamic data visuals</p>
-
-<p> Need to establish solid data architecture before we can build this page out.</p>
+{% block content %}
 
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost Curve Dashboard</title>
+    <link rel="stylesheet" href="{% static 'users/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <p> Parameter for data picker, other fields like vendor, GL</p>
+    <p> Total Inventory: $ </p>
+    <p> Total Invoice: $ </p>
+    <P> Total COGS</P>
+    <p> Delta from last period</p>
+    <p> Invoice Count</p>
+    
+</body>
 {% endblock %}
-        
+</html>
+
+
 
     

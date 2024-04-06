@@ -75,3 +75,24 @@ def loginPage(request):
 def logoutUser(request):
     logout(request)
     return redirect('loginPage')
+
+
+
+@login_required(login_url='loginPage')
+def user_profile(request):
+    profile = request.user.profile
+    form = UserProfileForm(instance=profile)
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully')
+            return redirect('user_profile')
+
+    context = {
+        'user': request.user,
+        'profile': profile,
+        'form': form
+    }
+    return render(request, 'users/user_profile.html', context)

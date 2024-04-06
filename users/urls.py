@@ -11,6 +11,7 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('login/', views.loginPage, name='loginPage'),
     path('logout/', views.logoutUser, name='logout'),
+    path('profile/', views.user_profile, name='user_profile'),
  
    
 # https://stackoverflow.com/questions/67545932/how-can-i-send-a-reset-password-email-on-django

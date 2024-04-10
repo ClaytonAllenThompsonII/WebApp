@@ -1,0 +1,297 @@
+body {
+    font-family: 'Verdana','Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f2f2f2;
+}
+
+header {
+    background-color: #f2f2f2f5; /* Very light gray */
+    color: black; /* Dark text for readability */
+    padding: 20px 40px;
+    display: block;
+}
+.container {
+    display: flex;
+    width: 100%; /* Ensure container fills the width */
+    max-width: 100vw; /* Prevent horizontal overflow */
+    margin: 0 auto; /* Align container in the center */
+    padding: 4px 4px; /* Adjust padding as necessary */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+header h5 {
+    margin: 0;
+    font-size: 24px; /* Make the header text larger and more prominent */
+    font-weight: normal; /* Adjust based on your design */
+}
+
+main {
+    padding: 8px 8px; /* Consistent padding with the header */
+    max-width: 1200px; /* Limit the width for readability */
+    margin: auto; /* Center the main content */
+}
+
+main p {
+    font-size: 16px; /* Adjust based on your design */
+    line-height: 1.5;
+    color: #333; /* Dark grey for readability */
+    margin-bottom: 1rem; /* Space between paragraphs */
+}
+
+/* Example of emphasizing keywords */
+main p b {
+    font-weight: bold;
+    color: #007bff; /* Or any color that matches your design */
+}
+.messages {
+    padding: 15px;
+    margin-bottom: 20px; /* Space before the introductory text */
+    background-color: #eef4ff; /* Light background color for message area */
+    border-left: 5px solid #007bff; /* A thematic accent line */
+    border-radius: 5px; /* Soften the corners */
+}
+
+.alert {
+    padding: 10px;
+    margin-bottom: 10px; /* Space between messages */
+    border-radius: 4px; /* Consistent rounded corners */
+    background-color: #bfdebe; /* Example alert background, adjust based on message type */
+    color: #239314; /* Example alert text color, adjust based on message type */
+}
+
+p {
+    line-height: 1.6; /* Improve readability */
+    color: #333; /* Dark grey for better text readability */
+    margin-top: 0;
+    margin-bottom: 1em; /* Consistent bottom margin for paragraphs */
+}
+
+b {
+    font-weight: bold; /* Ensure bold texts stand out */
+}
+
+
+#upload-form {
+    max-width: 100%;
+    flex-direction: column;
+    align-items: left;
+}
+#image {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+#uploaded-image {
+    max-width: 100%;
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    margin-top: 1rem;
+}
+#type {
+    margin-bottom: 1rem;
+}
+
+.grid-container {
+    display: grid;
+    gap: 20px; /* Adjusts space between grid items */
+    padding: 20px; /* Padding around the entire grid container */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Single column layout by default */
+}
+
+/* Medium screens (e.g., tablets): 2 columns */
+@media (min-width: 968px) {
+    .grid-container {
+        grid-template-columns: repeat(2, 1fr); /* Adjust if necessary for your design */
+    }
+}
+
+/* Large screens: 3 columns with specific start, center, end positioning */
+@media (min-width: 1024px) {
+    .grid-container {
+        grid-template-columns: 1.5fr 2fr .75fr; /* Creates a 3-column layout with the center column wider */
+    }
+
+    .form-partition:nth-child(1) { /* First partition to the left */
+        justify-self: start;
+    }
+
+    .form-partition:nth-child(2) { /* Second partition to the center */
+        justify-self: center;
+    }
+
+    .form-partition:nth-child(3) { /* Third partition to the right */
+        justify-self: end;
+    }
+}
+
+button {
+    background-color: #007bff; /* Primary Action Color */
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+select, input[type=file] {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.form-partition {
+    font-size: 9px; /* Adjust the font size as needed */
+    margin-bottom: 20px; /* Adds space between partitions */
+    padding: 15px;
+    background-color: #f9f9f9; /* Light background for each partition */
+    border-radius: 8px; /* Optional: rounds corners of each partition */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: adds subtle shadow for depth */
+    border: 3px solid #d6d8db; /* Changing border color to light grey */
+}
+
+.step {
+    margin-bottom: 8px; /* Space between steps within the same partition */
+}
+
+.step p {
+    font-size: 12px;
+}
+
+.form-partition h3 {
+    font-family: 'Arial', sans-serif; /* Example font, replace with your choice */
+    font-size: 21px; /* Adjust size as needed */
+    font-weight: bold;
+    margin-bottom: 15px; /* Adds space below the header */
+    color: #333; /* Dark grey for sharp contrast; adjust as needed */
+}
+@media (max-width: 768px) {
+    .form-partition h3 {
+        font-size: 20px; /* Slightly smaller font size for smaller screens */
+        padding: 8px;
+    }
+}
+
+/* Styling for the table within the partition */
+.form-partition table {
+    width: 100%; /* Full width of the partition */
+    border-collapse: collapse; /* Collapses border to avoid double lines */
+    margin-top: 10px; /* Adds some space above the table */
+    table-layout: auto; /* Allows the table to automatically adjust column widths */
+}
+
+.form-partition table, 
+.form-partition th, 
+.form-partition td {
+    border: 1px solid #ddd; /* Light grey border for the table and cells */
+}
+
+.form-partition th, .form-partition td {
+    text-align: left; /* Aligns text to the left */
+    padding: 8px; /* Adds padding inside table cells for better readability */
+}
+
+.form-partition th {
+    background-color: #f2f2f2; /* Light grey for table headers */
+    color: #000; /* Black text color for headers */
+}
+
+/* Hover effect for table rows */
+.form-partition tr:hover {background-color: #e7f2fb;}
+
+.form-partition table a {
+    margin: 0 5px; /* Adds a little space around the sort arrows */
+    color: #007bff; /* Or any color that fits your design */
+}
+.form-partition table th {
+    white-space: nowrap; /* Keeps the header text from wrapping */
+}
+
+.count-list p {
+    font-size: 12px; /* Slightly smaller font size for description or list items */
+    line-height: 1.6; /* Good line height for readability */
+}
+.form-partition .weight-input-section label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-partition .weight-input-section input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #d6d8db;
+    border-radius: 4px;
+    box-sizing: border-box; /* Ensures padding does not affect the input's actual width */
+}
+
+.form-partition .weight-input-section button# getWeightButton {
+    display: inline-block; /* Allows for styling and positioning flexibility */
+    background-color: #007bff; /* Blue background color */
+    color: white; /* White text color */
+    padding: 8px 12px; /* Padding around the text for better appearance */
+    margin-top: 10px; /* Space between the input field and the button */
+    border: none; /* Removes the default border */
+    border-radius: 4px; /* Rounded corners for a modern look */
+    cursor: pointer; /* Changes the cursor on hover for better user feedback */
+}
+
+.form-partition .weight-input-section button# getWeightButton:hover {
+    background-color: #0056b3; /* Darker shade of blue on hover for interaction feedback */
+}
+
+footer {
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #002FA7;
+    text-align:center;
+    padding: 1rem;
+}
+
+/* Introduce a section for HuggingFace Model Inference Widget */
+.inference-widget {
+    background-color: #E8E8E8; /* Light gray background */
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+}
+
+.inference-widget h3 {
+    color: #000; /* Virgil Abloh-inspired boldness */
+    margin-bottom: 15px;
+}
+
+
+.inventory-layout {
+    display: grid;
+    grid-template-columns: 3fr 1fr; /* Main content area and sidebar */
+    gap: 20px; /* Space between main content and sidebar */
+    padding: 8px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.inventory-sidebar {
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+}
+
+/* Additional responsive adjustments */
+@media (max-width: 968px) {
+    .inventory-layout {
+        grid-template-columns: 1fr; /* Stack columns on smaller screens */
+    }
+
+    .inventory-sidebar {
+        position: relative;
+        top: 0;
+    }
+}

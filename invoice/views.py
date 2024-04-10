@@ -60,4 +60,14 @@ def upload_invoice(request):
 
     else:
         form = InvoiceForm()
-    return render(request, 'invoice/upload_invoice.html', {'form': form})
+
+    invoices = Invoice.objects.all().order_by('-uploaded_at')  # Order by upload date (optional)
+
+    context = {'form': form,
+               'invoices': invoices,
+                }    
+        
+    return render(request, 'invoice/upload_invoice.html', context)
+
+
+

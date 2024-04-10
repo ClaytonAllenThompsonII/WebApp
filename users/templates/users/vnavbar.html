@@ -1,0 +1,58 @@
+{% load static %}
+
+<div class="container">
+    <div class="sidebar">
+        <h4> À la Carte </h4>    
+        <ul class="menu-list">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li>Inventory
+                <ul>
+                    <li><a href="{% url 'inventory_app' %}">Inventory Processing</a></li>
+                    <li><a href="{% url 'inventory_app' %}">nth Product Index</a></li>
+                </ul>
+            </li>
+            <li>Invoice
+                <ul>
+                    
+                    <li><a href="{% url 'upload_invoice' %}"> Invoices </a></li>
+                    <li><a href="#">Reconciliation</a></li>
+                    <li><a href="#">Extraction Review</a></li>
+                    <li><a href="#">Products, GL Accounts</a></li>
+                    <li><a href="#"> TX: Journal Entries</a></li>
+                </ul>
+            </li>
+            <li>Analytics
+                <ul>
+                    <li><a href="#">Analytics Products</a></li>
+                    <li><a href="#">Machine Learning</a></li>
+                    <li><a href="#">Neural Network</a></li>
+                    
+                </ul>
+            </li>
+            <li>Unit Economics
+                <ul>
+                    <li><a href="#"> Real COGS</a></li>
+                    <li><a href="#">Plate Cost Card</a></li>
+                    <li><a href="#">Recipe Cost Card</a></li>
+                    <li><a href="#">Portion Cost</a></li>
+
+                </ul>
+
+            </li>
+
+            <li>Dilligence
+                <ul>
+                    <li><a href="#">Financial Reporting</a></li>
+                    <li><a href="#"> Presentation Generator</a></li>
+                    <li><a href="#"> AI assitant for meetings notes</a></li>
+                    <li><a href="#"></a></li>
+                    <li><a href="#"></a></li>
+
+                </ul>
+
+            </li>
+        </ul>
+        
+    </div>
+
+    <div class="content">

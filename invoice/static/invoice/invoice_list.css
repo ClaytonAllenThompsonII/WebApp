@@ -1,0 +1,109 @@
+
+
+
+
+/* Invoice Table Section */
+.invoice-table {
+    margin-top: 10px; /* Adds some space above the table */
+    align-self: left;
+}
+
+/* Table Enhancements */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 3px; /* Adds space between the filter section and table */
+    border: 1px solid #9E9E9E; /* Smooth dark borders for contrast */
+}
+
+
+
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+
+}
+
+th {
+    background-color: #f2f2f2;
+    font-size: 11px; /* Adjusted for consistency and readability */
+    border-right: 1px solid #9E9E9E;
+}
+
+td {
+    font-size: 14px; /* Slightly larger text for content */
+}
+
+.filter-section {
+    display: flex;  /* Arranges filter items horizontally */
+    flex-wrap: wrap; /* Allow items to wrap */
+    gap: 0px;  /* Adds some space between filter items */
+    padding: 3px; /* Optional padding */
+    justify-content: flex-start; /* Align items to the start */
+  }
+
+  .filter-section div {
+    flex-direction: column;
+  }
+  
+  .filter-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Aligns content to the start */
+    font-size: 12px;
+    margin-right: 0px;
+  }
+  
+  .filter-item label {
+    display: flex;
+    width: 120px;  /* Adjust this value as needed for your labels */
+    margin-right: 1px;
+    margin-bottom: 3px;
+    text-align: center;
+    background-color: #F5F5F5; /* Matching the background for a cohesive look */
+    color: #333; /* Slightly darker text for readability */
+  }
+  .filter-item input {
+    display: flex;
+    width: 120px;  /* Adjust this value as needed for your labels */
+    margin-right: 1px;
+    text-align: center;
+    background-color: #b4dcf7e9;  /* Light blue background color */
+  }
+
+  .filter-item select {
+    display: flex;
+    width: 120px;  /* Adjust this value as needed for your labels */
+    margin-right: 1px;
+    text-align: center;
+    background-color: #b4dcf7e9;  /* Light blue background color */
+
+  }
+
+  .filter-item-content {
+    display: flex;
+    width: 100%; /* Adjusts width based on the content */
+    justify-content: flex-start; /* Aligns label and input/select to the start */
+    align-items: center; /* Aligns items vertically */
+    gap: 0px; /* Provides space between label and input/select */
+    background-color: #f2f2f2;
+    
+    
+  }
+
+  /* Assuming label, input, and select elements need no specific width adjustments */
+.filter-item label, 
+.filter-item input, 
+.filter-item select {
+    margin: 0; /* Removes margin to prevent unnecessary space */
+    width: auto; /* Adjusts width based on content */
+}
+
+.filter-item input, 
+.filter-item select {
+    /* Assuming you want to keep your input and select styles as is */
+    border: 1px solid #9E9E9E; /* Ensuring inputs are well-defined */
+    background-color: #FFF; /* Pure white for inputs for contrast and focus */
+    padding: 2px 5px; /* Padding inside inputs and selects */
+}

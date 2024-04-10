@@ -1,11 +1,12 @@
 {% extends 'users/navbar.html' %}
-
 {% load static %}
 
 
 {% block content %}
+
 <head>
     <link rel="stylesheet" href="{% static 'users/profile_style.css' %}" />
+    {% block extra_css %}{% endblock %}
 </head>
 <div class="container">
     <h3>User Profile</h3>

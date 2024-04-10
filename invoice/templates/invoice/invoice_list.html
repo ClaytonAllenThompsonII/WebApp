@@ -1,0 +1,77 @@
+{% load static %}
+
+
+<link rel="stylesheet" href="{% static 'invoice/invoice_list.css' %}">
+
+   
+   <!-- Invoice Table Section -->
+   <section class="invoice-table">
+    <h2>Invoices</h2>
+    <!-- Search Bar, Filter and Date Picker -->
+    
+    <div class="filter-section">
+        <div class="filter-item">
+
+            <div class="filter-item-content">
+                <label for="datePicker">Date</label> <!-- Implement date picker and status dropdown -->
+                <input type="date" id="datePicker">
+                
+                
+            </div>
+        </div>
+
+        <div class="filter-item">
+            <div class="filter-item-content">
+                <label for="searchInput">Search</label>
+                <input type="text" id="searchInput" placeholder="Search">
+            </div>
+          </div>
+        
+        <div class="filter-item">
+            <div class="filter-item-content">
+                <label for="statusFilter">Status</label>
+                <select id="statusFilter">
+                    <option value="">All Invoices</option>
+                    <option value="Action Needed">Action Needed</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Archived">Archived</option>
+                </select>
+
+            </div>
+        
+        </div>  
+
+        <div class="filter-item-content">
+        <div class="filter-item-content"></div>
+
+        </div>
+        
+        
+    </div>
+   
+    </section>
+ <!-- Table -->
+ <table class = "table-hover" id="invoiceTable ">
+    <thead>
+        <tr>
+            <th scope="col">Invoice Upload ID</th>
+            <th scope="col">Invoice Number</th>
+            <th scope="col">Uploaded By</th>
+            <th scope="col">Original Filename</th>
+            <th scope="col">Upload Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for invoice in invoices %}
+        <tr>
+            <td>{{ invoice.id }}</td>
+            <td> </td>
+            <td>{{ invoice.user.username }}</td>
+            <td>{{ invoice.filename }}</td>
+            <td>{{ invoice.uploaded_at }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

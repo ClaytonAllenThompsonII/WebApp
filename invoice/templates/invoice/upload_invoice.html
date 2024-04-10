@@ -1,135 +1,55 @@
 {% extends 'users/main.html' %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'invoice/invoice_upload.css' %}">    
+{% endblock %}
+
 {% block content %}
-<style>
-    /* Custom styles */
-    .card {
-        border-radius: 15px;
-    }
 
-    .custom-file-input::-webkit-file-upload-button {
-        visibility: hidden;
-    }
-
-    .custom-file-input::before {
-        content: 'Select PDF';
-        display: inline-block;
-        background: linear-gradient(top, #f9f9f9, #e3e3e3);
-        border: 1px solid #999;
-        border-radius: 5px;
-        padding: 5px 8px;
-        outline: none;
-        white-space: nowrap;
-        cursor: pointer;
-        text-shadow: 1px 1px #fff;
-        font-weight: 700;
-        font-size: 10pt;
-    }
-
-    .custom-file-input:hover::before {
-        border-color: black;
-    }
-
-    .custom-file-input:active::before {
-        background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
-    }
-
-    .custom-file-input::after {
-        content: 'Choose File';
-        display: inline-block;
-        background: linear-gradient(top, #f9f9f9, #e3e3e3);
-        border: 1px solid #999;
-        border-radius: 5px;
-        padding: 5px 8px;
-        outline: none;
-        white-space: nowrap;
-        cursor: pointer;
-        text-shadow: 1px 1px #fff;
-        font-weight: 700;
-        font-size: 10pt;
-    }
-
-    .custom-file-input:hover::after {
-        border-color: black;
-    }
-
-    .custom-file-input:active::after {
-        background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
-    }
-
-    .custom-file-label {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-    }
-
-    .btn-upload {
-        background-color: #007bff;
-        color: white;
-        border-radius: 5px;
-        padding: 8px 20px;
-        font-size: 16px;
-        font-weight: bold;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn-upload:hover {
-        background-color: #0056b3;
-    }
-</style>
-
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card shadow-lg">
-                <div class="card-body">
-                    <!-- Add messages here -->
-                    {% if messages %}
-                    <div class="messages">
-                        {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} mb-4">
-                            {{ message }}
-                        </div>
+<div class="container2"> 
+    <!-- Upload Section -->
+    <section class="upload-section" >
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <!-- Add messages here -->
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} mb-4">
+                        {{ message }}
+                    </div>
                         {% endfor %}
-                    </div>
-                    {% endif %}
-                    <h1 class="card-title text-center mb-4">
-                        <img src="{% static 'users/Cost Curve Logo.png' %}" alt="Logo" style="height: 50px; margin-right: 10px;">  
-                        Upload Invoice</h1>
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="input-group mb-3">
-                            <div class="custom-file">
-                                <input type="file" class="custom-file-input" id="pdf_file" name="pdf_file">
-                                <label class="custom-file-label" for="pdf_file" id="file-label">Select Invoice PDF</label>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-upload btn-block mt-4">Upload</button>
-                    </form>
-                    <div class="mt-4">
-                        <p>Upload your invoice PDF here for fast and secure processing. </p>
-                        <p>Cost Curve utilizes a deep learning-based service that converts different types of invoices documents into an editable format. </p>
-                        <p>This allows for robust and normalized text(typed and hand written) and tabluar data capture.  </p>
-                    </div>
                 </div>
+                {% endif %}
+
+                <h5 class="card-title text-center mb-4">Upload Invoice</h5>
+                <form method="post" enctype="multipart/form-data" class="upload-form">
+                        {% csrf_token %}
+                        <div class="input-group custom-upload-group">
+                            <input type="file" class="custom-file-input" id="pdf_file" name="pdf_file">
+                            <label class="custom-file-label" for="pdf_file">Select Invoice PDF</label>
+                            <button type="submit" class="btn btn-upload">Upload</button>
+                        </div>
+                </form>
             </div>
         </div>
-    </div>
+    </section>
+    <section class="invoice-table" >
+        {% include 'invoice/invoice_list.html' %}
+    </section>
 </div>
-<br>
-<br>
+  
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var fileInput = document.getElementById('pdf_file');
-        var fileLabel = document.getElementById('file-label');
-        
+        var fileLabel = document.querySelector('.custom-file-label'); // Note the change here
+                            
         fileInput.addEventListener('change', function(event) {
             var fileName = event.target.files[0].name;
             fileLabel.textContent = fileName;
-        });
+            fileLabel.classList.add('file-selected'); // Add class when file is selected
+            });
     });
     </script>
 {% endblock %}

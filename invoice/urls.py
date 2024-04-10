@@ -28,5 +28,6 @@ from . import views
 APP_NAME = 'invoice' # Invoice App namespace
 urlpatterns = [
     path('upload/', views.upload_invoice, name='upload_invoice'),
+
     # Add other URL patterns as needed
 ]

@@ -1,232 +1,55 @@
 {% extends 'users/main.html' %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'invoice/invoice_upload.css' %}">    
+{% endblock %}
+
 {% block content %}
-<style>
-    /* Custom styles */
 
-    body {
-    font-family: Verdana;
-    }
-    .card {
-        border-radius: 15px;
-    }
-
-    .custom-file-input::-webkit-file-upload-button {
-        visibility: hidden;
-    }
-
-    .custom-file-input::before {
-        content: 'Select PDF';
-        display: inline-block;
-        background: linear-gradient(top, #f9f9f9, #e3e3e3);
-        border: 1px solid #999;
-        border-radius: 5px;
-        padding: 5px 8px;
-        outline: none;
-        white-space: nowrap;
-        cursor: pointer;
-        text-shadow: 1px 1px #fff;
-        font-weight: 700;
-        font-size: 10pt;
-    }
-
-    .custom-file-input:hover::before {
-        border-color: black;
-    }
-
-    .custom-file-input:active::before {
-        background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
-    }
-
-    .custom-file-input::after {
-        content: 'Choose File';
-        display: inline-block;
-        background: linear-gradient(top, #f9f9f9, #e3e3e3);
-        border: 1px solid #999;
-        border-radius: 5px;
-        padding: 5px 8px;
-        outline: none;
-        white-space: nowrap;
-        cursor: pointer;
-        text-shadow: 1px 1px #fff;
-        font-weight: 700;
-        font-size: 10pt;
-    }
-
-    .custom-file-input:hover::after {
-        border-color: black;
-    }
-
-    .custom-file-input:active::after {
-        background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
-    }
-
-    .custom-file-label {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        
-    }
-
-    .btn-upload {
-        background-color: #007bff;
-        color: white;
-        border-radius: 5px;
-        padding: 8px 20px;
-        font-size: 16px;
-        font-weight: bold;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn-upload:hover {
-        background-color: #0056b3;
-    }
-
-    .container {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-
-}
-
-.sidebar {
-    flex: 0 0 250px; /* Adjust the width as necessary */
-    /* Other styles remain the same */
-}
-
-.content {
-    flex: 4; /* Content takes up the remaining space */
-    /* Adjust padding, margin, and other styles as needed */
-    width: 80%; /* Content width is 80% of the container's width */
-    margin: 20px; /* Add some margin around the content for spacing */
-    background-color: #ffffff; /* Optional: for visual distinction */
-    padding: 20px; /* Add some padding inside the content area */
-    border-radius: 15px; /* Optional: if you want rounded corners */
-}
-
-/* Adjust the upload section as necessary, maybe like this: */
-.upload-section {
-    flex: 0 0 350px; /* Adjust based on your preference */
-    /* Include other styles as needed */
-}
-
-</style>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cost Curve Dashboard</title>
-    <link rel="stylesheet" href="{% static 'users/style.css' %}">
-    {% block extra_css %}{% endblock %}
-</head>
-
-<body>
-
-    <h2>Invoices</h2>
-    <!-- Search Bar -->
-    <input type="text" id="searchInput" placeholder="Search by Invoice Number, Vendor, Item...">
-    
-    <!-- Filter and Date Picker -->
-    <div>
-        <!-- Implement date picker and status dropdown -->
-        <input type="date" id="datePicker">
-        <select id="statusFilter">
-            <option value="">All Invoices</option>
-            <option value="Action Needed">Action Needed</option>
-            <option value="Processing">Processing</option>
-            <option value="Completed">Completed</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Archived">Archived</option>
-        </select>
-    </div>
-
-    <!-- Table -->
-    <table id="invoiceTable">
-        <thead>
-            <tr>
-                <th>Vendor</th>
-                <th>Invoice Number</th>
-                <th>Invoice Date</th>
-                <th>Amount Payable</th>
-                <th>Status</th>
-                <th>Upload Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for invoice in invoices %}
-            <tr>
-                <td>{{ invoice.vendor }}</td>
-                <td><a href="#">{{ invoice.invoice_number }}</a></td>
-                <td>{{ invoice.invoice_date }}</td>
-                <td>{{ invoice.amount_payable }}</td>
-                <td>{{ invoice.status }}</td>
-                <td>{{ invoice.upload_date }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-        </div>
-
-        <div class="container mt-3">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card shadow-lg">
-                        <div class="card-body">
-                            <!-- Add messages here -->
-                            {% if messages %}
-                            <div class="messages">
-                                {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }} mb-4">
-                                    {{ message }}
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                            <h5 class="card-title text-center mb-4">
-                                <img src="{% static 'users/Cost Curve Logo.png' %}" alt="Logo" style="height: 30px; margin-right: 10px;">  
-                                Upload Invoice</h5>
-                            <form method="post" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                <div class="input-group mb-3">
-                                    <div class="custom-file">
-                                        <input type="file" class="custom-file-input" id="pdf_file" name="pdf_file">
-                                        <label class="custom-file-label" for="pdf_file" id="file-label">Select Invoice PDF</label>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-upload btn-block mt-4">Upload</button>
-                            </form>
-                            <div class="mt-4">
-                                <p>Upload your invoice PDF here for fast and secure processing. </p>
-                                
-                            </div>
-                        </div>
+<div class="container2"> 
+    <!-- Upload Section -->
+    <section class="upload-section" >
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <!-- Add messages here -->
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} mb-4">
+                        {{ message }}
                     </div>
+                        {% endfor %}
                 </div>
+                {% endif %}
+
+                <h5 class="card-title text-center mb-4">Upload Invoice</h5>
+                <form method="post" enctype="multipart/form-data" class="upload-form">
+                        {% csrf_token %}
+                        <div class="input-group custom-upload-group">
+                            <input type="file" class="custom-file-input" id="pdf_file" name="pdf_file">
+                            <label class="custom-file-label" for="pdf_file">Select Invoice PDF</label>
+                            <button type="submit" class="btn btn-upload">Upload</button>
+                        </div>
+                </form>
             </div>
         </div>
-        <br>
-        <br>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                var fileInput = document.getElementById('pdf_file');
-                var fileLabel = document.getElementById('file-label');
-                
-                fileInput.addEventListener('change', function(event) {
-                    var fileName = event.target.files[0].name;
-                    fileLabel.textContent = fileName;
-                });
+    </section>
+    <section class="invoice-table" >
+        {% include 'invoice/invoice_list.html' %}
+    </section>
+</div>
+  
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var fileInput = document.getElementById('pdf_file');
+        var fileLabel = document.querySelector('.custom-file-label'); // Note the change here
+                            
+        fileInput.addEventListener('change', function(event) {
+            var fileName = event.target.files[0].name;
+            fileLabel.textContent = fileName;
+            fileLabel.classList.add('file-selected'); // Add class when file is selected
             });
-            </script>
-    </div>
-</body>
-
-
-</html>
-
-
+    });
+    </script>
 {% endblock %}

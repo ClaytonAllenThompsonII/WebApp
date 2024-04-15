@@ -50,6 +50,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -58,8 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'inventory.apps.InventoryConfig',
-    'invoice.apps.InvoiceConfig',
-    
+    'invoice.apps.InvoiceConfig',  
 ]
 
 MIDDLEWARE = [
@@ -91,7 +91,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'WebApp.wsgi.application'
+ASGI_APPLICATION = 'WebApp.asgi.application'
 
+# Configure the channel layer, usually using Redis as the backing store. This setup is necessary for Django Channels but not specific to Daphne.
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

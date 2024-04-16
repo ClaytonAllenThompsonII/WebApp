@@ -13,7 +13,8 @@ from django.core.asgi import get_asgi_application
 
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
-from inventory.routing import websocket_urlpatterns  # Adjust this import according to your app's structure
+from inventory.routing import websocket_urlpatterns  
+# Adjust this import according to your app's structure
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'WebApp.settings')
 

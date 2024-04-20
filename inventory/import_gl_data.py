@@ -24,16 +24,25 @@ def import_gl_level_2():
         reader = csv.DictReader(csvfile)
         for row in reader:
 
-            # Clean the BOM from the keys of the row and strip spaces from the values
-            cleaned_row = {key.lstrip('\ufeff').strip(): value.strip() for key, value in row.items()}
-            parent_name = cleaned_row['parent']
+            # Assuming `row` is a dictionary representing a row read from the CSV
+            # Clean the BOM from the keys of the row
+            cleaned_row = {key.lstrip('\ufeff'): value for key, value in row.items()}
 
-
-            gl1_parent = GLLevel1.objects.get(name=parent_name)
-            GLLevel2.objects.get_or_create(
-                name=cleaned_row['name'],
-                parent=gl1_parent
-            )
+            # Use `cleaned_row` instead of `row` for further processing
+            print(cleaned_row)  # Print the entire row to inspect its structure
+            print(cleaned_row.keys())  # Print all keys in the cleaned row
+            parent_name = cleaned_row['parent'].strip()
+            try:
+                gl1_parent = GLLevel1.objects.get(name=parent_name)
+                GLLevel2.objects.get_or_create(
+                    name=cleaned_row['name'].strip(),
+                    parent=gl1_parent
+                )
+            except KeyError as e:
+                print(f"KeyError encountered: {e}")
+                print(f"Problematic row: {cleaned_row}")
+            except GLLevel2.DoesNotExist:
+                print(f"GLLevel1 parent not found for: {parent_name}")
     print("GLLevel2 data imported successfully.")
 
 def import_gl_level_3():
@@ -103,3 +112,6 @@ def test_csv_read():
 
 # Invoke the debugging function
 test_csv_read()
+
+
+

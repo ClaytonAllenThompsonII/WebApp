@@ -1,3 +1,6 @@
+""" Script to populate a boilerplate sqlite3 database with various CSV files
+Gl1 > GL2 > GL3 > Product, One-to-many """
+
 import csv
 from inventory.models import GLLevel1, GLLevel2, GLLevel3, Product
 
@@ -58,11 +61,14 @@ def import_gl_level_3():
             print(cleaned_row.keys())  # Print all keys in the cleaned row
             parent_name = cleaned_row['parent'].strip()
             try:
+                # Find the GLLevel2 parent by name
                 gl2_parent = GLLevel2.objects.get(name=parent_name)
+                # Create GLLevel3 entry, avoiding duplicates
                 GLLevel3.objects.get_or_create(
                     name=cleaned_row['name'].strip(),
                     parent=gl2_parent
                 )
+                
             except KeyError as e:
                 print(f"KeyError encountered: {e}")
                 print(f"Problematic row: {cleaned_row}")

@@ -1,4 +1,3 @@
-/* Add these styles to profile_style.css */
 body, html {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     background-color: #f5f5f5;
@@ -7,37 +6,44 @@ body, html {
     padding: 0;
 }
 
-.container {
+.profile-container {
     max-width: 400px;
-    margin: 60px auto;
-    background-color: #fff;
+    margin: auto;
     padding: 25px;
+    background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 40px; /* Provides padding inside the container */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers content horizontally */
 }
 
-h2 {
+h3 {
     color: #333;
     font-size: 24px;
     margin-bottom: 20px;
 }
 
-.profile-detail, .form-group {
+.detail, .input-group {
+    width: 100%; /* Ensures these elements take the full width of the .profile-container */
+    max-width: 360px; /* Sets a maximum width for better control */
     background-color: #f0f0f0;
     padding: 15px;
     border-radius: 5px;
     margin-bottom: 20px;
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
-.profile-detail strong, .form-label {
+.detail strong, .input-group label {
     font-weight: bold;
     margin-right: 15px;
 }
 
-.btn-primary {
+.btn-update {
     background-color: #007BFF;
     border: none;
     padding: 10px 20px;
@@ -49,22 +55,20 @@ h2 {
     transition: background-color 0.3s ease;
 }
 
-.btn-primary:hover {
+.btn-update:hover {
     background-color: #0056b3;
 }
 
 input, select, textarea {
     width: calc(100% - 30px);
     padding: 10px;
-    margin-top: 5px;
     border: 1px solid #ddd;
     border-radius: 5px;
     box-sizing: border-box;
 }
 
-/* Added responsiveness */
 @media (max-width: 768px) {
-    .container {
+    .profile-container {
         margin: 20px;
         padding: 15px;
     }

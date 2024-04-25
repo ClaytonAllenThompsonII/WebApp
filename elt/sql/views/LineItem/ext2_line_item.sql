@@ -1,22 +1,22 @@
 CREATE OR REPLACE VIEW ext2_line_item AS
 
 
-SELECT
-    inp.id AS in_invoice_processing_id,
-    inp.s3_object_key,
-    li_expense_fields.value AS line_item_expense_field,
-    inp.received_timestamp,
-    MAX(CASE WHEN ((li_expense_fields->'Type')::jsonb->>'Text') = 'PRODUCT_CODE' THEN (li_expense_fields->'ValueDetection')::jsonb->>'Text' END) AS product_code,
-    MAX(CASE WHEN ((li_expense_fields->'Type')::jsonb->>'Text') = 'ITEM' THEN (li_expense_fields->'ValueDetection')::jsonb->>'Text' END) AS item,
-    MAX(CASE WHEN ((li_expense_fields->'Type')::jsonb->>'Text') = 'QUANTITY' THEN (li_expense_fields->'ValueDetection')::jsonb->>'Text' END) AS quantity,
-    MAX(CASE WHEN ((li_expense_fields->'Type')::jsonb->>'Text') = 'UNIT_PRICE' THEN (li_expense_fields->'ValueDetection')::jsonb->>'Text' END) AS unit_price,
-    MAX(CASE WHEN ((li_expense_fields->'Type')::jsonb->>'Text') = 'PRICE' THEN (li_expense_fields->'ValueDetection')::jsonb->>'Text' END) AS price
-FROM
-    in_invoice_processing inp,
-    jsonb_array_elements(inp.textract_json->'ExpenseDocuments'->0->'LineItemGroups') AS lig(value),
-    jsonb_array_elements(lig.value->'LineItems') AS li(value),
-    jsonb_array_elements(li.value->'LineItemExpenseFields') AS li_expense_fields(value)
-	
-	group by in_invoice_processing_id, s3_object_key, li_expense_fields.value, li;
+SELECT 
+    in_invoice_processing_id,
+    s3_object_key,
+    received_timestamp,
+    line_item_index,
+    MAX(CASE WHEN type_text = 'PRODUCT_CODE' THEN vd_text ELSE NULL END) AS product_code,
+    COALESCE(MAX(CASE WHEN type_text = 'ITEM' THEN vd_text ELSE NULL END), MAX(CASE WHEN type_text = 'EXPENSE_ROW' THEN vd_text ELSE NULL END)) AS item,
+    MAX(CASE WHEN type_text = 'UNIT_PRICE' THEN vd_text ELSE NULL END) AS unit_price,
+    MAX(CASE WHEN type_text = 'PRICE' THEN vd_text ELSE NULL END) AS price,
+    jsonb_object_agg(COALESCE(ld_text, 'Unknown Label'), vd_text) FILTER (WHERE type_text = 'OTHER' AND vd_text IS NOT NULL) AS other_details,
+    MAX(CASE WHEN type_text = 'EXPENSE_ROW' THEN vd_text ELSE NULL END) AS expense_row
+FROM 
+    ext1_line_item
+GROUP BY
+    in_invoice_processing_id, s3_object_key, received_timestamp, line_item_index
+ORDER BY
+    in_invoice_processing_id, line_item_index;
 
 

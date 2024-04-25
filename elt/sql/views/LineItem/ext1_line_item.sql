@@ -6,7 +6,7 @@ SELECT
     li.idx AS line_item_index,  -- New field added to represent line item index
     (li_expense_fields.value -> 'Type'::text) ->> 'Text'::text AS type_text,
     (li_expense_fields.value -> 'ValueDetection'::text) ->> 'Text'::text AS vd_text,
-    (li_expense_fields.value -> 'LabelDetection'::text) ->> 'Text'::text AS ld_text,
+    REPLACE((li_expense_fields.value -> 'LabelDetection' ->> 'Text'), E'\n', ' | ') AS ld_text,
     sf.invoice_receipt_id AS invoice_receipt_id
     
 FROM 

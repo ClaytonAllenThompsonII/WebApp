@@ -3,6 +3,7 @@
 
     The purpose of restructuring these data entries is to ensure that the enriched line item details can be effectively integrated with the rest of the invoice data downstream. This adjustment allows for enhanced accuracy and utility in the invoice processing system, facilitating better analysis and reporting capabilities by aligning the extracted data with the expected database schema for invoice management.
 */
+
 CREATE OR REPLACE VIEW ext1_uom AS
 
 -- CTE `other`: Extracts each SummaryField from the Textract JSON stored in the database, filtering for types labeled as 'OTHER'.
@@ -57,7 +58,7 @@ tagged_items AS (
         field_text,
         summary_value_text,
         summary_label_text,
-        MAX(item_number) OVER (PARTITION BY invoice_id, group_id ORDER BY field_index ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS line_item_group
+        MAX(item_number) OVER (PARTITION BY invoice_id, group_id ORDER BY field_index ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS line_item_product_group
     FROM item_groups
 )
 
@@ -65,12 +66,11 @@ tagged_items AS (
 SELECT
     invoice_id,
     s3_object_key,
-    line_item_group,
+    line_item_product_group as product_number,
     MAX(CASE WHEN summary_label_text = 'BPC:' THEN summary_value_text ELSE NULL END) AS BPC,  -- Maximum value for BPC within the group
     MAX(CASE WHEN summary_label_text = 'SIZE:' THEN summary_value_text ELSE NULL END) AS Size,  -- Maximum value for Size within the group
     MAX(CASE WHEN summary_label_text = 'NOTE:' THEN summary_value_text ELSE NULL END) AS Note  -- Maximum value for Note within the group
 FROM tagged_items
-WHERE line_item_group IS NOT NULL AND summary_label_text <> 'ITEM#:'  -- Exclude the 'ITEM#:' labels from the output
-GROUP BY invoice_id, s3_object_key, line_item_group  -- Group by invoice and line item group
-ORDER BY invoice_id, line_item_group;  -- Order results by invoice and item group
-	
+WHERE line_item_product_group IS NOT NULL AND summary_label_text <> 'ITEM#:'  -- Exclude the 'ITEM#:' labels from the output
+GROUP BY invoice_id, s3_object_key, line_item_product_group  -- Group by invoice and line item group
+ORDER BY invoice_id, line_item_product_group;  -- Order results by invoice and item group

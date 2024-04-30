@@ -4,42 +4,35 @@ WITH vendor_details AS (
     SELECT
         inp.id AS processing_id,
         inp.s3_object_key,
-        MAX(
-            CASE
-                WHEN ((sf.value -> 'Type'::text) ->> 'Text'::text) = 'ACCOUNT_NUMBER'::text THEN (sf.value -> 'ValueDetection'::text) ->> 'Text'::text
-                ELSE NULL::text
-            END) AS account_number,
-        MAX(
-            CASE
-                WHEN ((sf.value -> 'Type'::text) ->> 'Text'::text) = 'VENDOR_PHONE'::text THEN (sf.value -> 'ValueDetection'::text) ->> 'Text'::text
-                ELSE NULL::text
-            END) AS vendor_phone,
-        MAX(
-            CASE
-                WHEN ((sf.value -> 'Type'::text) ->> 'Text'::text) = 'VENDOR_URL'::text THEN (sf.value -> 'ValueDetection'::text) ->> 'Text'::text
-                ELSE NULL::text
-            END) AS vendor_url
-    FROM in_invoice_processing inp
-    CROSS JOIN LATERAL jsonb_array_elements(((inp.textract_json -> 'ExpenseDocuments'::text) -> 0) -> 'SummaryFields'::text) sf(value)
-    GROUP BY inp.id, inp.s3_object_key
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'ACCOUNT_NUMBER' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS account_number,
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_PHONE' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS vendor_phone,
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_URL' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS vendor_url,
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_NAME' OR (sf.value -> 'Type' ->> 'Text' = 'NAME' AND ev.is_vendor) THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS vendor_name,
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'STREET' AND ev.is_vendor THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS street,
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'CITY' AND ev.is_vendor THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS city,
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'STATE' AND ev.is_vendor THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS state,
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'ZIP_CODE' AND ev.is_vendor THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS zip_code,
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'REMIT_ADDRESS' OR (sf.value -> 'Type' ->> 'Text' = 'ADDRESS_BLOCK' AND ev.is_vendor_remit_to) THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS remit_address_block
+    FROM
+        in_invoice_processing inp
+    JOIN
+        LATERAL jsonb_array_elements(inp.textract_json -> 'ExpenseDocuments' -> 0 -> 'SummaryFields') AS sf(value) ON TRUE
+    JOIN
+        ext1_vendor ev ON ev.processing_id = inp.id AND ev.s3_object_key = inp.s3_object_key
+    GROUP BY
+        inp.id, inp.s3_object_key
 )
 SELECT
-    ext.processing_id,
-    ext.s3_object_key,
-    ext.type_text,
-    ext.type,
-    ext.group_text,
-    ext.group_type,
-    ext.vd_text,
-    ext.value_detection,
-    ext.ld_text,
-    ext.label_detection,
-    ext.is_vendor,
-    ext.is_vendor_remit_to,
+    vd.processing_id,
+    vd.s3_object_key,
     vd.account_number,
     vd.vendor_phone,
-    vd.vendor_url
-FROM ext1_vendor ext
-JOIN vendor_details vd
-    ON ext.processing_id = vd.processing_id
-       AND ext.s3_object_key::text = vd.s3_object_key::text;
+    vd.vendor_url,
+    vd.vendor_name,
+    vd.street,
+    vd.city,
+    vd.state,
+    vd.zip_code,
+    vd.remit_address_block
+FROM
+    vendor_details vd;

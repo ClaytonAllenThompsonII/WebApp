@@ -4,42 +4,48 @@ WITH vendor_details AS (
     SELECT
         inp.id AS processing_id,
         inp.s3_object_key,
-        MAX(
-            CASE
-                WHEN ((sf.value -> 'Type'::text) ->> 'Text'::text) = 'ACCOUNT_NUMBER'::text THEN (sf.value -> 'ValueDetection'::text) ->> 'Text'::text
-                ELSE NULL::text
-            END) AS account_number,
-        MAX(
-            CASE
-                WHEN ((sf.value -> 'Type'::text) ->> 'Text'::text) = 'VENDOR_PHONE'::text THEN (sf.value -> 'ValueDetection'::text) ->> 'Text'::text
-                ELSE NULL::text
-            END) AS vendor_phone,
-        MAX(
-            CASE
-                WHEN ((sf.value -> 'Type'::text) ->> 'Text'::text) = 'VENDOR_URL'::text THEN (sf.value -> 'ValueDetection'::text) ->> 'Text'::text
-                ELSE NULL::text
-            END) AS vendor_url
-    FROM in_invoice_processing inp
-    CROSS JOIN LATERAL jsonb_array_elements(((inp.textract_json -> 'ExpenseDocuments'::text) -> 0) -> 'SummaryFields'::text) sf(value)
-    GROUP BY inp.id, inp.s3_object_key
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_NAME' OR (sf.value -> 'Type' ->> 'Text' = 'NAME' AND ev.address_role = 'vendor') THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS vendor_name,
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'ACCOUNT_NUMBER' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS account_number,
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_PHONE' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS vendor_phone,
+        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_URL' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS vendor_url
+    FROM
+        in_invoice_processing inp
+    JOIN
+        LATERAL jsonb_array_elements(inp.textract_json -> 'ExpenseDocuments' -> 0 -> 'SummaryFields') AS sf(value) ON TRUE
+    JOIN
+        ext1_vendor ev ON ev.processing_id = inp.id AND ev.s3_object_key = inp.s3_object_key
+    GROUP BY
+        inp.id, inp.s3_object_key
+),
+address_data AS (
+    SELECT *
+    FROM ext2_vendor_address_clean
 )
 SELECT
-    ext.processing_id,
-    ext.s3_object_key,
-    ext.type_text,
-    ext.type,
-    ext.group_text,
-    ext.group_type,
-    ext.vd_text,
-    ext.value_detection,
-    ext.ld_text,
-    ext.label_detection,
-    ext.is_vendor,
-    ext.is_vendor_remit_to,
+    vd.processing_id,
+    vd.s3_object_key,
+    vd.vendor_name,
     vd.account_number,
     vd.vendor_phone,
-    vd.vendor_url
-FROM ext1_vendor ext
-JOIN vendor_details vd
-    ON ext.processing_id = vd.processing_id
-       AND ext.s3_object_key::text = vd.s3_object_key::text;
+    vd.vendor_url,
+    ad.remit_street,
+    ad.remit_city,
+    ad.remit_state,
+    ad.remit_zip_code,
+    ad.remit_address_block,
+    ad.sold_street,
+    ad.sold_city,
+    ad.sold_state,
+    ad.sold_zip_code,
+    ad.sold_address_block,
+    ad.ship_street,
+    ad.ship_city,
+    ad.ship_state,
+    ad.ship_zip_code,
+    ad.ship_address_block
+FROM
+    vendor_details vd
+JOIN
+    address_data ad ON ad.processing_id = vd.processing_id AND ad.s3_object_key = vd.s3_object_key
+ORDER BY
+    vd.processing_id, vd.s3_object_key;

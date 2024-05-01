@@ -1,32 +1,45 @@
-INSERT INTO vendor (
-  vendor,
-  account_number,
-  address_block,
-  street,
-  city,
-  state,
-  zip_code,
-  vendor_phone,
-  vendor_url,
-  remit_address_block,
-  remit_street,
-  remit_city,
-  remit_state,
-  remit_zip_code
+INSERT INTO out_vendor (
+    vendor_name,
+    account_number,
+    vendor_phone,
+    vendor_url,
+    remit_street,
+    remit_city,
+    remit_state,
+    remit_zip_code,
+    remit_address_block,
+    sold_street,
+    sold_city,
+    sold_state,
+    sold_zip_code,
+    sold_address_block,
+    ship_street,
+    ship_city,
+    ship_state,
+    ship_zip_code,
+    ship_address_block
 )
-SELECT 
-  DISTINCT v.vendor,
-  v.account_number,
-  v.address_block,
-  v.street,
-  v.city,
-  v.state,
-  v.zip_code,
-  v.vendor_phone,
-  v.vendor_url,
-  v.remit_address_block,
-  v.remit_street,
-  v.remit_city,
-  v.remit_state,
-  v.remit_zip_code
-FROM ext3_vendor v;
+SELECT
+    vendor_name,
+    account_number,
+    vendor_phone,
+    vendor_url,
+    remit_street,
+    remit_city,
+    remit_state,
+    remit_zip_code,
+    remit_address_block,
+    sold_street,
+    sold_city,
+    sold_state,
+    sold_zip_code,
+    sold_address_block,
+    ship_street,
+    ship_city,
+    ship_state,
+    ship_zip_code,
+    ship_address_block
+FROM
+    res_vendor
+ON CONFLICT (vendor_name) DO NOTHING;
+

@@ -1,0 +1,24 @@
+CREATE OR REPLACE VIEW res_vendor AS
+
+SELECT DISTINCT
+    vendor_name,
+    account_number,
+    vendor_phone,
+    vendor_url,
+    remit_street,
+    remit_city,
+    remit_state,
+    remit_zip_code,
+    remit_address_block,
+    sold_street,
+    sold_city,
+    sold_state,
+    sold_zip_code,
+    sold_address_block,
+    ship_street,
+    ship_city,
+    ship_state,
+    ship_zip_code,
+    ship_address_block
+FROM
+    ext2_vendor;

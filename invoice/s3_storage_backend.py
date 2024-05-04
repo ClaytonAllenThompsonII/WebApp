@@ -35,7 +35,7 @@ class S3StorageBackend:
         #file_extension = os.path.splitext(file.name)[1]
         # Generate the S3 key for the file
         if group:
-            s3_key = f'invoices/{group}/user_{user_id}/{file.name}'
+            s3_key = f'invoices/Folder-A/{group}/user_{user_id}/{file.name}'
         else:
             s3_key = f'invoices/user_{user_id}/{file.name}'
 

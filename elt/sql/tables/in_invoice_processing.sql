@@ -17,9 +17,6 @@ CREATE TABLE in_invoice_processing (
     -- Automatically captures the current timestamp at the time of insertion.
     received_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
-    -- Boolean flag indicating whether the Textract response has been processed.
-    -- Useful for batch processing and ensuring data is processed only once.
-    processed BOOLEAN DEFAULT FALSE
 );
 
 -- Optional: Add comments to the table and its columns for further clarification
@@ -27,4 +24,3 @@ COMMENT ON TABLE in_invoice_processing IS 'Staging area for raw JSON responses f
 COMMENT ON COLUMN in_invoice_processing.s3_object_key IS 'S3 object key for the source file.';
 COMMENT ON COLUMN in_invoice_processing.textract_json IS 'Raw JSON response from Amazon Textract.';
 COMMENT ON COLUMN in_invoice_processing.received_timestamp IS 'Timestamp when the record was inserted.';
-COMMENT ON COLUMN in_invoice_processing.processed IS 'Flag indicating if the response has been processed.';

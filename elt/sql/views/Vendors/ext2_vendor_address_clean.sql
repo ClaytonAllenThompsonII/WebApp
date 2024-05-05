@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW ext2_vendor_address AS
+CREATE OR REPLACE VIEW ext2_vendor_address_clean AS
 
 WITH AddressDetails AS (
     SELECT

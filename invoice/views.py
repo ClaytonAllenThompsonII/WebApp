@@ -28,11 +28,16 @@ def upload_invoice(request):
             invoice.user = request.user # set the user here
             invoice.save()
 
+
+            # Fetch user groups
+            user_groups = request.user.groups.all()
+            group = user_groups[0].name if user_groups else None  # Assuming the user belongs to only one group
+
             # invoice_file = form.cleaned_data['pdf_file']
 
             try:
                 # Upload invoice file to S3 using the storage backend
-                filename = storage_backend.invoice_file_upload(invoice.pdf_file, user_id=request.user.id)
+                filename = storage_backend.invoice_file_upload(invoice.pdf_file, user_id=request.user.id, group=group)
                 invoice.filename = filename
                 invoice.save() # Save the model instance with the filename
 

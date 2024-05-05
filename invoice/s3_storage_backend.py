@@ -30,11 +30,14 @@ class S3StorageBackend:
             logger.error("Error initializing S3 client: %s", e)
             raise
 
-    def invoice_file_upload(self, file, user_id):
+    def invoice_file_upload(self, file, user_id, group=None):
         """Uploads the invoice file to S3."""
         #file_extension = os.path.splitext(file.name)[1]
         # Generate the S3 key for the file
-        s3_key = f'invoices/user_{user_id}/{file.name}'
+        if group:
+            s3_key = f'invoices/Folder-A/{group}/user_{user_id}/{file.name}'
+        else:
+            s3_key = f'invoices/user_{user_id}/{file.name}'
 
         # Generate a unique filename or use the original filename
         filename = f'{user_id}_{file.name}'

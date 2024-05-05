@@ -6,9 +6,10 @@ SELECT
     l.in_invoice_processing_id,   -- Unique ID of the invoice processing session
     l.s3_object_key,              -- Reference to the S3 object where the original document is stored
     l.received_timestamp,         -- Timestamp when the invoice data was received
-    l.line_item_index,            -- Index of the line item within the invoice
+    l.line_item_index,
+    l.invoice_receipt_id,            -- Index of the line item within the invoice
     COALESCE(l.product_code, 'N/A') AS product_code,  -- Product code of the line item, 'N/A' if not available
-    INITCAP(COALESCE(l.item, 'No item description available')) AS item,  -- Item description, capitalized
+    INITCAP(COALESCE(REGEXP_REPLACE(l.item, E'[\\n\\r]+', ' ', 'g'), 'No item description available')) AS item,  -- Item description, capitalized, with line breaks removed
     COALESCE(l.unit_price, '0.00') AS unit_price,   -- Unit price of the item, '0.00' if not available
     COALESCE(NULLIF((l.other_details ->> 'UNIT | DISC'), ''), '0.00') AS unit_disc,  -- Unit discount, '0.00' if not applicable
     COALESCE(NULLIF((l.other_details ->> 'TAXES'), ''), '0.00') AS taxes,  -- Taxes applied, '0.00' if none
@@ -21,7 +22,7 @@ SELECT
     COALESCE(u.BPC, 'Not relevant') AS uom_BPC,  -- Boxes per case, default 'Not relevant'
     COALESCE(u.Size, 'Not relevant') AS uom_Size,  -- Size of the item, default 'Not relevant'
     COALESCE(u.Note, 'Not relevant') AS uom_Note, -- Additional notes, default 'Not relevant'
-    COALESCE(l.expense_row, 'No details') AS expense_row,  -- Details about the expense row, 'No details' if empty
+    COALESCE(REGEXP_REPLACE(l.expense_row,E'[\\n\\r]+', ' ', 'g'), 'No details') AS expense_row,  -- Details about the expense row, 'No details' if empty
     COALESCE(NULLIF((l.other_details ->> 'Unknown Label'), ''), 'None') AS unknown_label  -- Handles any unknown labels
 FROM 
     ext2_line_item l  -- Source table containing line item details

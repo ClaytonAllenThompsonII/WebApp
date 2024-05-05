@@ -4,13 +4,15 @@ SELECT
     in_invoice_processing_id,
     s3_object_key,
     MAX(received_timestamp) AS received_timestamp,
-    MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_DATE' THEN summary_value_text END) AS invoice_receipt_date,
-    MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_ID' THEN summary_value_text END) AS invoice_receipt_id,
     MAX(CASE WHEN summary_type_text = 'ACCOUNT_NUMBER' THEN summary_value_text END) AS account_number,
     MAX(CASE WHEN summary_type_text = 'VENDOR_NAME' OR (summary_type_text = 'NAME' AND group_property_id = 'Vendor Group') THEN summary_value_text END) AS vendor_name,
     MAX(CASE WHEN summary_type_text = 'ORDER_DATE' THEN summary_value_text END) AS order_date,
+    
+    MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_ID' THEN summary_value_text END) AS invoice_receipt_id,
+    MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_DATE' THEN summary_value_text END) AS invoice_receipt_date,
     MAX(CASE WHEN summary_type_text = 'DUE_DATE' THEN summary_value_text END) AS due_date,
     MAX(CASE WHEN summary_type_text = 'DELIVERY_DATE' THEN summary_value_text END) AS delivery_date,
+    
     MAX(CASE WHEN summary_type_text = 'PO_NUMBER' THEN summary_value_text END) AS po_number,
     MAX(CASE WHEN summary_type_text = 'PAYMENT_TERMS' THEN summary_value_text END) AS payment_terms,
     MAX(CASE WHEN summary_type_text = 'TOTAL' THEN summary_value_text END) AS total,

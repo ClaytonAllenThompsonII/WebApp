@@ -61,7 +61,9 @@ def main():
     """ Main function to execute the process of extracting line items from a JSON file
     and printing the resulting DataFrame. """
     
-    file_path = '/Users/claytonthompson/Desktop/2022_0407_KX_600159_1360.84.pdf.json'  # Adjust to your actual file path
+    #file_path = '/Users/claytonthompson/Desktop/2022_0407_KX_600159_1360.84.pdf.json'  # Adjust to your actual file path
+    file_path = '/Users/claytonthompson/Desktop/2022_0402_KX_599585_1114.06.pdf.json'  # Adjust to your actual file path
+
     df = process_expense_documents(file_path)
     print(df)
 

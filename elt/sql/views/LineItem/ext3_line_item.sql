@@ -10,11 +10,11 @@ SELECT
     l.invoice_receipt_id,            -- Index of the line item within the invoice
     COALESCE(l.product_code, 'N/A') AS product_code,  -- Product code of the line item, 'N/A' if not available
     INITCAP(COALESCE(REGEXP_REPLACE(l.item, E'[\\n\\r]+', ' ', 'g'), 'No item description available')) AS item,  -- Item description, capitalized, with line breaks removed
-    COALESCE(l.unit_price, '0.00') AS unit_price,   -- Unit price of the item, '0.00' if not available
+    COALESCE(CAST(NULLIF(REGEXP_REPLACE(l.unit_price, '[-,]', '.', 'g'), '') AS NUMERIC), 0.00) AS unit_price,   -- Unit price of the item, '0.00' if not available
     COALESCE(NULLIF((l.other_details ->> 'UNIT | DISC'), ''), '0.00') AS unit_disc,  -- Unit discount, '0.00' if not applicable
     COALESCE(NULLIF((l.other_details ->> 'TAXES'), ''), '0.00') AS taxes,  -- Taxes applied, '0.00' if none
     COALESCE(NULLIF((l.other_details ->> 'UNIT | NET | AMOUNT'), ''), '0.00') AS unit_net_amount, -- Net amount after discounts
-    COALESCE(l.price, '0.00') AS price,   -- Total price of the line item, '0.00' if not available
+    COALESCE(CAST(NULLIF(REGEXP_REPLACE(REGEXP_REPLACE(l.price, '[^0-9.-]', '', 'g'), '[-,]', '.', 'g'), '') AS NUMERIC), 0.00) AS price,  -- Total price of the line item, '0.00' if not available
     COALESCE(NULLIF((l.other_details ->> 'CS | ORD/DLV'), ''), 'Not specified') AS cs_ord_dlv,  -- Cases ordered/delivered
     COALESCE(NULLIF((l.other_details ->> 'BTLS | ORD/DLV'), ''), 'Not specified') AS btls_ord_dlv, -- Bottles ordered/delivered
     -- UOM fields to enrich line item data with additional details like packaging and notes

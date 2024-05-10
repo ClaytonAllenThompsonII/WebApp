@@ -31,11 +31,20 @@ FinalAddresses AS (
     SELECT
         processing_id,
         s3_object_key,
+        -- Vendor address
+        MAX(CASE WHEN address_role = 'vendor' THEN street END) AS vendor_street,
+        MAX(CASE WHEN address_role = 'vendor' THEN city END) AS vendor_city,
+        MAX(CASE WHEN address_role = 'vendor' THEN state END) AS vendor_state,
+        MAX(CASE WHEN address_role = 'vendor' THEN zip_code END) AS vendor_zip_code,
+        MAX(CASE WHEN address_role = 'vendor' THEN address_block END) AS vendor_address_block,
+        -- Remit Address 
         MAX(CASE WHEN address_role = 'remit_to' THEN street END) AS remit_street,
         MAX(CASE WHEN address_role = 'remit_to' THEN city END) AS remit_city,
         MAX(CASE WHEN address_role = 'remit_to' THEN state END) AS remit_state,
         MAX(CASE WHEN address_role = 'remit_to' THEN zip_code END) AS remit_zip_code,
         MAX(CASE WHEN address_role = 'remit_to' THEN address_block END) AS remit_address_block,
+        
+        --User address
         MAX(CASE WHEN address_role = 'sold_to' THEN street END) AS sold_street,
         MAX(CASE WHEN address_role = 'sold_to' THEN city END) AS sold_city,
         MAX(CASE WHEN address_role = 'sold_to' THEN state END) AS sold_state,

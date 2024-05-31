@@ -4,7 +4,16 @@ WITH vendor_details AS (
     SELECT
         inp.id AS processing_id,
         inp.s3_object_key,
-        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_NAME' OR (sf.value -> 'Type' ->> 'Text' = 'NAME' AND ev.address_role = 'vendor') THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS vendor_name,
+        COALESCE(
+			MAX(CASE 
+				WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_NAME' THEN 
+					sf.value -> 'ValueDetection' ->> 'Text' 
+			END),
+			MAX(CASE 
+				WHEN sf.value -> 'Type' ->> 'Text' = 'NAME' AND ev.address_role = 'vendor' THEN 
+					sf.value -> 'ValueDetection' ->> 'Text' 
+			END)
+		) AS vendor_name,
         MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'ACCOUNT_NUMBER' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS account_number,
         MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_PHONE' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS vendor_phone,
         MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_URL' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS vendor_url
@@ -28,7 +37,16 @@ SELECT
     vd.account_number,
     vd.vendor_phone,
     vd.vendor_url,
-    ad.remit_street,
+
+
+    
+    regexp_replace(ad.vendor_street, E'[\\n\\r]+', ' ', 'g'  ) as vendor_street,
+    ad.vendor_city,
+    ad.vendor_state,
+    ad.vendor_zip_code,
+    regexp_replace(ad.vendor_address_block, E'[\\n\\r]+', ' ', 'g'  ) as vendor_address_block,
+
+    regexp_replace(ad.remit_street, E'[\\n\\r]+', ' ', 'g' ) as remit_street,
     ad.remit_city,
     ad.remit_state,
     ad.remit_zip_code,

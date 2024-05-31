@@ -54,7 +54,7 @@ def process_expense_documents(file_path):
 def main():
     """ Main execution function to load data from a specified file,
       process it, and print the resulting DataFrame. """
-    file_path = '/Users/claytonthompson/Desktop/2022_0407_KX_600159_1360.84.pdf.json'
+    file_path = '/Users/claytonthompson/Desktop/2022_0401_CB_06-922692141_4891.96.pdf.json'
     df = process_expense_documents(file_path)
     # Print the DataFrame clearly
     print(df.to_string(index=False))

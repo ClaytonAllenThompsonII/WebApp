@@ -1,10 +1,14 @@
-
 CREATE TABLE out_vendor (
     vendor_id SERIAL PRIMARY KEY,  -- Auto-incrementing ID as primary key
     vendor_name VARCHAR(255) UNIQUE,  -- Unique vendor name
     account_number VARCHAR(255),
     vendor_phone VARCHAR(255),
     vendor_url VARCHAR(255),
+    vendor_street VARCHAR(255),
+    vendor_city VARCHAR(255),
+    vendor_state VARCHAR(255),
+    vendor_zip_code VARCHAR(255),
+    vendor_address_block TEXT,
     remit_street VARCHAR(255),
     remit_city VARCHAR(255),
     remit_state VARCHAR(255),

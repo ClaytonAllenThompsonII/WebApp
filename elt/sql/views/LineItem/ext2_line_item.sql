@@ -11,6 +11,7 @@ SELECT
     COALESCE(MAX(CASE WHEN type_text = 'ITEM' THEN vd_text ELSE NULL END), MAX(CASE WHEN type_text = 'EXPENSE_ROW' THEN vd_text ELSE NULL END)) AS item,
     MAX(CASE WHEN type_text = 'UNIT_PRICE' THEN vd_text ELSE NULL END) AS unit_price,
     MAX(CASE WHEN type_text = 'PRICE' THEN vd_text ELSE NULL END) AS price,
+    MAX(CASE WHEN type_text = 'QUANTITY' THEN vd_text ELSE NULL END) as quantity,
     jsonb_object_agg(COALESCE(ld_text, 'Unknown Label'), vd_text) FILTER (WHERE type_text = 'OTHER' AND vd_text IS NOT NULL) AS other_details,
     MAX(CASE WHEN type_text = 'EXPENSE_ROW' THEN vd_text ELSE NULL END) AS expense_row
 FROM 

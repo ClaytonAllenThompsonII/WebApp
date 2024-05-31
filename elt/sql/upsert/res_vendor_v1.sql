@@ -3,6 +3,11 @@ INSERT INTO out_vendor (
     account_number,
     vendor_phone,
     vendor_url,
+    vendor_street,
+    vendor_city,
+    vendor_state,
+    vendor_zip_code,
+    vendor_address_block,
     remit_street,
     remit_city,
     remit_state,
@@ -24,6 +29,11 @@ SELECT
     account_number,
     vendor_phone,
     vendor_url,
+    vendor_street,
+    vendor_city,
+    vendor_state,
+    vendor_zip_code,
+    vendor_address_block,
     remit_street,
     remit_city,
     remit_state,
@@ -42,4 +52,5 @@ SELECT
 FROM
     res_vendor
 ON CONFLICT (vendor_name) DO NOTHING;
+
 

@@ -1,53 +1,48 @@
+-- Create a view to format and clean line item data from ext2_line_item
 CREATE OR REPLACE VIEW for_line_item AS
-
 SELECT
-    -- Extract necessary fields
-    received_timestamp,
-    s3_object_key,
     in_invoice_processing_id,
+    s3_object_key,
+    received_timestamp AS upload_date,
     invoice_receipt_id,
     expense_document_index,
     line_item_index,
     
-    -- Normalize item description
-    COALESCE(item, item_description, item_null, item_item, item_item_description) AS item_description,
-    -- Normalize Brand
-    COALESCE(item_brand, other_brand) as brand, 
+    -- Product code
+    product_code,
+    COALESCE(INITCAP(item_brand), INITCAP(other_brand)) as brand, 
+    -- Item description, removing any extraneous "ITEM#:" details
+    COALESCE(INITCAP(item), regexp_replace(item_description, 'ITEM#:.*', '', 'g')) AS item_description,
+    
+    -- Unit price, converting to numeric and handling different formats
+    CASE 
+        WHEN unit_price IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_price, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN unit_pricing IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_pricing, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN unit_price_ea IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_price_ea, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN unit_price_upper IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_price_upper, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN unit_price_mixed IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_price_mixed, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN unit_net_amount IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_net_amount, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN unit_gross IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_gross, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN unit_price_null IS NOT NULL THEN NULLIF(regexp_replace(unit_price_null, '[^\d.]', '', 'g'), '')::NUMERIC
 
-    -- Unit: Case
-    COALESCE()
+        ELSE NULL
+    END AS unit_price,
 
-    -- Unit Price (pre-discount)
-    COALESCE(unit_price, unit_pricing, unit_price_ea, unit_price_upper, unit_price_mixed) as list_unit_price,
+    -- Total price, converting to numeric and handling different formats
+    CASE 
+        WHEN price IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN price_amount IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price_amount, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN price_net_amount IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price_net_amount, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN price_total IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price_total, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN price_extended IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price_extended, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+        WHEN price_null IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price_null, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
 
-    -- Unit Discount ($ amount)
-    COALESCE(other_unit_disc, other_discount, other_disc_rate) as discount,
-
-    -- Unit Net Amount
-    COALESCE()
-
-
-    -- Taxes (for line item)
-    -- Total (for line item)
-
-
-
+        ELSE NULL
+    END AS price
 
 
     
-    -- Normalize Unit of Measure (UOM)
-    COALESCE(other_unit_net, other_unit_tax_amount, other_unit_net_amount, other_unit_disc, other_unit_net) AS uom,
-    
-    -- Normalize quantity
-    COALESCE(quantity, q quantity_btl_qty, quantity_full_cases, quantity_btls_ord_dlv, quantity_qpc, quantity_description, quantity_cs_ord_dlv, quantity_case_qty, quantity_pack, quantity_null) AS quantity,
-    
-    -- Normalize unit price
-    COALESCE(unit_price, unit_pricing, unit_price_ea, unit_price_upper, unit_price_mixed, unit_net_amount, unit_gross, unit_price_null) AS unit_price,
-    
-    -- Normalize total price
-    COALESCE(price, price_amount, price_net_amount, price_total, price_extended, price_null) AS total_price
-
-FROM
+FROM 
     ext2_line_item
 ORDER BY
     in_invoice_processing_id, expense_document_index, line_item_index;

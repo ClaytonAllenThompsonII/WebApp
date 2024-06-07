@@ -1,34 +1,3 @@
-"""
-This module provides functionality to synchronize data from a PostgreSQL database
-hosted on AWS RDS to a local PostgreSQL database. The synchronization process
-is initiated by querying data from a specified table in the RDS database and then
-inserting this data into a corresponding table in the local database.
-
-Usage:
-    Ensure that the .env file has the following variables set:
-    - RDS_INSTANCE_ENDPOINT: The endpoint URL for the RDS instance.
-    - RDS_DB_NAME: The name of the RDS database.
-    - RDS_DB_USER: The username for the RDS database.
-    - RDS_DB_PASSWORD: The password for the RDS database user.
-    - DB_HOST: The host for the local database.
-    - DB_NAME: The name of the local database.
-    - DB_USER: The username for the local database.
-    - DB_PASSWORD: The password for the local database user.
-
-    Run the script from the command line:
-    $ python <script_name>.py
-
-Functions:
-    sync_data(): Connects to both databases, fetches data from the RDS instance,
-                 and inserts it into the local application database.
-
-Dependencies:
-    psycopg2, python-dotenv
-
-Note:
-    This script is intended for environments where the local database is accessible
-    and configured to accept connections from the script's execution context.
-"""
 import os
 import psycopg2
 from dotenv import load_dotenv
@@ -39,10 +8,8 @@ load_dotenv()
 
 def sync_data():
     """ 
-    This function fetches records from a specified table in the RDS
-    database and inserts them into a corresponding table in the local database.
+    Fetch records from OLAP (RDS source) and insert them into the application database (local).
     """
-
     # Retrieve the last sync time
     last_sync_time = get_last_sync_time()
 
@@ -78,19 +45,40 @@ def sync_data():
         rds_cursor = rds_conn.cursor()
         local_cursor = local_conn.cursor()
 
-        # Example query to fetch data
-        rds_cursor.execute("SELECT * FROM your_rds_table;")
-        rows = rds_cursor.fetchall()
+        # Fetch new records from the OLAP database (RDS source)
+        rds_cursor.execute("SELECT * FROM for_invoice WHERE batched_at IS NULL")
+        invoices = rds_cursor.fetchall()
 
-        # Insert data into the local database
-        for row in rows:
-            local_cursor.execute(
-                "INSERT INTO your_local_table (column1, column2) VALUES (%s, %s);",
-                (row[0], row[1])
-            )
+        # Insert new records into the application database (local)
+        for invoice in invoices:
+            local_cursor.execute("""
+            INSERT INTO invoice (in_invoice_processing_id, s3_object_key, upload_date, account_number, 
+                                 vendor_name, due_date, delivery_date, invoice_receipt_date, invoice_number, total, vendor_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NULL)
+            """, invoice)
+            
+            # Update the batched_at timestamp in the OLAP database
+            rds_cursor.execute("UPDATE for_invoice SET batched_at = %s WHERE in_invoice_processing_id = %s", 
+                               (datetime.now(), invoice[0]))
 
-        # Commit changes to the local database
+        # Repeat the same process for line_item, vendor, and product domains
+        for domain in ['line_item', 'vendor', 'product']:
+            rds_cursor.execute(f"SELECT * FROM for_{domain} WHERE batched_at IS NULL")
+            records = rds_cursor.fetchall()
+            
+            for record in records:
+                local_cursor.execute(f"""
+                INSERT INTO {domain} (/* Columns specific to {domain} */)
+                VALUES (%s, %s, %s, /* other columns */)
+                """, record)
+                
+                # Update the batched_at timestamp in the OLAP database
+                rds_cursor.execute(f"UPDATE for_{domain} SET batched_at = %s WHERE id = %s", 
+                                   (datetime.now(), record[0]))
+
+        # Commit changes to both databases
         local_conn.commit()
+        rds_conn.commit()
 
     finally:
         rds_cursor.close()

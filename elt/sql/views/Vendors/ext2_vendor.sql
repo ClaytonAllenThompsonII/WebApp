@@ -1,69 +1,102 @@
+-- Create a view to extract and normalize vendor data from ext1_invoice
 CREATE OR REPLACE VIEW ext2_vendor AS
 
-WITH vendor_details AS (
-    SELECT
-        inp.id AS processing_id,
-        inp.s3_object_key,
-        COALESCE(
-			MAX(CASE 
-				WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_NAME' THEN 
-					sf.value -> 'ValueDetection' ->> 'Text' 
-			END),
-			MAX(CASE 
-				WHEN sf.value -> 'Type' ->> 'Text' = 'NAME' AND ev.address_role = 'vendor' THEN 
-					sf.value -> 'ValueDetection' ->> 'Text' 
-			END)
-		) AS vendor_name,
-        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'ACCOUNT_NUMBER' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS account_number,
-        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_PHONE' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS vendor_phone,
-        MAX(CASE WHEN sf.value -> 'Type' ->> 'Text' = 'VENDOR_URL' THEN sf.value -> 'ValueDetection' ->> 'Text' END) AS vendor_url
-    FROM
-        in_invoice_processing inp
-    JOIN
-        LATERAL jsonb_array_elements(inp.textract_json -> 'ExpenseDocuments' -> 0 -> 'SummaryFields') AS sf(value) ON TRUE
-    JOIN
-        ext1_vendor ev ON ev.processing_id = inp.id AND ev.s3_object_key = inp.s3_object_key
-    GROUP BY
-        inp.id, inp.s3_object_key
-),
-address_data AS (
-    SELECT *
-    FROM ext2_vendor_address_clean
-)
 SELECT
-    vd.processing_id,
-    vd.s3_object_key,
-    vd.vendor_name,
-    vd.account_number,
-    vd.vendor_phone,
-    vd.vendor_url,
-
-
+    -- Basic metadata fields from ext1_invoice
+    in_invoice_processing_id,
+    s3_object_key,
+    MAX(received_timestamp) AS received_timestamp,
     
-    regexp_replace(ad.vendor_street, E'[\\n\\r]+', ' ', 'g'  ) as vendor_street,
-    ad.vendor_city,
-    ad.vendor_state,
-    ad.vendor_zip_code,
-    regexp_replace(ad.vendor_address_block, E'[\\n\\r]+', ' ', 'g'  ) as vendor_address_block,
+    -- Vendor information
+    MAX(CASE WHEN summary_type_text = 'ACCOUNT_NUMBER' AND summary_label_text = 'Account Number:' THEN summary_value_text ELSE NULL END) AS account_number_label,
+    MAX(CASE WHEN summary_type_text = 'ACCOUNT_NUMBER' AND summary_label_text = 'ACCOUNT#' THEN summary_value_text ELSE NULL END) AS account_number_hash,
+	
+	-- Customer information
+    MAX(CASE WHEN summary_type_text = 'CUSTOMER_NUMBER' AND summary_label_text = 'Customer #' THEN summary_value_text ELSE NULL END) AS customer_number_label,
+    MAX(CASE WHEN summary_type_text = 'CUSTOMER_NUMBER' AND summary_label_text = 'CUSTOMER' THEN summary_value_text ELSE NULL END) AS customer_number_customer,
 
-    regexp_replace(ad.remit_street, E'[\\n\\r]+', ' ', 'g' ) as remit_street,
-    ad.remit_city,
-    ad.remit_state,
-    ad.remit_zip_code,
-    ad.remit_address_block,
-    ad.sold_street,
-    ad.sold_city,
-    ad.sold_state,
-    ad.sold_zip_code,
-    ad.sold_address_block,
-    ad.ship_street,
-    ad.ship_city,
-    ad.ship_state,
-    ad.ship_zip_code,
-    ad.ship_address_block
+    MAX(CASE WHEN summary_type_text = 'OTHER' AND summary_label_text = 'WD#' THEN summary_value_text ELSE NULL END) AS other_wd_number,
+
+
+      -- Name information
+    MAX(CASE WHEN summary_type_text = 'NAME' AND summary_label_text = 'CUSTOMER:' THEN summary_value_text ELSE NULL END) AS name_customer,
+    MAX(CASE WHEN summary_type_text = 'NAME' AND summary_label_text = 'Printed Name:' THEN summary_value_text ELSE NULL END) AS name_printed,
+    MAX(CASE WHEN summary_type_text = 'NAME' AND summary_label_text IS NULL THEN summary_value_text ELSE NULL END) AS name_null,
+
+    -- Vendor name
+    MAX(CASE WHEN summary_type_text = 'VENDOR_NAME' AND summary_label_text IS NULL THEN summary_value_text ELSE NULL END) AS vendor_name,
+    -- Vendor phone
+    MAX(CASE WHEN summary_type_text = 'VENDOR_PHONE' AND summary_label_text = 'Phone:' THEN summary_value_text ELSE NULL END) AS vendor_phone,
+    MAX(CASE WHEN summary_type_text = 'VENDOR_PHONE' AND summary_label_text = 'Sales Phone:' THEN summary_value_text ELSE NULL END) AS vendor_phone_sales,
+    MAX(CASE WHEN summary_type_text = 'VENDOR_PHONE' AND summary_label_text = 'Sales Person:' THEN summary_value_text ELSE NULL END) AS vendor_phone_person,
+    MAX(CASE WHEN summary_type_text = 'VENDOR_PHONE' AND summary_label_text IS NULL THEN summary_value_text ELSE NULL END) AS vendor_phone_null,
+        
+        -- Vendor address
+    
+    MAX(CASE WHEN summary_type_text = 'VENDOR_ADDRESS' AND summary_label_text IS NULL THEN summary_value_text ELSE NULL END) AS vendor_address_null,
+
+
+        -- Vendor address fields
+    MAX(CASE WHEN summary_type_text = 'NAME' AND group_type = 'vendor' THEN summary_value_text ELSE NULL END) AS name_vendor,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS' AND group_type = 'vendor' THEN summary_value_text ELSE NULL END) AS vendor_address,
+    MAX(CASE WHEN summary_type_text = 'STREET' AND group_type = 'vendor' THEN summary_value_text ELSE NULL END) AS vendor_street,
+    MAX(CASE WHEN summary_type_text = 'CITY' AND group_type = 'vendor' THEN summary_value_text ELSE NULL END) AS vendor_city,
+    MAX(CASE WHEN summary_type_text = 'STATE' AND group_type = 'vendor' THEN summary_value_text ELSE NULL END) AS vendor_state,
+    MAX(CASE WHEN summary_type_text = 'ZIP_CODE' AND group_type = 'vendor' THEN summary_value_text ELSE NULL END) AS vendor_zip_code,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS_BLOCK' AND group_type = 'vendor' THEN summary_value_text ELSE NULL END) AS vendor_address_block,
+
+    -- Remit to address fields
+    MAX(CASE WHEN summary_type_text = 'NAME' AND group_type = 'remit_to' THEN summary_value_text ELSE NULL END) AS name_remit_to,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS' AND group_type = 'remit_to' THEN summary_value_text ELSE NULL END) AS remit_to_address,
+    MAX(CASE WHEN summary_type_text = 'STREET' AND group_type = 'remit_to' THEN summary_value_text ELSE NULL END) AS remit_to_street,
+    MAX(CASE WHEN summary_type_text = 'CITY' AND group_type = 'remit_to' THEN summary_value_text ELSE NULL END) AS remit_to_city,
+    MAX(CASE WHEN summary_type_text = 'STATE' AND group_type = 'remit_to' THEN summary_value_text ELSE NULL END) AS remit_to_state,
+    MAX(CASE WHEN summary_type_text = 'ZIP_CODE' AND group_type = 'remit_to' THEN summary_value_text ELSE NULL END) AS remit_to_zip_code,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS_BLOCK' AND group_type = 'remit_to' THEN summary_value_text ELSE NULL END) AS remit_to_address_block,
+    MAX(CASE WHEN summary_type_text = 'VENDOR_ADDRESS' AND summary_label_text = 'Please remit payments to:' THEN summary_value_text ELSE NULL END) AS vendor_address_remit_to,
+    MAX(CASE WHEN summary_type_text = 'VENDOR_ADDRESS' AND summary_label_text = 'REMIT TO:' THEN summary_value_text ELSE NULL END) AS vendor_address_remit_to_colon,
+    MAX(CASE WHEN summary_type_text = 'VENDOR_ADDRESS' AND summary_label_text = 'REMIT TO' THEN summary_value_text ELSE NULL END) AS vendor_address_remit_to_plain,
+
+    -- Ship to address fields
+    MAX(CASE WHEN summary_type_text = 'NAME' AND group_type = 'ship_to' THEN summary_value_text ELSE NULL END) AS name_ship_to,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS' AND group_type = 'ship_to' THEN summary_value_text ELSE NULL END) AS ship_to_address,
+    MAX(CASE WHEN summary_type_text = 'STREET' AND group_type = 'ship_to' THEN summary_value_text ELSE NULL END) AS ship_to_street,
+    MAX(CASE WHEN summary_type_text = 'CITY' AND group_type = 'ship_to' THEN summary_value_text ELSE NULL END) AS ship_to_city,
+    MAX(CASE WHEN summary_type_text = 'STATE' AND group_type = 'ship_to' THEN summary_value_text ELSE NULL END) AS ship_to_state,
+    MAX(CASE WHEN summary_type_text = 'ZIP_CODE' AND group_type = 'ship_to' THEN summary_value_text ELSE NULL END) AS ship_to_zip_code,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS_BLOCK' AND group_type = 'ship_to' THEN summary_value_text ELSE NULL END) AS ship_to_address_block,
+
+    -- Sold to address fields
+    MAX(CASE WHEN summary_type_text = 'NAME' AND group_type = 'sold_to' THEN summary_value_text ELSE NULL END) AS name_sold_to,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS' AND group_type = 'sold_to' THEN summary_value_text ELSE NULL END) AS sold_to_address,
+    MAX(CASE WHEN summary_type_text = 'STREET' AND group_type = 'sold_to' THEN summary_value_text ELSE NULL END) AS sold_to_street,
+    MAX(CASE WHEN summary_type_text = 'CITY' AND group_type = 'sold_to' THEN summary_value_text ELSE NULL END) AS sold_to_city,
+    MAX(CASE WHEN summary_type_text = 'STATE' AND group_type = 'sold_to' THEN summary_value_text ELSE NULL END) AS sold_to_state,
+    MAX(CASE WHEN summary_type_text = 'ZIP_CODE' AND group_type = 'sold_to' THEN summary_value_text ELSE NULL END) AS sold_to_zip_code,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS_BLOCK' AND group_type = 'sold_to' THEN summary_value_text ELSE NULL END) AS sold_to_address_block,
+
+    -- Bill to address fields
+    MAX(CASE WHEN summary_type_text = 'NAME' AND group_type = 'bill_to' THEN summary_value_text ELSE NULL END) AS name_bill_to,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS' AND group_type = 'bill_to' THEN summary_value_text ELSE NULL END) AS bill_to_address,
+    MAX(CASE WHEN summary_type_text = 'STREET' AND group_type = 'bill_to' THEN summary_value_text ELSE NULL END) AS bill_to_street,
+    MAX(CASE WHEN summary_type_text = 'CITY' AND group_type = 'bill_to' THEN summary_value_text ELSE NULL END) AS bill_to_city,
+    MAX(CASE WHEN summary_type_text = 'STATE' AND group_type = 'bill_to' THEN summary_value_text ELSE NULL END) AS bill_to_state,
+    MAX(CASE WHEN summary_type_text = 'ZIP_CODE' AND group_type = 'bill_to' THEN summary_value_text ELSE NULL END) AS bill_to_zip_code,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS_BLOCK' AND group_type = 'bill_to' THEN summary_value_text ELSE NULL END) AS bill_to_address_block,
+
+    -- Receiver address fields
+    MAX(CASE WHEN summary_type_text = 'NAME' AND group_type = 'receiver' THEN summary_value_text ELSE NULL END) AS name_receiver,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS' AND group_type = 'receiver' THEN summary_value_text ELSE NULL END) AS receiver_address,
+    MAX(CASE WHEN summary_type_text = 'STREET' AND group_type = 'receiver' THEN summary_value_text ELSE NULL END) AS receiver_street,
+    MAX(CASE WHEN summary_type_text = 'CITY' AND group_type = 'receiver' THEN summary_value_text ELSE NULL END) AS receiver_city,
+    MAX(CASE WHEN summary_type_text = 'STATE' AND group_type = 'receiver' THEN summary_value_text ELSE NULL END) AS receiver_state,
+    MAX(CASE WHEN summary_type_text = 'ZIP_CODE' AND group_type = 'receiver' THEN summary_value_text ELSE NULL END) AS receiver_zip_code,
+    MAX(CASE WHEN summary_type_text = 'ADDRESS_BLOCK' AND group_type = 'receiver' THEN summary_value_text ELSE NULL END) AS receiver_address_block
+
+
 FROM
-    vendor_details vd
-JOIN
-    address_data ad ON ad.processing_id = vd.processing_id AND ad.s3_object_key = vd.s3_object_key
+    ext1_invoice
+GROUP BY
+    in_invoice_processing_id, s3_object_key
 ORDER BY
-    vd.processing_id, vd.s3_object_key;
+    in_invoice_processing_id;

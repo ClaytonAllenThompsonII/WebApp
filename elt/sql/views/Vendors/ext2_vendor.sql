@@ -15,6 +15,9 @@ SELECT
     MAX(CASE WHEN summary_type_text = 'CUSTOMER_NUMBER' AND summary_label_text = 'Customer #' THEN summary_value_text ELSE NULL END) AS customer_number_label,
     MAX(CASE WHEN summary_type_text = 'CUSTOMER_NUMBER' AND summary_label_text = 'CUSTOMER' THEN summary_value_text ELSE NULL END) AS customer_number_customer,
 
+    MAX(CASE WHEN summary_type_text = 'OTHER' AND summary_label_text = 'WD#' THEN summary_value_text ELSE NULL END) AS other_wd_number,
+
+
       -- Name information
     MAX(CASE WHEN summary_type_text = 'NAME' AND summary_label_text = 'CUSTOMER:' THEN summary_value_text ELSE NULL END) AS name_customer,
     MAX(CASE WHEN summary_type_text = 'NAME' AND summary_label_text = 'Printed Name:' THEN summary_value_text ELSE NULL END) AS name_printed,

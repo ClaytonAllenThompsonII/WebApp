@@ -1,4 +1,5 @@
-CREATE TABLE invoice (
+-- Create the out_invoice table to store invoice data
+CREATE TABLE out_invoice (
   invoice_id SERIAL PRIMARY KEY,               -- Auto-incrementing Invoice ID as primary key
   in_invoice_processing_id INT,                -- Foreign key to track the source of the invoice
   s3_object_key VARCHAR(255),                  -- Key to locate the invoice document in S3
@@ -8,10 +9,11 @@ CREATE TABLE invoice (
   due_date DATE,                               -- Date by which the payment for the invoice is due
   delivery_date DATE,                          -- Date on which the goods or services were delivered
   invoice_receipt_date DATE,                   -- Date when the invoice was issued/received
-  invoice_number VARCHAR(255),                 -- Vendor assigned invoice number
+  invoice_number VARCHAR(255) UNIQUE,                 -- Vendor assigned invoice number
   total DECIMAL,                               -- Total amount of the invoice including taxes and fees
   vendor_id INT,                               -- Foreign key linking to the vendor table
   inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Timestamp when the record is inserted into this table
   batched_at TIMESTAMP,                        -- Timestamp when the record is batched into the application database
-  FOREIGN KEY (vendor_id) REFERENCES vendor(vendor_id) ON DELETE SET NULL  -- Ensures integrity of reference to vendor table
+  FOREIGN KEY (vendor_id) REFERENCES out_vendor(vendor_id) ON DELETE SET NULL  -- Ensures integrity of reference to vendor table
 );
+

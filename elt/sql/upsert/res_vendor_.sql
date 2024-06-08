@@ -68,8 +68,6 @@ DO UPDATE SET
     remit_to_city = EXCLUDED.remit_to_city,                                                -- Update remit-to city
     remit_to_state = EXCLUDED.remit_to_state,                                              -- Update remit-to state
     remit_to_zip_code = EXCLUDED.remit_to_zip_code,                                        -- Update remit-to ZIP code
-    remit_to_address_block = EXCLUDED.remit_to_address_block;                              -- Update remit-to address block
+    remit_to_address_block = EXCLUDED.remit_to_address_block,                              -- Update remit-to address block
     inserted_at = EXCLUDED.inserted_at,                                                    -- Update inserted_at timestamp
-    batched_at = EXCLUDED.batched_at,                                                      -- Preserve batched_at timestamp if it exists
-      inserted_at = EXCLUDED.inserted_at,                                                    -- Update inserted_at timestamp
     batched_at = EXCLUDED.batched_at;                                                      -- Preserve batched_at timestamp if it exists

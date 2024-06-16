@@ -334,7 +334,21 @@ END AS other_size_unit,
     ) FILTER (WHERE type_text = 'OTHER' AND vd_text IS NOT NULL) AS other_details,
     
     -- Retain expense row information, if available
-    MAX(CASE WHEN type_text = 'EXPENSE_ROW' THEN vd_text ELSE NULL END) AS expense_row
+    MAX(
+    CASE WHEN type_text = 'EXPENSE_ROW' THEN initcap(vd_text) ELSE NULL END) AS expense_row,
+
+    -- Extract the second number after the '/' in the item_null field
+CASE
+    WHEN MAX(CASE WHEN type_text = 'ITEM' AND ld_text IS NULL THEN regexp_replace(vd_text, '(.*)(ITEM#:.*)', '\1') ELSE NULL END) IS NOT NULL THEN
+        CASE
+            WHEN regexp_replace(MAX(CASE WHEN type_text = 'ITEM' AND ld_text IS NULL THEN regexp_replace(vd_text, '(.*)(ITEM#:.*)', '\1') ELSE NULL END), '^(\d+)/(\d+).*$', '\2') ~ '^\d+$' THEN
+                regexp_replace(MAX(CASE WHEN type_text = 'ITEM' AND ld_text IS NULL THEN regexp_replace(vd_text, '(.*)(ITEM#:.*)', '\1') ELSE NULL END), '^(\d+)/(\d+).*$', '\2')::NUMERIC
+            ELSE
+                NULL
+        END
+    ELSE
+        NULL
+END AS item_null_q -- last resort source of the delivered quantity. 
 
 FROM 
     ext1_line_item

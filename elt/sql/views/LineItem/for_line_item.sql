@@ -1,5 +1,6 @@
--- Create a view to format and clean line item data from ext2_line_item
 CREATE OR REPLACE VIEW for_line_item AS
+
+
 SELECT
     in_invoice_processing_id,
     s3_object_key,
@@ -15,34 +16,117 @@ SELECT
     COALESCE(INITCAP(item), regexp_replace(item_description, 'ITEM#:.*', '', 'g')) AS item_description,
     
     -- Unit price, converting to numeric and handling different formats
-    CASE 
-        WHEN unit_price IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_price, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN unit_pricing IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_pricing, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN unit_price_ea IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_price_ea, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN unit_price_upper IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_price_upper, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN unit_price_mixed IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_price_mixed, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN unit_net_amount IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_net_amount, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN unit_gross IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(unit_gross, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN unit_price_null IS NOT NULL THEN NULLIF(regexp_replace(unit_price_null, '[^\d.]', '', 'g'), '')::NUMERIC
+    COALESCE(
+        NULLIF(regexp_replace(unit_pricing, '-', '.', 'g'), '')::NUMERIC,
+        NULLIF(regexp_replace(unit_price_ea, '-', '.', 'g'), '')::NUMERIC,
+        NULLIF(regexp_replace(primary_unit_price_upper, '-', '.', 'g'), '')::NUMERIC,
+        NULLIF(regexp_replace(unit_price_mixed, '-', '.', 'g'), '')::NUMERIC,
+        NULLIF(regexp_replace(unit_price_null, '-', '.', 'g'), '')::NUMERIC
 
-        ELSE NULL
-    END AS unit_price,
+    ) AS unit_price,
 
-    -- Total price, converting to numeric and handling different formats
-    CASE 
-        WHEN price IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN price_amount IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price_amount, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN price_net_amount IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price_net_amount, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN price_total IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price_total, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN price_extended IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price_extended, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
-        WHEN price_null IS NOT NULL THEN NULLIF(regexp_replace(regexp_replace(price_null, '-', '.', 'g'), '[^\d.]', '', 'g'), '')::NUMERIC
+    -- Net amount
+    COALESCE(
+        CASE WHEN (case_net_amount::TEXT ~ '^[0-9.-]+$') THEN case_net_amount ELSE NULL END::NUMERIC,
+        CASE WHEN (bottle_net_amount::TEXT ~ '^[0-9.-]+$') THEN bottle_net_amount ELSE NULL END::NUMERIC,
+        CASE WHEN (unit_net_amount::TEXT ~ '^[0-9.-]+$') THEN unit_net_amount ELSE NULL END::NUMERIC,
+        CASE WHEN (price_extended::TEXT ~ '^[0-9.-]+$') THEN price_extended ELSE NULL END::NUMERIC,
+        CASE WHEN (other_unit_net::TEXT ~ '^[0-9.-]+$') THEN other_unit_net ELSE NULL END::NUMERIC,
+        CASE WHEN (other_null_unit_net_amount::TEXT ~ '^[0-9.-]+$') THEN other_null_unit_net_amount ELSE NULL END::NUMERIC,
+        CASE WHEN (unit_price_ea::TEXT ~ '^[0-9.-]+$') THEN unit_price_ea ELSE NULL END::NUMERIC,
+        CASE WHEN (unit_price_null::TEXT ~ '^[0-9.-]+$') THEN unit_price_null ELSE NULL END::NUMERIC,
+        CASE WHEN (unit_pricing::TEXT ~ '^[0-9.-]+$') THEN unit_pricing ELSE NULL END::NUMERIC,
+        CASE WHEN (unit_price_null::TEXT ~ '^[0-9.-]+$') THEN unit_price_null ELSE NULL END::NUMERIC,
+        CASE WHEN (price_net_amount::TEXT ~ '^[0-9.-]+$') THEN price_net_amount ELSE NULL END::NUMERIC
+    ) AS net_amount,
 
-        ELSE NULL
-    END AS price
+     -- Tax
+    COALESCE(
+        NULLIF(other_tax, '')::NUMERIC,
+        NULLIF(other_taxes, '')::NUMERIC,
+        NULLIF(other_unit_tax_amount, '')::NUMERIC,
+        NULLIF(other_unit_tax, '')::NUMERIC,
+        0.00
+    ) AS taxes,
 
+    COALESCE(
+		case_discount,
+		bottle_discount,
+		0.00
+	
+	) as discount,
+
+
+    -- Quantity
+    COALESCE(
+        quantity_btl_qty::NUMERIC,
+        quantity_cases_delivered,
+        other_cases_delivered,
+        quantity_case_qty::NUMERIC,
+        quantity_full_cases::NUMERIC,
+        quantity_item::NUMERIC,
+        quantity2::NUMERIC,
+        quantity_qty::NUMERIC,
+        quantity_cs_pk::NUMERIC,
+        quantity_bottles_delivered,
+        other_null_quantity::NUMERIC,
+        other_btl_qty::NUMERIC,
+        other_case_qty::NUMERIC,
+        item_null_q::NUMERIC,
+        quantity_null::NUMERIC,
+        0
+
+    ) AS quantity,
+	
+	price::NUMERIC,
+	
+	-- Determine unit_of_measure based on boolean fields
+    COALESCE(
+    uom_bottle,
+    uom_case,
+    other_null_unit_type,
+    CASE
+        WHEN bottle_present THEN 'bottle'
+        WHEN case_present THEN 'case'
+        ELSE CASE
+            WHEN quantity2 IS NOT NULL AND quantity2::TEXT ~ '\.\d+' THEN 'lb'
+            ELSE 'each'
+        END
+    END
+) AS unit_of_measure,
+	
+	
+	COALESCE(
+		quantity_pack::NUMERIC,
+    	pk_sz_other_pack::NUMERIC,
+        bpc::NUMERIC,
+		quantity_null::NUMERIC
+
+	) as pack,
+
+
+    COALESCE(
+		pk_sz_other_size::NUMERIC,
+		other_pack_size,
+		other_size_quantity,
+		other_size_upper_quantity,
+		size_quantity_uom,
+		other_gallons_liters
+		
+	) as size, -- pack size
+
+
+    COALESCE(
+        other_size_unit, 
+        other_size_upper_unit,
+        size_unit_uom
+
+    ) as unit -- lowest unit of measure
 
     
 FROM 
-    ext2_line_item
+    ext3_line_item
+	
+
 ORDER BY
     in_invoice_processing_id, expense_document_index, line_item_index;

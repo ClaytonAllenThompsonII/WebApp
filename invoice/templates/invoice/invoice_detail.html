@@ -1,0 +1,36 @@
+<!-- invoice_detail.html -->
+{% extends 'base_generic.html' %}
+
+{% block content %}
+  <h2>Invoice: {{ invoice.invoice_number }}</h2>
+  <p>Upload Date: {{ invoice.upload_date }}</p>
+  <p>Vendor: {{ invoice.vendor.vendor_name }}</p>
+  <p>Total: {{ invoice.total }}</p>
+
+  <h3>Invoice PDF</h3>
+  <iframe src="{{ invoice.pdf_url }}" width="600" height="800"></iframe>
+
+  <h3>Line Items</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Unit of Measure</th>
+        <th>GL Account</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line_item in invoice.lineitem_set.all %}
+        <tr>
+          <td>{{ line_item.description }}</td>
+          <td>{{ line_item.quantity }}</td>
+          <td>{{ line_item.price }}</td>
+          <td>{{ line_item.uom }}</td>
+          <td>{{ line_item.gl_account }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

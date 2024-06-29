@@ -5,7 +5,7 @@ SELECT
  s3_object_key,
  received_timestamp as upload_date,
  -- Customer Account Number
- COALESCE(account_number_label, account_number_hash, customer_number_label, customer_number_customer, other_wd_number) as account_number,
+ COALESCE(account_number_label, account_number_hash, customer_number_label, customer_number_customer, other_wd_number, customer_no_customer) as account_number,
  -- Vendor Name
  INITCAP(vendor_name) AS vendor_name,
   -- Delivery date (converting to MM/DD/YYYY format)
@@ -57,6 +57,7 @@ SELECT
 	 -- Total information (removing non-numeric characters and converting to DECIMAL)
     COALESCE(
         REGEXP_REPLACE(total, '[^\d.-]', '', 'g')::DECIMAL,
+        REGEXP_REPLACE(total_upper, '[^\d.-]', '', 'g')::DECIMAL,
         REGEXP_REPLACE(total_pay_this_amount, '[^\d.-]', '', 'g')::DECIMAL,
         REGEXP_REPLACE(total_invoice, '[^\d.-]', '', 'g')::DECIMAL,
         REGEXP_REPLACE(total_totals, '[^\d.-]', '', 'g')::DECIMAL

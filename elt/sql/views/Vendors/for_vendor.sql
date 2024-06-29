@@ -7,17 +7,17 @@ SELECT
     received_timestamp AS upload_date,
 
     -- Vendor Account Number
-    COALESCE(account_number_label, account_number_hash, customer_number_label, customer_number_customer, other_wd_number) AS account_number,
+    COALESCE(account_number_label, account_number_hash, customer_number_label, customer_number_customer, other_wd_number, customer_no_customer) AS account_number,
 
     -- Vendor Name
     COALESCE(INITCAP(name_vendor), INITCAP(vendor_name)) AS vendor_name,
 
     -- Vendor Phone (format to XXX-XXX-XXXX)
     CASE
-        WHEN LENGTH(REGEXP_REPLACE(COALESCE(vendor_phone, vendor_phone_sales, vendor_phone_person, vendor_phone_null), '[^\d]', '', 'g')) = 10 THEN
-            SUBSTRING(REGEXP_REPLACE(COALESCE(vendor_phone, vendor_phone_sales, vendor_phone_person, vendor_phone_null), '[^\d]', '', 'g') FROM 1 FOR 3) || '-' ||
-            SUBSTRING(REGEXP_REPLACE(COALESCE(vendor_phone, vendor_phone_sales, vendor_phone_person, vendor_phone_null), '[^\d]', '', 'g') FROM 4 FOR 3) || '-' ||
-            SUBSTRING(REGEXP_REPLACE(COALESCE(vendor_phone, vendor_phone_sales, vendor_phone_person, vendor_phone_null), '[^\d]', '', 'g') FROM 7)
+        WHEN LENGTH(REGEXP_REPLACE(COALESCE(vendor_phone, vendor_phone_sales, vendor_phone_person, vendor_phone_null, other_phone_local), '[^\d]', '', 'g')) = 10 THEN
+            SUBSTRING(REGEXP_REPLACE(COALESCE(vendor_phone, vendor_phone_sales, vendor_phone_person, vendor_phone_null, other_phone_local), '[^\d]', '', 'g') FROM 1 FOR 3) || '-' ||
+            SUBSTRING(REGEXP_REPLACE(COALESCE(vendor_phone, vendor_phone_sales, vendor_phone_person, vendor_phone_null, other_phone_local), '[^\d]', '', 'g') FROM 4 FOR 3) || '-' ||
+            SUBSTRING(REGEXP_REPLACE(COALESCE(vendor_phone, vendor_phone_sales, vendor_phone_person, vendor_phone_null, other_phone_local), '[^\d]', '', 'g') FROM 7)
         ELSE NULL
     END AS vendor_phone,
 

@@ -76,3 +76,9 @@ def upload_invoice(request):
 
 
 
+@login_required(login_url='loginPage')
+def invoice_repo(request):
+    """Displays a list of invoices in a table."""
+    invoices = Invoice.objects.all().order_by('-uploaded_at')  # Fetch all invoices, ordered by uploaded_at
+    context = {'invoices': invoices}
+    return render(request, 'invoice/invoice_repo.html', context)

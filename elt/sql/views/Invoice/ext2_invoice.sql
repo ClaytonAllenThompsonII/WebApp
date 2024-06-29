@@ -36,17 +36,32 @@ SELECT
     MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_DATE' AND summary_label_text = 'DELV. DATE' THEN summary_value_text ELSE NULL END) AS invoice_receipt_date_delv_period,
     MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_DATE' AND summary_label_text = 'DELV DATE' THEN summary_value_text ELSE NULL END) AS invoice_receipt_date_delv,
 
+    MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_DATE' AND summary_label_text = 'Invoice Date' THEN summary_value_text ELSE NULL END) AS invoice_receipt_date_invoice_lower,
+    MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_DATE' AND summary_label_text IS NULL THEN summary_value_text ELSE NULL END) AS invoice_receipt_date_null,
+
+    MAX(CASE WHEN summary_type_text = 'ORDER_DATE' AND summary_label_text = 'Order Date' THEN summary_value_text ELSE NULL END) AS order_date,
+
+
+
  -- Due date information
     MAX(CASE WHEN summary_type_text = 'DUE_DATE' AND summary_label_text = 'Due Date' THEN summary_value_text ELSE NULL END) AS due_date,
     MAX(CASE WHEN summary_type_text = 'DUE_DATE' AND summary_label_text = 'Date Due:' THEN summary_value_text ELSE NULL END) AS due_date_due,
     MAX(CASE WHEN summary_type_text = 'DUE_DATE' AND summary_label_text = 'Due Date:' THEN summary_value_text ELSE NULL END) AS due_date_label,
     MAX(CASE WHEN summary_type_text = 'DUE_DATE' AND summary_label_text = 'PAYMENT DUE DATE' THEN summary_value_text ELSE NULL END) AS due_date_payment,
 
+    MAX(CASE WHEN summary_type_text = 'DUE_DATE' AND summary_label_text = 'DUE DATE' THEN summary_value_text ELSE NULL END) AS due_date_uppercase,
+    MAX(CASE WHEN summary_type_text = 'DUE_DATE' AND summary_label_text = 'DUE DATE :' THEN summary_value_text ELSE NULL END) AS due_date_uppercase2,
+
+
     -- Invoice receipt ID information
     MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_ID' AND summary_label_text = 'Invoice #' THEN summary_value_text ELSE NULL END) AS invoice_receipt_id_number,
     MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_ID' AND summary_label_text = 'INVOICE' THEN summary_value_text ELSE NULL END) AS invoice_receipt_id_invoice,
     MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_ID' AND summary_label_text = 'Invoice Number:' THEN summary_value_text ELSE NULL END) AS invoice_receipt_id_label,
     MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_ID' AND summary_label_text = 'INVOICE NUMBER' THEN summary_value_text ELSE NULL END) AS invoice_receipt_id_number_upper,
+
+    MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_ID' AND summary_label_text = 'Invoice No.' THEN summary_value_text ELSE NULL END) AS invoice_receipt_id_invoice_no,
+    MAX(CASE WHEN summary_type_text = 'INVOICE_RECEIPT_ID' AND summary_label_text IS NULL THEN summary_value_text ELSE NULL END) AS invoice_receipt_id_null,
+
 
       -- Payment terms information
     MAX(CASE WHEN summary_type_text = 'PAYMENT_TERMS' AND summary_label_text = 'Terms' THEN summary_value_text ELSE NULL END) AS payment_terms,
@@ -61,6 +76,8 @@ SELECT
 
         -- Service charge information
     MAX(CASE WHEN summary_type_text = 'SERVICE_CHARGE' AND summary_label_text = 'MISC CHARGES CHGS FOR FUEL SURCHARGE' THEN summary_value_text ELSE NULL END) AS service_charge_fuel_surcharge,
+    MAX(CASE WHEN summary_type_text = 'SERVICE_CHARGE' AND summary_label_text IS NULL THEN summary_value_text ELSE NULL END) AS service_charge_null,
+
 
     -- Subtotal information
     MAX(CASE WHEN summary_type_text = 'SUBTOTAL' AND summary_label_text = '02-COOLER' THEN summary_value_text ELSE NULL END) AS subtotal_02_cooler,

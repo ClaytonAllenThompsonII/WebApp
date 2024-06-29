@@ -10,7 +10,7 @@ SELECT
     COALESCE(account_number_label, account_number_hash, customer_number_label, customer_number_customer, other_wd_number) AS account_number,
 
     -- Vendor Name
-    COALESCE(name_vendor, INITCAP(vendor_name)) AS vendor_name,
+    COALESCE(INITCAP(name_vendor), INITCAP(vendor_name)) AS vendor_name,
 
     -- Vendor Phone (format to XXX-XXX-XXXX)
     CASE

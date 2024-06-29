@@ -1,0 +1,39 @@
+<!-- templates/invoice/invoice_repo.html -->
+{% extends 'users/main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'invoice/invoice_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container2">
+    <!-- Invoice Table Section -->
+    <section class="invoice-table">
+        <h2>Invoices</h2>
+        <!-- Table -->
+        <table class="table-hover" id="invoiceTable">
+            <thead>
+                <tr>
+                    <th scope="col">Invoice Upload ID</th> 
+                    <th scope="col">Invoice Number</th>
+                    <th scope="col">Uploaded By</th>
+                    <th scope="col">Original Filename</th>
+                    <th scope="col">Upload Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices %}
+                <tr>
+                    <td>{{ invoice.id }}</td>
+                    <td>{{ invoice.invoice_number }}</td>
+                    <td>{{ invoice.user.username }}</td>
+                    <td>{{ invoice.filename }}</td>
+                    <td>{{ invoice.uploaded_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+{% endblock %}

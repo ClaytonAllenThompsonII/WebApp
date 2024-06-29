@@ -14,6 +14,12 @@ SELECT
 	-- Customer information
     MAX(CASE WHEN summary_type_text = 'CUSTOMER_NUMBER' AND summary_label_text = 'Customer #' THEN summary_value_text ELSE NULL END) AS customer_number_label,
     MAX(CASE WHEN summary_type_text = 'CUSTOMER_NUMBER' AND summary_label_text = 'CUSTOMER' THEN summary_value_text ELSE NULL END) AS customer_number_customer,
+    MAX(CASE WHEN summary_type_text = 'CUSTOMER_NUMBER' AND summary_label_text = 'Customer No' THEN summary_value_text ELSE NULL END) AS customer_no_customer,
+
+
+
+
+    
 
     MAX(CASE WHEN summary_type_text = 'OTHER' AND summary_label_text = 'WD#' THEN summary_value_text ELSE NULL END) AS other_wd_number,
 
@@ -30,7 +36,8 @@ SELECT
     MAX(CASE WHEN summary_type_text = 'VENDOR_PHONE' AND summary_label_text = 'Sales Phone:' THEN summary_value_text ELSE NULL END) AS vendor_phone_sales,
     MAX(CASE WHEN summary_type_text = 'VENDOR_PHONE' AND summary_label_text = 'Sales Person:' THEN summary_value_text ELSE NULL END) AS vendor_phone_person,
     MAX(CASE WHEN summary_type_text = 'VENDOR_PHONE' AND summary_label_text IS NULL THEN summary_value_text ELSE NULL END) AS vendor_phone_null,
-        
+    MAX(CASE WHEN summary_type_text = 'OTHER' AND summary_label_text = 'LOCAL :' THEN summary_value_text ELSE NULL END) AS other_phone_local,
+    
         -- Vendor address
     
     MAX(CASE WHEN summary_type_text = 'VENDOR_ADDRESS' AND summary_label_text IS NULL THEN summary_value_text ELSE NULL END) AS vendor_address_null,

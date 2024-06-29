@@ -12,6 +12,8 @@ SELECT
 	-- Customer information
     MAX(CASE WHEN summary_type_text = 'CUSTOMER_NUMBER' AND summary_label_text = 'Customer #' THEN summary_value_text ELSE NULL END) AS customer_number_label,
     MAX(CASE WHEN summary_type_text = 'CUSTOMER_NUMBER' AND summary_label_text = 'CUSTOMER' THEN summary_value_text ELSE NULL END) AS customer_number_customer,
+    MAX(CASE WHEN summary_type_text = 'CUSTOMER_NUMBER' AND summary_label_text = 'Customer No' THEN summary_value_text ELSE NULL END) AS customer_no_customer,
+
 
       -- Name information
     MAX(CASE WHEN summary_type_text = 'NAME' AND summary_label_text = 'CUSTOMER:' THEN summary_value_text ELSE NULL END) AS name_customer,
@@ -86,6 +88,8 @@ SELECT
 
     -- Total information
     MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'Total' THEN summary_value_text ELSE NULL END) AS total,
+    MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'TOTAL' THEN summary_value_text ELSE NULL END) AS total_upper,
+
     MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'Due' THEN summary_value_text ELSE NULL END) AS total_due,
     MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'SUB TOTAL FOR:' THEN summary_value_text ELSE NULL END) AS total_sub_total_for,
     MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'PAY THIS AMOUNT' THEN summary_value_text ELSE NULL END) AS total_pay_this_amount,

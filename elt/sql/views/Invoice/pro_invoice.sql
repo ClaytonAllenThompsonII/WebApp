@@ -17,7 +17,8 @@ SELECT
     invoice_date_date::DATE AS invoice_receipt_date, -- Cast to DATE type
     due_date_date::DATE AS due_date, -- Cast to DATE type
     invoice_number,
-    total
+    total,
+    terms
 FROM 
     ranked_invoices
 WHERE 

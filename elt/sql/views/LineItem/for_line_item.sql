@@ -74,6 +74,9 @@ SELECT
         other_case_qty::NUMERIC,
         item_null_q::NUMERIC,
         quantity_null::NUMERIC,
+        quantity_shipped::NUMERIC, 
+        quantity_ordered::NUMERIC, 
+		qty_shipped::NUMERIC, 
         0
 
     ) AS quantity,
@@ -108,7 +111,7 @@ SELECT
     COALESCE(
 		pk_sz_other_size::NUMERIC,
 		other_pack_size,
-		other_size_quantity,
+		other_size_quantity_numerator,
 		other_size_upper_quantity,
 		size_quantity_uom,
 		other_gallons_liters
@@ -120,8 +123,18 @@ SELECT
         other_size_unit, 
         other_size_upper_unit,
         size_unit_uom
+    ) as unit, -- lowest unit of measure
 
-    ) as unit -- lowest unit of measure
+    COALESCE(
+	other_unit_weight::NUMERIC,
+	other_extended_weight::NUMERIC
+	
+	) as weight,
+
+    expense_row,
+	-- Track low volume edge cases I skipped here
+	quantity_size, 
+	quantity_size2
 
     
 FROM 

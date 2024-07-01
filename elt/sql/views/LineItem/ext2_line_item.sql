@@ -23,6 +23,8 @@ SELECT
     MAX(CASE WHEN type_text = 'ITEM' AND ld_text = 'Brand' THEN vd_text ELSE NULL END) AS item_brand,
     MAX(CASE WHEN type_text = 'ITEM' AND ld_text IS NULL THEN regexp_replace(vd_text, '(.*)(ITEM#:.*)', '\1') ELSE NULL END) AS item_null,
     MAX(CASE WHEN type_text = 'ITEM' AND ld_text = 'Category' THEN vd_text ELSE NULL END) AS item_category,
+    MAX(CASE WHEN type_text = 'ITEM' AND ld_text = 'Item Description' THEN vd_text ELSE NULL END) AS item_item_description_2,
+
 
     -- Extract unit price variations
     MAX(CASE WHEN type_text = 'UNIT_PRICE' THEN vd_text ELSE NULL END) AS unit_price, -- need to add formatting here showing 44-13 instrad of . 
@@ -47,6 +49,10 @@ SELECT
     MAX(CASE WHEN type_text = 'UNIT_PRICE' AND ld_text = 'Unit Price' THEN vd_text ELSE NULL END) AS unit_price_mixed,
     MAX(CASE WHEN type_text = 'UNIT_PRICE' AND ld_text = 'Gross' THEN vd_text ELSE NULL END) AS unit_gross,
     MAX(CASE WHEN type_text = 'UNIT_PRICE' AND ld_text IS NULL THEN vd_text ELSE NULL END) AS unit_price_null,
+    MAX(CASE WHEN type_text = 'UNIT_PRICE' AND ld_text = 'UNIT TAX AMOUNT' THEN vd_text ELSE NULL END) AS unit_unit_tax_amount,
+
+
+
 
 
     -- Extract total price
@@ -61,6 +67,7 @@ SELECT
             NULLIF(MAX(CASE WHEN type_text = 'PRICE' AND ld_text = 'EXTENDED PRICE' THEN vd_text ELSE NULL END), '')::NUMERIC
         ELSE NULL
     END AS price_extended,
+    MAX(CASE WHEN type_text = 'PRICE' AND ld_text = 'Extended Price' THEN vd_text ELSE NULL END) AS price_extended_price,
     MAX(CASE WHEN type_text = 'PRICE' AND ld_text IS NULL THEN vd_text ELSE NULL END) AS price_null,
 
     
@@ -104,13 +111,23 @@ SELECT
     MAX(CASE WHEN type_text = 'QUANTITY' AND ld_text = 'Case Qty' THEN vd_text ELSE NULL END) AS quantity_case_qty,
     MAX(CASE WHEN type_text = 'QUANTITY' AND ld_text = 'Cs/PK' THEN vd_text ELSE NULL END) AS quantity_cs_pk,
     MAX(CASE WHEN type_text = 'QUANTITY' AND ld_text = 'Full Cases' THEN vd_text ELSE NULL END) AS quantity_full_cases,
-    MAX(CASE WHEN type_text = 'QUANTITY' AND ld_text = 'PACK' THEN vd_text ELSE NULL END) AS quantity_pack,
+
+    -- Clean quantity_pack field by extracting the first numeric value and converting to numeric
+    MAX(CASE 
+        WHEN type_text = 'QUANTITY' AND ld_text = 'PACK' THEN 
+            NULLIF(trim(both ' ' from regexp_replace(vd_text, '[^0-9]', '', 'g')), '')::NUMERIC
+        ELSE NULL 
+    END) AS quantity_pack,
+
+
+
+
     MAX(CASE WHEN type_text = 'QUANTITY' AND ld_text = 'Qpc' THEN vd_text ELSE NULL END) AS quantity_qpc,
     MAX(CASE WHEN type_text = 'QUANTITY' AND ld_text = 'Quantity' THEN vd_text ELSE NULL END) AS quantity2, -- this field is actually just weight data from KX Seafood (so far). Consider renaming. 
-    -- Clean quantity_qty field by removing all letters and stripping whitespace
+    -- Clean quantity_qty field by removing all letters and stripping whitespace, then converting to numeric
     MAX(CASE 
         WHEN type_text = 'QUANTITY' AND ld_text = 'QTY' THEN 
-            trim(both ' ' from regexp_replace(vd_text, '[A-Za-z]', '', 'g'))
+            NULLIF(trim(both ' ' from regexp_replace(vd_text, '[A-Za-z]', '', 'g')), '')::NUMERIC
         ELSE NULL 
     END) AS quantity_qty,
     MAX(
@@ -118,8 +135,15 @@ SELECT
         WHEN type_text = 'QUANTITY' AND ld_text IS NULL THEN 
             NULLIF(regexp_replace(vd_text, '[^0-9.]', '', 'g'), '')::NUMERIC 
         ELSE NULL 
-    END
-) AS quantity_null,
+    END) AS quantity_null,
+
+    MAX(CASE WHEN type_text = 'QUANTITY' AND ld_text = 'Qty Shipped' THEN vd_text ELSE NULL END) AS qty_shipped,
+    MAX(CASE WHEN type_text = 'QUANTITY' AND ld_text = 'Quantity Shipped' THEN vd_text ELSE NULL END) AS quantity_shipped,
+    MAX(CASE WHEN type_text = 'QUANTITY' AND ld_text = 'Quantity Ordered' THEN vd_text ELSE NULL END) AS quantity_ordered,
+
+    MAX(CASE WHEN type_text = 'QUANTITY' AND ld_text = 'Size' THEN vd_text ELSE NULL END) AS quantity_size,
+    MAX(CASE WHEN type_text = 'QUANTITY' AND ld_text = 'SIZE' THEN vd_text ELSE NULL END) AS quantity_size2,
+
 
 
 
@@ -163,6 +187,8 @@ SELECT
     MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Discount' THEN vd_text ELSE NULL END) AS other_discount,
     MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Disc Rate' THEN vd_text ELSE NULL END) AS other_disc_rate,
     MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'DOY' THEN vd_text ELSE NULL END) AS other_doy, -- text field D? 
+    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Ln' THEN vd_text ELSE NULL END) AS other_ln,
+
     MAX(CASE 
         WHEN type_text = 'OTHER' AND ld_text = 'Gallons/Liters' THEN 
             NULLIF(regexp_replace(vd_text, '[^\d.]', '', 'g'), '')::NUMERIC
@@ -176,10 +202,7 @@ SELECT
             NULL 
         END
     ) AS other_pack_size,
-
-    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Ln' THEN vd_text ELSE NULL END) AS other_ln,
-
-
+    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Pack' THEN vd_text ELSE NULL END) AS other_pack, -- text field D? 
     -- Extract 'other_pack' by getting the numbers before the slash '/' in 'other_pk_size'
     CASE 
         WHEN MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'PK-Size' THEN vd_text ELSE NULL END) IS NOT NULL THEN 
@@ -196,23 +219,59 @@ SELECT
 
     MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END) AS combined_size, 
     -- Split other_size into quantity and unit
-
+    CASE 
+    WHEN MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END) IS NOT NULL THEN 
+        (
+            SELECT string_agg(m[1], ' ') 
+            FROM regexp_matches(
+                MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END), 
+                '([0-9]+/[0-9]+|[0-9]+)', 
+                'g'
+            ) AS m
+        )
+    ELSE NULL
+    END AS other_size_quantity,
     CASE 
         WHEN MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END) IS NOT NULL THEN 
-            NULLIF(regexp_replace(MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END), '[^0-9.]', '', 'g'), '')::NUMERIC
+            (
+                SELECT m[1] 
+                FROM regexp_matches(
+                    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END), 
+                    '([0-9]+)', 
+                    'g'
+                ) AS m
+                LIMIT 1
+            )::NUMERIC
         ELSE NULL
-    END AS other_size_quantity,
+    END AS other_size_quantity_numerator,
+    CASE 
+        WHEN MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END) IS NOT NULL THEN 
+            (
+                SELECT m[2] 
+                FROM regexp_matches(
+                    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END), 
+                    '([0-9]+)/([0-9]+)', 
+                    'g'
+                ) AS m
+                LIMIT 1
+            )::NUMERIC
+        ELSE NULL
+    END AS other_size_quantity_denominator,
 
+
+
+
+    
 
     CASE 
     WHEN MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END) IS NOT NULL THEN 
         CASE 
-            WHEN NULLIF(regexp_replace(MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END), '[0-9.]', '', 'g'), '') = 'L' THEN 'liters'
-            WHEN NULLIF(regexp_replace(MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END), '[0-9.]', '', 'g'), '') = 'M' THEN 'milliliters'
-            ELSE LOWER(NULLIF(regexp_replace(MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END), '[0-9.]', '', 'g'), ''))
+            WHEN NULLIF(REGEXP_REPLACE(MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END), '[^a-zA-Z]', '', 'g'), '') = 'L' THEN 'liters'
+            WHEN NULLIF(REGEXP_REPLACE(MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END), '[^a-zA-Z]', '', 'g'), '') = 'M' THEN 'milliliters'
+            ELSE LOWER(NULLIF(REGEXP_REPLACE(MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Size' THEN vd_text ELSE NULL END), '[^a-zA-Z]', '', 'g'), ''))
         END
     ELSE NULL
-END AS other_size_unit,
+    END AS other_size_unit,
 
     -- Split other_size_upper into quantity and unit
     CASE 
@@ -229,6 +288,31 @@ END AS other_size_unit,
 
     MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Tax' THEN vd_text ELSE NULL END) AS other_tax,
     MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'TAXES' THEN vd_text ELSE NULL END) AS other_taxes,
+    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'UNIT TAX AMOUNT' THEN vd_text ELSE NULL END) AS other_unit_tax_amount,
+    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Unit Tax' THEN vd_text ELSE NULL END) AS other_unit_tax, -- Good checlk .00 entries could impact other fields. 
+
+    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'UNIT NET AMOUNT' THEN vd_text ELSE NULL END) AS other_unit_net_amount, -- Unpack and Handle (done below)
+    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Unit Net' THEN vd_text ELSE NULL END) AS other_unit_net,
+
+    
+    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'UNIT PRICE' THEN vd_text ELSE NULL END) AS other_unit_price,
+
+    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Quantity Ordered' THEN vd_text ELSE NULL END) AS other_quantity_ordered,
+
+    -- Clean other_unit_weight field by removing all letters and stripping whitespace, then converting to numeric
+    MAX(CASE 
+        WHEN type_text = 'OTHER' AND ld_text = 'Unit Weight' THEN 
+            NULLIF(trim(both ' ' from regexp_replace(vd_text, '[^0-9.]', '', 'g')), '')::NUMERIC
+        ELSE NULL 
+    END) AS other_unit_weight,
+    -- Clean other_extended_weight field by removing all letters and stripping whitespace, then converting to numeric
+    MAX(CASE 
+        WHEN type_text = 'OTHER' AND ld_text = 'Extended Weight' THEN 
+            NULLIF(trim(both ' ' from regexp_replace(vd_text, '[^0-9.]', '', 'g')), '')::NUMERIC
+        ELSE NULL 
+    END) AS other_extended_weight,
+
+
     -- Extract and unpack other_unit_disc
     MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'UNIT DISC' THEN vd_text ELSE NULL END) AS other_unit_disc, -- Unpack primary, secondary
     -- Bottle discount with fallback to case_discount if initial_bottle_discount is null
@@ -266,12 +350,8 @@ END AS other_size_unit,
                 ELSE NULL
             END
     END AS case_discount,
-    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Unit Net' THEN vd_text ELSE NULL END) AS other_unit_net,
-    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'UNIT TAX AMOUNT' THEN vd_text ELSE NULL END) AS other_unit_tax_amount,
-    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'Unit Tax' THEN vd_text ELSE NULL END) AS other_unit_tax, -- Good checlk .00 entries could impact other fields. 
-
-    MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'UNIT NET AMOUNT' THEN vd_text ELSE NULL END) AS other_unit_net_amount, -- Unpack and Handle (done below)
-        -- Split other_unit_net_amount into case_net_amount and bottle_net_amount
+   
+    -- Split other_unit_net_amount into case_net_amount and bottle_net_amount
     CASE
         WHEN 
             CASE 
@@ -306,7 +386,7 @@ END AS other_size_unit,
                 ELSE NULL
             END
     END AS case_net_amount,
-       -- Extract the original other_null field
+    -- Extract the original other_null field
     MAX(CASE WHEN type_text = 'OTHER' AND ld_text IS NULL THEN vd_text ELSE NULL END) AS other_null, -- split below, keeping as reminder. 
     -- Split other_null into unit_net_amount, quantity, and unit_type
     CASE
@@ -334,8 +414,7 @@ END AS other_size_unit,
     ) FILTER (WHERE type_text = 'OTHER' AND vd_text IS NOT NULL) AS other_details,
     
     -- Retain expense row information, if available
-    MAX(
-    CASE WHEN type_text = 'EXPENSE_ROW' THEN initcap(vd_text) ELSE NULL END) AS expense_row,
+    MAX(CASE WHEN type_text = 'EXPENSE_ROW' THEN initcap(vd_text) ELSE NULL END) AS expense_row,
 
     -- Extract the second number after the '/' in the item_null field
 CASE

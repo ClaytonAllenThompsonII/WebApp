@@ -5,7 +5,7 @@ WITH ranked_vendors AS (
     -- Partition by vendor_name and vendor_phone to rank rows for each vendor, ordering by upload_date in descending order
     SELECT 
         *,
-        ROW_NUMBER() OVER (PARTITION BY vendor_name, vendor_phone ORDER BY upload_date DESC) AS rn
+        ROW_NUMBER() OVER (PARTITION BY vendor_name, account_number ORDER BY upload_date DESC) AS rn
     FROM 
         for_vendor
 )

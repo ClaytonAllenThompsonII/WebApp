@@ -16,6 +16,7 @@ SELECT
     upload_date,
     invoice_receipt_id,
     expense_document_index,
+    
     line_item_index,
     product_code,
     brand,

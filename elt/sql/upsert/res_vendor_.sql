@@ -51,7 +51,7 @@ FROM
 
 -- On conflict (i.e., if a record with the same vendor_name and vendor_phone already exists)
 -- Update the existing record with the new data
-ON CONFLICT (vendor_name, vendor_phone) 
+ON CONFLICT (vendor_name, account_number) -- tough to match on vendor_phone... need to make sure these fields are rock solid. 
 DO UPDATE SET
     most_recent_in_invoice_processing_id = EXCLUDED.most_recent_in_invoice_processing_id,  -- Update to the most recent invoice processing ID
     most_recent_s3_object_key = EXCLUDED.most_recent_s3_object_key,                        -- Update to the most recent S3 object key

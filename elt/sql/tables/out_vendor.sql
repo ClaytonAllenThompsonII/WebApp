@@ -21,5 +21,5 @@ CREATE TABLE out_vendor (
     remit_to_address_block TEXT,                             -- Remit-to address block
     inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,-- Timestamp when the record is inserted into this table
     batched_at TIMESTAMP,                           -- Timestamp when the record is batched into the application database
-    UNIQUE (vendor_name, vendor_phone)                       -- Ensure unique vendor records based on name and phone
+    UNIQUE (vendor_name, account_number)                       -- Ensure unique vendor records based on name and account_number
 );

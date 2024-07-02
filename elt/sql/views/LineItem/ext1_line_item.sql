@@ -2,7 +2,14 @@ CREATE OR REPLACE VIEW ext1_line_item AS
 WITH preferred_invoice_id AS (
     SELECT 
         inp.id AS in_invoice_processing_id,
-        MAX(CASE WHEN summary_field -> 'Type' ->> 'Text' = 'INVOICE_RECEIPT_ID' THEN summary_field -> 'ValueDetection' ->> 'Text' END) AS invoice_receipt_id
+        COALESCE(
+            MAX(CASE WHEN summary_field -> 'Type' ->> 'Text' = 'INVOICE_RECEIPT_ID' AND summary_field -> 'LabelDetection' ->> 'Text' = 'Invoice #' THEN summary_field -> 'ValueDetection' ->> 'Text' END),
+            MAX(CASE WHEN summary_field -> 'Type' ->> 'Text' = 'INVOICE_RECEIPT_ID' AND summary_field -> 'LabelDetection' ->> 'Text' = 'INVOICE' THEN summary_field -> 'ValueDetection' ->> 'Text' END),
+            MAX(CASE WHEN summary_field -> 'Type' ->> 'Text' = 'INVOICE_RECEIPT_ID' AND summary_field -> 'LabelDetection' ->> 'Text' = 'Invoice Number:' THEN summary_field -> 'ValueDetection' ->> 'Text' END),
+            MAX(CASE WHEN summary_field -> 'Type' ->> 'Text' = 'INVOICE_RECEIPT_ID' AND summary_field -> 'LabelDetection' ->> 'Text' = 'INVOICE NUMBER' THEN summary_field -> 'ValueDetection' ->> 'Text' END),
+            MAX(CASE WHEN summary_field -> 'Type' ->> 'Text' = 'INVOICE_RECEIPT_ID' AND summary_field -> 'LabelDetection' ->> 'Text' = 'Invoice No.' THEN summary_field -> 'ValueDetection' ->> 'Text' END),
+            MAX(CASE WHEN summary_field -> 'Type' ->> 'Text' = 'INVOICE_RECEIPT_ID' AND summary_field -> 'LabelDetection' ->> 'Text' IS NULL THEN summary_field -> 'ValueDetection' ->> 'Text' END)
+        ) AS invoice_receipt_id
     FROM 
         in_invoice_processing inp
     JOIN LATERAL

@@ -1,4 +1,4 @@
--- Step 1: Create the line_item table with an invoice_id column
+-- Step 1: Create the out_line_item table with an invoice_id column
 CREATE TABLE out_line_item (
     line_item_id SERIAL PRIMARY KEY, -- Primary key
     in_invoice_processing_id INT,
@@ -8,6 +8,7 @@ CREATE TABLE out_line_item (
     invoice_receipt_id TEXT,
     expense_document_index INT,
     line_item_index INT,
+    product_id INT, -- Foreign key to the out_product table
     product_code TEXT,
     brand TEXT,
     item_description TEXT,
@@ -23,5 +24,6 @@ CREATE TABLE out_line_item (
     unit TEXT,
     weight NUMERIC,
     expense_row TEXT,
-    CONSTRAINT fk_invoice FOREIGN KEY (invoice_id) REFERENCES out_invoice(invoice_id) -- Foreign key constraint
+    CONSTRAINT fk_invoice FOREIGN KEY (invoice_id) REFERENCES out_invoice(invoice_id) ON DELETE CASCADE ON UPDATE CASCADE, -- Foreign key constraint
+    CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES out_product(product_id) ON DELETE CASCADE ON UPDATE CASCADE -- Foreign key constraint
 );

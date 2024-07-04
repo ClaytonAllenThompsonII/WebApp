@@ -8,28 +8,47 @@
 
 {% block content %}
 <div class="container2">
-    <!-- Invoice Table Section -->
+    <!-- Sorting Controls -->
+    <section class="sorting-controls">
+        <form method="get" action="{% url 'invoice_repo' %}">
+            <label for="sort_by">Sort by:</label>
+            <select name="sort_by" id="sort_by">
+                <option value="vendor_name" {% if request.GET.sort_by == 'vendor_name' %}selected{% endif %}>Vendor</option>
+                <option value="invoice_number" {% if request.GET.sort_by == 'invoice_number' %}selected{% endif %}>Invoice Number</option>
+                <option value="invoice_receipt_date" {% if request.GET.sort_by == 'invoice_receipt_date' %}selected{% endif %}>Invoice Date</option>
+                <option value="total" {% if request.GET.sort_by == 'total' %}selected{% endif %}>Amount Payable</option>
+                <option value="upload_date" {% if request.GET.sort_by == 'upload_date' %}selected{% endif %}>Upload Date</option>
+            </select>
+            <select name="order" id="order">
+                <option value="asc" {% if request.GET.order == 'asc' %}selected{% endif %}>Ascending</option>
+                <option value="desc" {% if request.GET.order == 'desc' %}selected{% endif %}>Descending</option>
+            </select>
+            <button type="submit">Sort</button>
+        </form>
+    </section>
+
+    <!-- New Table Section -->
     <section class="invoice-table">
-        <h2>Invoices</h2>
+        <h2>Invoice Details</h2>
         <!-- Table -->
-        <table class="table-hover" id="invoiceTable">
+        <table class="table-hover" id="invoiceDetailsTable">
             <thead>
                 <tr>
-                    <th scope="col">Invoice Upload ID</th> 
+                    <th scope="col">Vendor</th>
                     <th scope="col">Invoice Number</th>
-                    <th scope="col">Uploaded By</th>
-                    <th scope="col">Original Filename</th>
+                    <th scope="col">Invoice Date</th>
+                    <th scope="col">Amount Payable</th>
                     <th scope="col">Upload Date</th>
                 </tr>
             </thead>
             <tbody>
                 {% for invoice in invoices %}
                 <tr>
-                    <td>{{ invoice.id }}</td>
+                    <td>{{ invoice.vendor_name }}</td>
                     <td>{{ invoice.invoice_number }}</td>
-                    <td>{{ invoice.user.username }}</td>
-                    <td>{{ invoice.filename }}</td>
-                    <td>{{ invoice.uploaded_at }}</td>
+                    <td>{{ invoice.invoice_receipt_date }}</td>
+                    <td>{{ invoice.total }}</td>
+                    <td>{{ invoice.upload_date }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

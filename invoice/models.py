@@ -26,4 +26,22 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"Invoice {self.filename} uploaded by {self.user.username} at {self.uploaded_at}"
+
+class ProcessedInvoice(models.Model):
+    invoice_id = models.IntegerField(primary_key=True)
+    in_invoice_processing_id = models.IntegerField()
+    s3_object_key = models.CharField(max_length=255)
+    upload_date = models.DateTimeField()
+    account_number = models.CharField(max_length=255)
+    vendor_name = models.CharField(max_length=255)
+    due_date = models.DateField(null=True, blank=True) # allow null values for now
+    delivery_date = models.DateField(null=True, blank=True) # allow NULL values if needed
+    invoice_receipt_date = models.DateField()
+    invoice_number = models.CharField(max_length=255, unique=True)
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    vendor_id = models.IntegerField()
+    inserted_at = models.DateTimeField(auto_now_add=True)
+    batched_at = models.DateTimeField(null=True, blank=True)
     
+    class Meta:
+        db_table = 'out_invoice_processed'  # The actual table name in your PostgreSQL application db

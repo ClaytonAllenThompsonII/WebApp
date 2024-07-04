@@ -9,7 +9,7 @@ from .forms import InvoiceForm
 from .s3_storage_backend import S3StorageBackend
 from botocore.exceptions import BotoCoreError, ClientError
 
-from .models import Invoice
+from .models import Invoice, ProcessedInvoice
 
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,18 @@ def upload_invoice(request):
 
 @login_required(login_url='loginPage')
 def invoice_repo(request):
-    """Displays a list of invoices in a table."""
-    invoices = Invoice.objects.all().order_by('-uploaded_at')  # Fetch all invoices, ordered by uploaded_at
-    context = {'invoices': invoices}
+    """Displays a list of processed invoices in a table with sorting options."""
+    sort_by = request.GET.get('sort_by', 'invoice_receipt_date')  # Default sorting by upload date
+    order = request.GET.get('order', 'desc')  # Default to descending order
+
+    if order == 'asc':
+        invoices = ProcessedInvoice.objects.all().order_by(sort_by)
+    else:
+        invoices = ProcessedInvoice.objects.all().order_by('-' + sort_by)
+
+    context = {
+        'invoices': invoices,
+        'sort_by': sort_by,
+        'order': order,
+    }
     return render(request, 'invoice/invoice_repo.html', context)

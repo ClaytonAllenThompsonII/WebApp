@@ -29,5 +29,7 @@ APP_NAME = 'invoice' # Invoice App namespace
 urlpatterns = [
     path('upload/', views.upload_invoice, name='upload_invoice'),
     path('repo/', views.invoice_repo, name='invoice_repo'),  # Add this line for Invoice Repo
+    path('line-items/', views.line_items_repo, name='line_items_repo'),  # Add this line
+
     # Add other URL patterns as needed
 ]

@@ -1,0 +1,73 @@
+{% extends 'users/main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'invoice/invoice_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container2">
+    <!-- Sorting Controls -->
+    <section class="sorting-controls">
+        <form method="get" action="{% url 'line_items_repo' %}">
+            <label for="sort_by">Sort by:</label>
+            <select name="sort_by" id="sort_by">
+                <option value="invoice_id" {% if request.GET.sort_by == 'invoice_id' %}selected{% endif %}>Invoice ID</option>
+                <option value="product_code" {% if request.GET.sort_by == 'product_code' %}selected{% endif %}>Product Code</option>
+                <option value="item_description" {% if request.GET.sort_by == 'item_description' %}selected{% endif %}>Description</option>
+            </select>
+            <select name="order" id="order">
+                <option value="asc" {% if request.GET.order == 'asc' %}selected{% endif %}>Ascending</option>
+                <option value="desc" {% if request.GET.order == 'desc' %}selected{% endif %}>Descending</option>
+            </select>
+            <button type="submit">Sort</button>
+        </form>
+    </section>
+
+    <!-- Line Items Table Section -->
+    <section class="invoice-table">
+        <h2>Line Items</h2>
+        <!-- Table -->
+        <table class="table-hover" id="lineItemsTable">
+            <thead>
+                <tr>
+                    <th scope="col">Invoice Receipt ID</th>
+                    <th scope="col">Product ID</th>
+                    <th scope="col">Product Code</th>
+                    <th scope="col">Brand</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Unit Price</th>
+                    <th scope="col">Net Amount</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Unit of Measure</th>
+                    <th scope="col">Pack</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Unit</th>
+                    <th scope="col">Weight</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for line_item in line_items %}
+                <tr>
+                    <td>{{ line_item.invoice_receipt_id }}</td>
+                    <td>{{ line_item.product_id }}</td>
+                    <td>{{ line_item.product_code }}</td>
+                    <td>{{ line_item.brand }}</td>
+                    <td>{{ line_item.item_description }}</td>
+                    <td>{{ line_item.unit_price }}</td>
+                    <td>{{ line_item.net_amount }}</td>
+                    <td>{{ line_item.quantity }}</td>
+                    <td>{{ line_item.price }}</td>
+                    <td>{{ line_item.unit_of_measure }}</td>
+                    <td>{{ line_item.pack }}</td>
+                    <td>{{ line_item.size }}</td>
+                    <td>{{ line_item.unit }}</td>
+                    <td>{{ line_item.weight }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+{% endblock %}

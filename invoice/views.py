@@ -9,7 +9,7 @@ from .forms import InvoiceForm
 from .s3_storage_backend import S3StorageBackend
 from botocore.exceptions import BotoCoreError, ClientError
 
-from .models import Invoice, ProcessedInvoice
+from .models import Invoice, ProcessedInvoice, ProcessedLineItem
 
 
 logger = logging.getLogger(__name__)
@@ -93,3 +93,19 @@ def invoice_repo(request):
         'order': order,
     }
     return render(request, 'invoice/invoice_repo.html', context)
+
+
+
+@login_required(login_url='loginPage')
+def line_items_repo(request):
+    sort_by = request.GET.get('sort_by', 'invoice_id')
+    order = request.GET.get('order', 'asc')
+
+    if order == 'desc':
+        sort_by = f'-{sort_by}'
+
+    line_items = ProcessedLineItem.objects.all().order_by(sort_by)
+    context = {
+        'line_items': line_items,
+    }
+    return render(request, 'invoice/invoice_line_item_list.html', context)

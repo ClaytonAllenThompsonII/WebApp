@@ -22,5 +22,5 @@ CREATE TABLE out_invoice_processed (
 -- local testing using pg admin
 psql -h localhost -U your_username -d your_database -c 
 
-\copy out_invoice_processed(invoice_id, in_invoice_processing_id, s3_object_key, upload_date, account_number, vendor_name, due_date, delivery_date, invoice_receipt_date, invoice_number, total, vendor_id, inserted_at, batched_at) 
-FROM 'out_invoice.csv' DELIMITER ',' CSV HEADER NULL 'NULL';
+\copy out_line_item_processed(line_item_id, in_invoice_processing_id, s3_object_key, upload_date, invoice_id, invoice_receipt_id, expense_document_index, line_item_index, product_id, product_code, brand, item_description, unit_price, net_amount, taxes, discount, quantity, price, unit_of_measure, pack, size, unit, weight, expense_row) 
+FROM '/Users/claytonthompson/Desktop/out_line_item.csv' DELIMITER ',' CSV HEADER NULL AS 'NULL';

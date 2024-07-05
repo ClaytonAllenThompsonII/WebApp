@@ -45,3 +45,35 @@ class ProcessedInvoice(models.Model):
     
     class Meta:
         db_table = 'out_invoice_processed'  # The actual table name in your PostgreSQL application db
+
+
+
+
+class ProcessedLineItem(models.Model):
+    line_item_id = models.IntegerField(null=True, blank=True)  # Add this line
+    in_invoice_processing_id = models.IntegerField(null=True, blank=True)
+    s3_object_key = models.TextField(null=True, blank=True)
+    upload_date = models.DateTimeField(null=True, blank=True)
+    invoice_id = models.IntegerField(null=True, blank=True)
+    invoice_receipt_id = models.TextField(null=True, blank=True)
+    expense_document_index = models.IntegerField(null=True, blank=True)
+    line_item_index = models.IntegerField(null=True, blank=True)
+    product_id = models.IntegerField(null=True, blank=True)
+    product_code = models.TextField(null=True, blank=True)
+    brand = models.TextField(null=True, blank=True)
+    item_description = models.TextField(null=True, blank=True)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    net_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    taxes = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    unit_of_measure = models.TextField(null=True, blank=True)
+    pack = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    size = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    unit = models.TextField(null=True, blank=True)
+    weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    expense_row = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'out_line_item_processed'

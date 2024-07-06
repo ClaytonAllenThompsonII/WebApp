@@ -1,0 +1,198 @@
+{% extends 'users/main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'invoice/invoice_list.css' %}">
+<style>
+    .container2 {
+        display: flex;
+        flex-direction: column;
+        max-width: 1200px;
+        margin: auto;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+        text-align: center;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #333;
+        margin-bottom: 20px;
+    }
+    .form-section {
+        margin-bottom: 20px;
+        overflow-y: auto;
+        max-height: 60vh; /* Adjust based on your requirements */
+    }
+    .reference-fields, .editable-fields {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .reference-fields .field, .editable-fields .field {
+        flex: 1 1 45%;
+    }
+    .field label {
+        font-weight: bold;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #555;
+        display: block;
+        margin-bottom: 5px;
+    }
+    .field .value {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #333;
+        background-color: #e9ecef;
+        padding: 8px;
+        border-radius: 4px;
+    }
+    form input, form select, form textarea {
+        padding: 5px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    form textarea {
+        resize: vertical;
+        min-height: 30px;
+    }
+    form button {
+        padding: 10px 20px;
+        font-size: 16px;
+        color: white;
+        background-color: #007BFF;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+    form button:hover {
+        background-color: #0056b3;
+    }
+    .pdf-viewer {
+        height: 80vh; /* Adjust based on your requirements */
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .pdf-viewer iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container2">
+    <h2>Edit Line Item {{ line_item.line_item_id }}</h2>
+    <div class="form-section">
+        <div class="reference-fields">
+            <div class="field">
+                <label>Line Item ID</label>
+                <div class="value">{{ line_item.line_item_id }}</div>
+            </div>
+            <div class="field">
+                <label>Invoice Processing ID</label>
+                <div class="value">{{ line_item.in_invoice_processing_id }}</div>
+            </div>
+            <div class="field">
+                <label>S3 Object Key</label>
+                <div class="value">{{ line_item.s3_object_key }}</div>
+            </div>
+            <div class="field">
+                <label>Upload Date</label>
+                <div class="value">{{ line_item.upload_date }}</div>
+            </div>
+            <div class="field">
+                <label>Invoice ID</label>
+                <div class="value">{{ line_item.invoice_id }}</div>
+            </div>
+            <div class="field">
+                <label>Invoice Receipt ID</label>
+                <div class="value">{{ line_item.invoice_receipt_id }}</div>
+            </div>
+            <div class="field">
+                <label>Expense Document Index</label>
+                <div class="value">{{ line_item.expense_document_index }}</div>
+            </div>
+            <div class="field">
+                <label>Line Item Index</label>
+                <div class="value">{{ line_item.line_item_index }}</div>
+            </div>
+            <div class="field">
+                <label>Product ID</label>
+                <div class="value">{{ line_item.product_id }}</div>
+            </div>
+            <div class="field">
+                <label>Product Code</label>
+                <div class="value">{{ line_item.product_code }}</div>
+            </div>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="editable-fields">
+                <div class="field">
+                    <label for="brand">Brand</label>
+                    {{ form.brand }}
+                </div>
+                <div class="field">
+                    <label for="item_description">Description</label>
+                    {{ form.item_description }}
+                </div>
+                <div class="field">
+                    <label for="unit_price">Unit Price</label>
+                    {{ form.unit_price }}
+                </div>
+                <div class="field">
+                    <label for="net_amount">Net Amount</label>
+                    {{ form.net_amount }}
+                </div>
+                <div class="field">
+                    <label for="taxes">Taxes</label>
+                    {{ form.taxes }}
+                </div>
+                <div class="field">
+                    <label for="discount">Discount</label>
+                    {{ form.discount }}
+                </div>
+                <div class="field">
+                    <label for="quantity">Quantity</label>
+                    {{ form.quantity }}
+                </div>
+                <div class="field">
+                    <label for="price">Price</label>
+                    {{ form.price }}
+                </div>
+                <div class="field">
+                    <label for="unit_of_measure">Unit of Measure</label>
+                    {{ form.unit_of_measure }}
+                </div>
+                <div class="field">
+                    <label for="pack">Pack</label>
+                    {{ form.pack }}
+                </div>
+                <div class="field">
+                    <label for="size">Size</label>
+                    {{ form.size }}
+                </div>
+                <div class="field">
+                    <label for="unit">Unit</label>
+                    {{ form.unit }}
+                </div>
+                <div class="field">
+                    <label for="weight">Weight</label>
+                    {{ form.weight }}
+                </div>
+            </div>
+            <button type="submit">Save</button>
+        </form>
+    </div>
+    <div class="pdf-viewer">
+        <iframe src="{{ presigned_url }}" type="application/pdf"></iframe>
+    </div>
+</div>
+{% endblock %}

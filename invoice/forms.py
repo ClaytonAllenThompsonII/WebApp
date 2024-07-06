@@ -6,7 +6,8 @@ uploading invoice PDF files.
 
 """
 from django import forms
-from .models import Invoice
+from .models import Invoice, ProcessedLineItem
+from inventory.models import GLLevel1, GLLevel2, GLLevel3
 
 class InvoiceForm(forms.ModelForm):
     """ Form class for uploading invoice PDF files.
@@ -21,3 +22,10 @@ class InvoiceForm(forms.ModelForm):
         fields (list): The fields to include in the form. """
         model = Invoice # Specifies the model associated with the form
         fields = ['pdf_file'] # Fields to include in the form
+
+
+
+class ProcessedLineItemForm(forms.ModelForm):
+    class Meta:
+        model = ProcessedLineItem
+        fields = ['upload_date', 'product_code', 'brand', 'item_description', 'unit_price', 'net_amount', 'taxes', 'discount', 'quantity', 'price', 'unit_of_measure', 'pack', 'size', 'unit', 'weight']

@@ -1,0 +1,54 @@
+{% extends 'users/main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'invoice/invoice_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container2">
+    <h2>Line Items for Invoice 🧾 {{ invoice.invoice_number }}</h2>
+    <table class="table-hover" id="lineItemsTable">
+        <thead>
+            <tr>
+                <th scope="col">Line Item ID</th>
+                <th scope="col">Invoice Receipt ID</th>
+                <th scope="col">Product ID</th>
+                <th scope="col">Product Code</th>
+                <th scope="col">Brand</th>
+                <th scope="col">Description</th>
+                <th scope="col">Unit Price</th>
+                <th scope="col">Net Amount</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Price</th>
+                <th scope="col">Unit of Measure</th>
+                <th scope="col">Pack</th>
+                <th scope="col">Size</th>
+                <th scope="col">Unit</th>
+                <th scope="col">Weight</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line_item in line_items %}
+            <tr>
+                <td><a href="{% url 'edit_line_item' line_item.line_item_id %}">{{ line_item.line_item_id }}</a></td>
+                <td>{{ line_item.invoice_receipt_id }}</td>
+                <td>{{ line_item.product_id }}</td>
+                <td>{{ line_item.product_code }}</td>
+                <td>{{ line_item.brand }}</td>
+                <td>{{ line_item.item_description }}</td>
+                <td>{{ line_item.unit_price }}</td>
+                <td>{{ line_item.net_amount }}</td>
+                <td>{{ line_item.quantity }}</td>
+                <td>{{ line_item.price }}</td>
+                <td>{{ line_item.unit_of_measure }}</td>
+                <td>{{ line_item.pack }}</td>
+                <td>{{ line_item.size }}</td>
+                <td>{{ line_item.unit }}</td>
+                <td>{{ line_item.weight }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

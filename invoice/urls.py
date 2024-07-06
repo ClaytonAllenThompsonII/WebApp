@@ -30,6 +30,7 @@ urlpatterns = [
     path('upload/', views.upload_invoice, name='upload_invoice'),
     path('repo/', views.invoice_repo, name='invoice_repo'),  # Add this line for Invoice Repo
     path('line-items/', views.line_items_repo, name='line_items_repo'),  # Add this line
-
+    path('line-items/<int:invoice_id>/', views.line_items_by_invoice, name='line_items_by_invoice'),  # New path
+    path('edit-line-item/<int:line_item_id>/', views.edit_line_item, name='edit_line_item'),  # New path
     # Add other URL patterns as needed
 ]

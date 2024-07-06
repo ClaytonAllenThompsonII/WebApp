@@ -52,4 +52,20 @@ class S3StorageBackend:
         except Exception as e:
             logger.error(f"Error uploading invoice file to S3: {e}")
             raise e
-        
+
+    def generate_presigned_url(self, s3_key):
+        """Generate a pre-signed URL for accessing the S3 object."""
+        # Replace 'Folder-B' with 'Folder-C' and remove the '.json' extension
+        s3_key = s3_key.replace('Folder-B', 'Folder-C').replace('.json', '')
+
+        try:
+            response = self.s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': self.bucket_name, 'Key': s3_key},
+                ExpiresIn=3600,
+                HttpMethod='GET'
+            )
+            return response
+        except Exception as e:
+            logger.error(f"Error generating pre-signed URL: {e}")
+            return None

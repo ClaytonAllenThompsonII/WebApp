@@ -2,7 +2,7 @@
 import logging
 from django.db import IntegrityError, DatabaseError
 from django.utils import timezone
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import InvoiceForm
@@ -10,6 +10,7 @@ from .s3_storage_backend import S3StorageBackend
 from botocore.exceptions import BotoCoreError, ClientError
 
 from .models import Invoice, ProcessedInvoice, ProcessedLineItem
+from .forms import ProcessedLineItemForm
 
 
 logger = logging.getLogger(__name__)
@@ -109,3 +110,40 @@ def line_items_repo(request):
         'line_items': line_items,
     }
     return render(request, 'invoice/invoice_line_item_list.html', context)
+
+
+
+@login_required(login_url='loginPage')
+def line_items_by_invoice(request, invoice_id):
+    invoice = get_object_or_404(ProcessedInvoice, pk=invoice_id)
+    line_items = ProcessedLineItem.objects.filter(invoice_id=invoice_id).order_by('expense_document_index', 'line_item_index')
+    context = {
+        'invoice': invoice,
+        'line_items': line_items,
+    }
+    return render(request, 'invoice/line_items_by_invoice.html', context)
+
+
+@login_required(login_url='loginPage')
+def edit_line_item(request, line_item_id):
+    line_item = get_object_or_404(ProcessedLineItem, line_item_id=line_item_id)
+    
+    # Initialize the S3 storage backend
+    s3_backend = S3StorageBackend()
+    # Generate the pre-signed URL
+    s3_url = s3_backend.generate_presigned_url(line_item.s3_object_key)
+    
+    if request.method == 'POST':
+        form = ProcessedLineItemForm(request.POST, instance=line_item)
+        if form.is_valid():
+            form.save()
+            return redirect('line_items_by_invoice', invoice_id=line_item.invoice_id)
+    else:
+        form = ProcessedLineItemForm(instance=line_item)
+    
+    context = {
+        'line_item': line_item,
+        'form': form,
+        's3_url': s3_url,
+    }
+    return render(request, 'invoice/edit_line_item.html', context)

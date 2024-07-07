@@ -47,7 +47,6 @@ class S3StorageBackend:
             # Upload the file to S3
             self.s3_client.upload_fileobj(file, self.bucket_name, s3_key)
             logger.info(f"Invoice file '{filename}' uploaded to S3 successfully.")
-
             return filename
         except Exception as e:
             logger.error(f"Error uploading invoice file to S3: {e}")
@@ -61,7 +60,7 @@ class S3StorageBackend:
         try:
             response = self.s3_client.generate_presigned_url(
                 'get_object',
-                Params={'Bucket': self.bucket_name, 'Key': s3_key},
+                Params={'Bucket': self.bucket_name, 'Key': s3_key, 'ResponseContentDisposition': 'inline', 'ResponseContentType': 'application/pdf'},  # Ensure Content-Type is set to PDF},  # Set Content-Disposition header to inline
                 ExpiresIn=3600,
                 HttpMethod='GET'
             )

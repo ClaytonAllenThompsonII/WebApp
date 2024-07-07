@@ -7,7 +7,8 @@ from django.contrib import messages
 from .forms import CreateUserForm, UserProfileForm
 
 from .models import Group, Profile
-
+from django.db.models import Sum, Count
+from invoice.models import ProcessedInvoice  # Import the correct model
 
 
 
@@ -15,7 +16,14 @@ from .models import Group, Profile
 
 @login_required(login_url='loginPage')
 def home(request):
-    return render(request, 'users/dashboard.html')
+    total_invoices = ProcessedInvoice.objects.aggregate(total_amount=Sum('total'))['total_amount'] or 0
+    invoice_count = ProcessedInvoice.objects.aggregate(count=Count('invoice_id'))['count'] or 0
+    context = {
+        'total_invoices': total_invoices,
+        'invoice_count': invoice_count,
+    }
+    return render(request, 'users/dashboard.html', context)
+
 
 @login_required(login_url='loginPage')
 def invoices(request):

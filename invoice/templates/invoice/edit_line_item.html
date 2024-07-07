@@ -2,64 +2,129 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'invoice/invoice_list.css' %}">
 <style>
     .container2 {
         display: flex;
-        flex-direction: column;
-        max-width: 1200px;
-        margin: auto;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 20px;
         padding: 20px;
-        background: #f9f9f9;
+        height: 100vh; /* Make the container take up the full viewport height */
+    }
+
+    .left-column {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        max-height: 100%; /* Use full height of the container */
+    }
+
+    .static-section {
+        margin-bottom: 20px; /* Add space between sections */
+    }
+
+    .pdf-viewer {
+        flex: 1;
+        height: 70%; /* Increase height for better viewing */
+        border: 1px solid #ddd;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
     }
-    h2 {
-        text-align: center;
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        color: #333;
-        margin-bottom: 20px;
-    }
+
     .form-section {
-        margin-bottom: 20px;
+        flex: 1;
         overflow-y: auto;
-        max-height: 60vh; /* Adjust based on your requirements */
+        max-height: 100%; /* Use full height of the container */
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9; /* Light background for contrast */
     }
+
     .reference-fields, .editable-fields {
         display: flex;
         flex-wrap: wrap;
         gap: 15px;
     }
+
     .reference-fields .field, .editable-fields .field {
-        flex: 1 1 45%;
+        flex: 1 1 30%; /* Adjust to make three columns */
     }
+
     .field label {
         font-weight: bold;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         color: #555;
         display: block;
-        margin-bottom: 5px;
+        margin-bottom: 3px;
+        font-size: 12px; /* Smaller font size for better readability */
     }
+
     .field .value {
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         color: #333;
         background-color: #e9ecef;
-        padding: 8px;
-        border-radius: 4px;
-    }
-    form input, form select, form textarea {
         padding: 5px;
+        border-radius: 4px;
+        font-size: 12px; /* Smaller font size for better readability */
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    form .editable-fields {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    form .field {
+        flex: 1 1 48%; /* Adjust to make two columns */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #333;
+        width: 100%; /* Ensure titles take up full width */
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px; /* Add space between title and fields */
+    }
+
+    form .field label {
+        font-weight: bold;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #555;
+        margin-bottom: 5px;
+        font-size: 12px;
+    }
+
+    form input, form select, form textarea {
+        padding: 10px;
         font-size: 14px;
         border: 1px solid #ddd;
         border-radius: 4px;
         width: 100%;
         box-sizing: border-box;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
+
     form textarea {
         resize: vertical;
         min-height: 30px;
+        max-height: 50px; /* Set a maximum height */
     }
+
     form button {
+        align-self: flex-end;
         padding: 10px 20px;
         font-size: 16px;
         color: white;
@@ -69,130 +134,213 @@
         cursor: pointer;
         margin-top: 20px;
     }
+
     form button:hover {
         background-color: #0056b3;
     }
-    .pdf-viewer {
-        height: 80vh; /* Adjust based on your requirements */
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden;
+
+    .enhancements-section {
+        margin-top: 20px; /* Add space above the new section */
     }
-    .pdf-viewer iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
+
+    .enhancements-section .field {
+        flex: 1 1 100%; /* Full width fields */
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container2">
-    <h2>Edit Line Item {{ line_item.line_item_id }}</h2>
-    <div class="form-section">
-        <div class="reference-fields">
-            <div class="field">
-                <label>Line Item ID</label>
-                <div class="value">{{ line_item.line_item_id }}</div>
-            </div>
-            <div class="field">
-                <label>Invoice Processing ID</label>
-                <div class="value">{{ line_item.in_invoice_processing_id }}</div>
-            </div>
-            <div class="field">
-                <label>S3 Object Key</label>
-                <div class="value">{{ line_item.s3_object_key }}</div>
-            </div>
-            <div class="field">
-                <label>Upload Date</label>
-                <div class="value">{{ line_item.upload_date }}</div>
-            </div>
-            <div class="field">
-                <label>Invoice ID</label>
-                <div class="value">{{ line_item.invoice_id }}</div>
-            </div>
-            <div class="field">
-                <label>Invoice Receipt ID</label>
-                <div class="value">{{ line_item.invoice_receipt_id }}</div>
-            </div>
-            <div class="field">
-                <label>Expense Document Index</label>
-                <div class="value">{{ line_item.expense_document_index }}</div>
-            </div>
-            <div class="field">
-                <label>Line Item Index</label>
-                <div class="value">{{ line_item.line_item_index }}</div>
-            </div>
-            <div class="field">
-                <label>Product ID</label>
-                <div class="value">{{ line_item.product_id }}</div>
-            </div>
-            <div class="field">
-                <label>Product Code</label>
-                <div class="value">{{ line_item.product_code }}</div>
+    <div class="left-column">
+        <div class="static-section">
+            <h2>Line Item Details</h2>
+            <div class="reference-fields">
+                <div class="field">
+                    <label>Line Item ID</label>
+                    <div class="value">{{ line_item.line_item_id }}</div>
+                </div>
+                <div class="field">
+                    <label>Invoice Processing ID</label>
+                    <div class="value">{{ line_item.in_invoice_processing_id }}</div>
+                </div>
+                <div class="field">
+                    <label>Upload Date</label>
+                    <div class="value">{{ line_item.upload_date }}</div>
+                </div>
+                <div class="field">
+                    <label>Invoice ID</label>
+                    <div class="value">{{ line_item.invoice_id }}</div>
+                </div>
+                <div class="field">
+                    <label>Invoice Receipt ID</label>
+                    <div class="value">{{ line_item.invoice_receipt_id }}</div>
+                </div>
+                <div class="field">
+                    <label>Expense Document Index</label>
+                    <div class="value">{{ line_item.expense_document_index }}</div>
+                </div>
+                <div class="field">
+                    <label>Line Item Index</label>
+                    <div class="value">{{ line_item.line_item_index }}</div>
+                </div>
+                <div class="field">
+                    <label>Product ID</label>
+                    <div class="value">{{ line_item.product_id }}</div>
+                </div>
+                <div class="field">
+                    <label>Product Code</label>
+                    <div class="value">{{ line_item.product_code }}</div>
+                </div>
             </div>
         </div>
+        <div class="pdf-viewer">
+            <iframe src="{{ s3_url }}" type="application/pdf" width="100%" height="100%"></iframe>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h2>Edit Line Item</h2>
         <form method="post">
             {% csrf_token %}
             <div class="editable-fields">
+                <div class="section-title">Product Details</div>
                 <div class="field">
-                    <label for="brand">Brand</label>
-                    {{ form.brand }}
-                </div>
-                <div class="field">
-                    <label for="item_description">Description</label>
+                    <label>{{ form.item_description.label }}</label>
                     {{ form.item_description }}
                 </div>
                 <div class="field">
-                    <label for="unit_price">Unit Price</label>
+                    <label>{{ form.brand.label }}</label>
+                    {{ form.brand }}
+                </div>
+                
+                <div class="section-title">Pricing</div>
+                <div class="field">
+                    <label>{{ form.unit_price.label }}</label>
                     {{ form.unit_price }}
                 </div>
                 <div class="field">
-                    <label for="net_amount">Net Amount</label>
+                    <label>{{ form.net_amount.label }}</label>
                     {{ form.net_amount }}
                 </div>
                 <div class="field">
-                    <label for="taxes">Taxes</label>
+                    <label>{{ form.taxes.label }}</label>
                     {{ form.taxes }}
                 </div>
                 <div class="field">
-                    <label for="discount">Discount</label>
+                    <label>{{ form.discount.label }}</label>
                     {{ form.discount }}
                 </div>
                 <div class="field">
-                    <label for="quantity">Quantity</label>
+                    <label>{{ form.quantity.label }}</label>
                     {{ form.quantity }}
                 </div>
                 <div class="field">
-                    <label for="price">Price</label>
+                    <label>{{ form.price.label }}</label>
                     {{ form.price }}
                 </div>
+
+                <div class="section-title">Unit Economics</div>
                 <div class="field">
-                    <label for="unit_of_measure">Unit of Measure</label>
+                    <label>{{ form.unit_of_measure.label }}</label>
                     {{ form.unit_of_measure }}
                 </div>
                 <div class="field">
-                    <label for="pack">Pack</label>
+                    <label>{{ form.pack.label }}</label>
                     {{ form.pack }}
                 </div>
                 <div class="field">
-                    <label for="size">Size</label>
+                    <label>{{ form.size.label }}</label>
                     {{ form.size }}
                 </div>
                 <div class="field">
-                    <label for="unit">Unit</label>
+                    <label>{{ form.unit.label }}</label>
                     {{ form.unit }}
                 </div>
                 <div class="field">
-                    <label for="weight">Weight</label>
+                    <label>{{ form.weight.label }}</label>
                     {{ form.weight }}
                 </div>
             </div>
             <button type="submit">Save</button>
         </form>
+
+        <!-- Mapping and Enhancements Section -->
+<div class="enhancements-section">
+    <h2>Mapping and Enhancements</h2>
+    <div class="field">
+        <label for="gl_level_1">GL Level 1</label>
+        <select id="gl_level_1" name="gl_level_1">
+            <option value="">Select GL Level 1</option>
+            {% for gl1 in gl_level_1 %}
+                <option value="{{ gl1.id }}">{{ gl1.name }}</option>
+            {% endfor %}
+        </select>
     </div>
-    <div class="pdf-viewer">
-        <iframe src="{{ presigned_url }}" type="application/pdf"></iframe>
+    <div class="field">
+        <label for="gl_level_2">GL Level 2</label>
+        <select id="gl_level_2" name="gl_level_2">
+            <option value="">Select GL Level 2</option>
+        </select>
+    </div>
+    <div class="field">
+        <label for="gl_level_3">GL Level 3</label>
+        <select id="gl_level_3" name="gl_level_3">
+            <option value="">Select GL Level 3</option>
+        </select>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const glLevel1Select = document.getElementById('gl_level_1');
+    const glLevel2Select = document.getElementById('gl_level_2');
+    const glLevel3Select = document.getElementById('gl_level_3');
+
+    glLevel1Select.addEventListener('change', function() {
+        const gl1Id = this.value;
+        if (gl1Id) {
+            fetch(`/inventory/get_gl_level_2/?gl1_id=${gl1Id}`)
+                .then(response => response.json())
+                .then(data => {
+                    glLevel2Select.innerHTML = '<option value="">Select GL Level 2</option>';
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = item.name;
+                        glLevel2Select.appendChild(option);
+                    });
+                });
+        } else {
+            glLevel2Select.innerHTML = '<option value="">Select GL Level 2</option>';
+            glLevel3Select.innerHTML = '<option value="">Select GL Level 3</option>';
+        }
+    });
+
+    glLevel2Select.addEventListener('change', function() {
+        const gl2Id = this.value;
+        if (gl2Id) {
+            fetch(`/inventory/get_gl_level_3/?gl2_id=${gl2Id}`)
+                .then(response => response.json())
+                .then(data => {
+                    glLevel3Select.innerHTML = '<option value="">Select GL Level 3</option>';
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = item.name;
+                        glLevel3Select.appendChild(option);
+                    });
+                });
+        } else {
+            glLevel3Select.innerHTML = '<option value="">Select GL Level 3</option>';
+        }
+    });
+});
+</script>
+
+
+
+
+
     </div>
 </div>
 {% endblock %}

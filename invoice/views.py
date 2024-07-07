@@ -10,6 +10,7 @@ from .s3_storage_backend import S3StorageBackend
 from botocore.exceptions import BotoCoreError, ClientError
 
 from .models import Invoice, ProcessedInvoice, ProcessedLineItem
+from inventory.models import GLLevel1
 from .forms import ProcessedLineItemForm
 
 
@@ -132,6 +133,12 @@ def edit_line_item(request, line_item_id):
     s3_backend = S3StorageBackend()
     # Generate the pre-signed URL
     s3_url = s3_backend.generate_presigned_url(line_item.s3_object_key)
+
+    # Fetch GL Level 1 data
+    gl_level_1 = GLLevel1.objects.all()
+
+     # Print the pre-signed URL for debugging
+    print("Generated S3 URL:", s3_url)
     
     if request.method == 'POST':
         form = ProcessedLineItemForm(request.POST, instance=line_item)
@@ -145,5 +152,6 @@ def edit_line_item(request, line_item_id):
         'line_item': line_item,
         'form': form,
         's3_url': s3_url,
+        'gl_level_1': gl_level_1,  # Pass GL Level 1 data to the template
     }
     return render(request, 'invoice/edit_line_item.html', context)

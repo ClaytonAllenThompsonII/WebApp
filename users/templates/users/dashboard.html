@@ -1,31 +1,98 @@
 {% extends 'users/main.html' %}
 
 {% load static %}
-{% block content %}
+{% block extra_css %}
+<style>
+    body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background-color: #f9f9f9;
+        color: #333;
+    }
 
+    .dashboard-container {
+        width: 80%;
+        margin: 0 auto;
+        padding: 20px;
+    }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cost Curve Dashboard</title>
-    <link rel="stylesheet" href="{% static 'users/style.css' %}">
-    {% block extra_css %}{% endblock %}
-</head>
+    .dashboard-container h1 {
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 24px;
+    }
 
-<body>
-    <p> Parameter for data picker, other fields like vendor, GL</p>
-    <p> Total Inventory: $ </p>
-    <p> Total Invoice: $ </p>
-    <P> Total COGS</P>
-    <p> Delta from last period</p>
-    <p> Invoice Count</p>
-    
-</body>
+    .dashboard-stats {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .stat {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        flex: 1;
+        min-width: 200px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat h2 {
+        margin-bottom: 10px;
+        font-size: 18px;
+        color: #555;
+    }
+
+    .stat p {
+        font-size: 16px;
+        font-weight: bold;
+        color: #000;
+    }
+
+    .additional-info {
+        text-align: center;
+        margin-top: 40px;
+    }
+
+    .additional-info p {
+        font-size: 14px;
+        color: #777;
+    }
+</style>
 {% endblock %}
-</html>
 
-
-
+{% block content %}
+<div class="dashboard-container">
+    <h1>Cost Curve Dashboard</h1>
     
+    <div class="dashboard-stats">
+        <div class="stat">
+            <h2>Total Inventory</h2>
+            <p>$0.00</p>
+        </div>
+        <div class="stat">
+            <h2>Total Invoices</h2>
+            <p>${{ total_invoices }}</p>
+        </div>
+        <div class="stat">
+            <h2>Total COGS</h2>
+            <p>$0.00</p>
+        </div>
+        <div class="stat">
+            <h2>Delta from Last Period</h2>
+            <p>$0.00</p>
+        </div>
+        <div class="stat">
+            <h2>Invoice Count</h2>
+            <p>{{ invoice_count }}</p>
+        </div>
+    </div>
+    
+    <div class="additional-info">
+        <p>Parameters for data picker, vendor, GL, etc.</p>
+    </div>
+</div>
+
+{% endblock %}

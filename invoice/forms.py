@@ -28,4 +28,4 @@ class InvoiceForm(forms.ModelForm):
 class ProcessedLineItemForm(forms.ModelForm):
     class Meta:
         model = ProcessedLineItem
-        fields = ['upload_date', 'product_code', 'brand', 'item_description', 'unit_price', 'net_amount', 'taxes', 'discount', 'quantity', 'price', 'unit_of_measure', 'pack', 'size', 'unit', 'weight']
+        fields = [ 'brand', 'item_description', 'unit_price', 'net_amount', 'taxes', 'discount', 'quantity', 'price', 'unit_of_measure', 'pack', 'size', 'unit', 'weight']

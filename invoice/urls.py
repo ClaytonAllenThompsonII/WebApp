@@ -32,5 +32,6 @@ urlpatterns = [
     path('line-items/', views.line_items_repo, name='line_items_repo'),  # Add this line
     path('line-items/<int:invoice_id>/', views.line_items_by_invoice, name='line_items_by_invoice'),  # New path
     path('edit-line-item/<int:line_item_id>/', views.edit_line_item, name='edit_line_item'),  # New path
+    path('general_ledger_accounts/', views.general_ledger_accounts, name='general_ledger_accounts'),
     # Add other URL patterns as needed
 ]

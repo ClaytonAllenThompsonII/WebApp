@@ -146,6 +146,21 @@
     .enhancements-section .field {
         flex: 1 1 100%; /* Full width fields */
     }
+    .gl-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .gl-table th, .gl-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    .gl-table th {
+        background-color: #f2f2f2;
+    }
 </style>
 {% endblock %}
 
@@ -264,6 +279,7 @@
             <button type="submit">Save</button>
         </form>
 
+
         <!-- Mapping and Enhancements Section -->
 <div class="enhancements-section">
     <h2>Mapping and Enhancements</h2>
@@ -278,67 +294,43 @@
     </div>
     <div class="field">
         <label for="gl_level_2">GL Level 2</label>
-        <select id="gl_level_2" name="gl_level_2">
+        <select id="gl_level_2" name="gl_level_2" disabled>
             <option value="">Select GL Level 2</option>
         </select>
     </div>
     <div class="field">
         <label for="gl_level_3">GL Level 3</label>
-        <select id="gl_level_3" name="gl_level_3">
+        <select id="gl_level_3" name="gl_level_3" disabled>
             <option value="">Select GL Level 3</option>
         </select>
     </div>
+    <table class="gl-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>GL Level 3 Name</th>
+            </tr>
+        </thead>
+        <tbody id="gl3-table-body">
+            {% for gl3 in gl_level_3 %}
+            <tr>
+                <td>{{ gl3.id }}</td>
+                <td>{{ gl3.name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+            
+    </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const glLevel1Select = document.getElementById('gl_level_1');
-    const glLevel2Select = document.getElementById('gl_level_2');
-    const glLevel3Select = document.getElementById('gl_level_3');
+<!-- Include the new JavaScript file -->
+<script src="{% static 'invoice/edit_line_item.js' %}"></script>
+    </div>
+</div>
 
-    glLevel1Select.addEventListener('change', function() {
-        const gl1Id = this.value;
-        if (gl1Id) {
-            fetch(`/inventory/get_gl_level_2/?gl1_id=${gl1Id}`)
-                .then(response => response.json())
-                .then(data => {
-                    glLevel2Select.innerHTML = '<option value="">Select GL Level 2</option>';
-                    data.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.id;
-                        option.textContent = item.name;
-                        glLevel2Select.appendChild(option);
-                    });
-                });
-        } else {
-            glLevel2Select.innerHTML = '<option value="">Select GL Level 2</option>';
-            glLevel3Select.innerHTML = '<option value="">Select GL Level 3</option>';
-        }
-    });
-
-    glLevel2Select.addEventListener('change', function() {
-        const gl2Id = this.value;
-        if (gl2Id) {
-            fetch(`/inventory/get_gl_level_3/?gl2_id=${gl2Id}`)
-                .then(response => response.json())
-                .then(data => {
-                    glLevel3Select.innerHTML = '<option value="">Select GL Level 3</option>';
-                    data.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.id;
-                        option.textContent = item.name;
-                        glLevel3Select.appendChild(option);
-                    });
-                });
-        } else {
-            glLevel3Select.innerHTML = '<option value="">Select GL Level 3</option>';
-        }
-    });
-});
-</script>
-
-
-
+        
 
 
     </div>

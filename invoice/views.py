@@ -5,13 +5,12 @@ from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import InvoiceForm
-from .s3_storage_backend import S3StorageBackend
 from botocore.exceptions import BotoCoreError, ClientError
-
+from inventory.models import GLLevel1, GLLevel2, GLLevel3
+from .s3_storage_backend import S3StorageBackend
 from .models import Invoice, ProcessedInvoice, ProcessedLineItem
-from inventory.models import GLLevel1
-from .forms import ProcessedLineItemForm
+
+from .forms import ProcessedLineItemForm, InvoiceForm
 
 
 logger = logging.getLogger(__name__)
@@ -134,8 +133,10 @@ def edit_line_item(request, line_item_id):
     # Generate the pre-signed URL
     s3_url = s3_backend.generate_presigned_url(line_item.s3_object_key)
 
-    # Fetch GL Level 1 data
+    # Fetch GL Level 1, GL Level 2, and GL Level 3 data
     gl_level_1 = GLLevel1.objects.all()
+    gl_level_2 = GLLevel2.objects.all()
+    gl_level_3 = GLLevel3.objects.all()
 
      # Print the pre-signed URL for debugging
     print("Generated S3 URL:", s3_url)
@@ -153,5 +154,23 @@ def edit_line_item(request, line_item_id):
         'form': form,
         's3_url': s3_url,
         'gl_level_1': gl_level_1,  # Pass GL Level 1 data to the template
+        'gl_level_2': gl_level_2,  # Pass GL Level 2 data to the template
+        'gl_level_3': gl_level_3,  # Pass GL Level 3 data to the template
     }
     return render(request, 'invoice/edit_line_item.html', context)
+
+
+
+@login_required(login_url='loginPage')
+def general_ledger_accounts(request):
+    gl_level_1 = GLLevel1.objects.all()
+    gl_level_2 = GLLevel2.objects.all()
+    gl_level_3 = GLLevel3.objects.all()
+    
+    context = {
+        'gl_level_1': gl_level_1,
+        'gl_level_2': gl_level_2,
+        'gl_level_3': gl_level_3,
+    }
+    
+    return render(request, 'invoice/general_ledger_accounts.html', context)

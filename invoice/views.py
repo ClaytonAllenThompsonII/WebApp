@@ -2,13 +2,16 @@
 import logging
 from django.db import IntegrityError, DatabaseError
 from django.utils import timezone
+from django.http import JsonResponse
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from botocore.exceptions import BotoCoreError, ClientError
 from inventory.models import GLLevel1, GLLevel2, GLLevel3
 from .s3_storage_backend import S3StorageBackend
-from .models import Invoice, ProcessedInvoice, ProcessedLineItem
+from .models import Invoice, ProcessedInvoice, ProcessedLineItem, ConsolidatedGL
+
 
 from .forms import ProcessedLineItemForm, InvoiceForm
 
@@ -76,7 +79,6 @@ def upload_invoice(request):
     return render(request, 'invoice/upload_invoice.html', context)
 
 
-
 @login_required(login_url='loginPage')
 def invoice_repo(request):
     """Displays a list of processed invoices in a table with sorting options."""
@@ -94,7 +96,6 @@ def invoice_repo(request):
         'order': order,
     }
     return render(request, 'invoice/invoice_repo.html', context)
-
 
 
 @login_required(login_url='loginPage')
@@ -133,10 +134,10 @@ def edit_line_item(request, line_item_id):
     # Generate the pre-signed URL
     s3_url = s3_backend.generate_presigned_url(line_item.s3_object_key)
 
-    # Fetch GL Level 1, GL Level 2, and GL Level 3 data
-    gl_level_1 = GLLevel1.objects.all()
-    gl_level_2 = GLLevel2.objects.all()
-    gl_level_3 = GLLevel3.objects.all()
+     # Fetch GL Level 1, GL Level 2, and GL Level 3 data from ConsolidatedGL
+    gl_level_1 = ConsolidatedGL.objects.values('gl_level_1_id', 'gl_level_1_name').distinct()
+    gl_level_2 = ConsolidatedGL.objects.values('gl_level_2_id', 'gl_level_2_name').distinct()
+    gl_level_3 = ConsolidatedGL.objects.values('gl_level_3_id', 'gl_level_3_name').distinct()
 
      # Print the pre-signed URL for debugging
     print("Generated S3 URL:", s3_url)

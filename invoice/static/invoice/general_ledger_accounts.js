@@ -1,64 +1,65 @@
 document.addEventListener('DOMContentLoaded', function() {
     const glLevel1Select = document.getElementById('gl_level_1');
     const glLevel2Select = document.getElementById('gl_level_2');
-    const glLevel3Select = document.getElementById('gl_level_3');
-    const gl3TableBody = document.getElementById('gl3_table').querySelector('tbody');
+    const glTableBody = document.querySelector('#gl_table tbody');
 
-    // Populate GL Level 2 based on GL Level 1 selection
+    // Function to filter the table based on GL Level 1 and GL Level 2 selections
+    function filterTable(gl1Id, gl2Id) {
+        let url = '/invoice/gl_level_3_by_gl1/';
+        if (gl1Id && gl2Id) {
+            url = `/invoice/gl_level_3_by_gl2/?gl1_id=${gl1Id}&gl2_id=${gl2Id}`;
+        } else if (gl1Id) {
+            url = `/invoice/gl_level_3_by_gl1/?gl1_id=${gl1Id}`;
+        }
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                glTableBody.innerHTML = '';
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.gl_level_1_name}</td>
+                        <td>${item.gl_level_2_name}</td>
+                        <td>${item.gl_level_3_name}</td>
+                    `;
+                    glTableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching GL Level 3 data:', error));
+    }
+
     glLevel1Select.addEventListener('change', function() {
         const gl1Id = this.value;
-        glLevel2Select.innerHTML = '<option value="">Select GL Level 2</option>';
-        glLevel3Select.innerHTML = '<option value="">Select GL Level 3</option>';
-        glLevel2Select.disabled = !gl1Id;
-        glLevel3Select.disabled = true;
-        
-        // Filter GL Level 2 options based on GL Level 1 selection
-        const gl2Options = Array.from(document.querySelectorAll('#gl_level_2 option'));
-        gl2Options.forEach(option => {
-            if (!gl1Id || option.dataset.parent == gl1Id) {
-                option.style.display = 'block';
-            } else {
-                option.style.display = 'none';
-            }
-        });
+        if (gl1Id) {
+            // Fetch and populate GL Level 2 options based on GL Level 1 selection
+            fetch(`/invoice/gl_level_2_by_gl1/?gl1_id=${gl1Id}`)
+                .then(response => response.json())
+                .then(data => {
+                    glLevel2Select.innerHTML = '<option value="">Select GL Level 2</option>';
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = item.name;
+                        glLevel2Select.appendChild(option);
+                    });
+                    glLevel2Select.disabled = false;
 
-        updateTable();
+                    // Reset GL Level 2 selection and filter table based on GL Level 1
+                    glLevel2Select.value = '';
+                    filterTable(gl1Id, '');
+                })
+                .catch(error => console.error('Error fetching GL Level 2 data:', error));
+        } else {
+            glLevel2Select.innerHTML = '<option value="">Select GL Level 2</option>';
+            glLevel2Select.disabled = true;
+            filterTable('', '');
+        }
     });
 
-    // Populate GL Level 3 based on GL Level 2 selection
     glLevel2Select.addEventListener('change', function() {
-        const gl2Id = this.value;
-        glLevel3Select.innerHTML = '<option value="">Select GL Level 3</option>';
-        glLevel3Select.disabled = !gl2Id;
-
-        // Filter GL Level 3 options based on GL Level 2 selection
-        const gl3Options = Array.from(document.querySelectorAll('#gl_level_3 option'));
-        gl3Options.forEach(option => {
-            if (!gl2Id || option.dataset.parent == gl2Id) {
-                option.style.display = 'block';
-            } else {
-                option.style.display = 'none';
-            }
-        });
-
-        updateTable();
-    });
-
-    // Update table based on GL Level 3 selection
-    glLevel3Select.addEventListener('change', updateTable);
-
-    // Function to update the table based on the selected filters
-    function updateTable() {
         const gl1Id = glLevel1Select.value;
-        const gl2Id = glLevel2Select.value;
-        const gl3Id = glLevel3Select.value;
-        const rows = Array.from(gl3TableBody.querySelectorAll('tr'));
-
-        rows.forEach(row => {
-            const gl1Match = !gl1Id || row.dataset.gl1 == gl1Id;
-            const gl2Match = !gl2Id || row.dataset.gl2 == gl2Id;
-            const gl3Match = !gl3Id || row.cells[3].textContent == glLevel3Select.querySelector(`option[value="${gl3Id}"]`).textContent;
-            row.style.display = gl1Match && gl2Match && gl3Match ? 'table-row' : 'none';
-        });
-    }
+        const gl2Id = this.value;
+        filterTable(gl1Id, gl2Id);
+    });
 });

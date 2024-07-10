@@ -1,5 +1,7 @@
 /* General Container Layout */
-
+.container2 {
+    padding: 20px;
+}
 
 h2 {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -8,34 +10,25 @@ h2 {
     margin-bottom: 20px;
 }
 
-.filters {
+.filter-section {
     display: flex;
-    flex-wrap: wrap;
     gap: 20px;
     margin-bottom: 20px;
 }
 
-.field {
-    display: flex;
-    flex-direction: column;
-    min-width: 200px;
-}
-
-.field label {
+.filter-section label {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight: bold;
     color: #555;
     margin-bottom: 5px;
 }
 
-.field select,
-.field input {
+.filter-section select {
     padding: 10px;
     font-size: 14px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    width: 100%;
-    box-sizing: border-box;
+    width: 200px;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
@@ -43,16 +36,10 @@ h2 {
     margin-top: 20px;
 }
 
-.gl3-table h3 {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 10px;
-}
-
 .gl3-table table {
     width: 100%;
     border-collapse: collapse;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .gl3-table table th,
@@ -64,11 +51,15 @@ h2 {
 
 .gl3-table table th {
     background-color: #f4f4f4;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight: bold;
     color: #333;
 }
 
 .gl3-table table tr:nth-child(even) {
     background-color: #f9f9f9;
+}
+
+.gl3-table table tr:hover {
+    background-color: #e0e0e0;
+    cursor: pointer;
 }

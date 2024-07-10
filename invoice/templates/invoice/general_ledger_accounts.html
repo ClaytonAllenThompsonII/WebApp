@@ -27,15 +27,7 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="field">
-            <label for="gl_level_3">GL Level 3</label>
-            <select id="gl_level_3" >
-                <option value="">Select GL Level 3</option>
-                {% for gl3 in gl_level_3 %}
-                    <option value="{{ gl3.id }}" data-parent="{{ gl3.parent_id }}">{{ gl3.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
+        
     </div>
     
     <div class="gl3-table">

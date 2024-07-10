@@ -33,5 +33,9 @@ urlpatterns = [
     path('line-items/<int:invoice_id>/', views.line_items_by_invoice, name='line_items_by_invoice'),  # New path
     path('edit-line-item/<int:line_item_id>/', views.edit_line_item, name='edit_line_item'),  # New path
     path('general_ledger_accounts/', views.general_ledger_accounts, name='general_ledger_accounts'),
+    path('gl_level_2_by_gl1/', views.get_gl_level_2, name='gl_level_2_by_gl1'),
+    path('gl_level_3_by_gl1/', views.gl_level_3_by_gl1, name='gl_level_3_by_gl1'),
+    path('gl_level_3_by_gl2/', views.gl_level_3_by_gl2, name='gl_level_3_by_gl2'),
+
     # Add other URL patterns as needed
 ]

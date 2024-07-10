@@ -2,13 +2,16 @@
 import logging
 from django.db import IntegrityError, DatabaseError
 from django.utils import timezone
+from django.http import JsonResponse
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from botocore.exceptions import BotoCoreError, ClientError
 from inventory.models import GLLevel1, GLLevel2, GLLevel3
 from .s3_storage_backend import S3StorageBackend
-from .models import Invoice, ProcessedInvoice, ProcessedLineItem
+from .models import Invoice, ProcessedInvoice, ProcessedLineItem, ConsolidatedGL
+
 
 from .forms import ProcessedLineItemForm, InvoiceForm
 
@@ -76,7 +79,6 @@ def upload_invoice(request):
     return render(request, 'invoice/upload_invoice.html', context)
 
 
-
 @login_required(login_url='loginPage')
 def invoice_repo(request):
     """Displays a list of processed invoices in a table with sorting options."""
@@ -94,7 +96,6 @@ def invoice_repo(request):
         'order': order,
     }
     return render(request, 'invoice/invoice_repo.html', context)
-
 
 
 @login_required(login_url='loginPage')
@@ -133,10 +134,10 @@ def edit_line_item(request, line_item_id):
     # Generate the pre-signed URL
     s3_url = s3_backend.generate_presigned_url(line_item.s3_object_key)
 
-    # Fetch GL Level 1, GL Level 2, and GL Level 3 data
-    gl_level_1 = GLLevel1.objects.all()
-    gl_level_2 = GLLevel2.objects.all()
-    gl_level_3 = GLLevel3.objects.all()
+     # Fetch GL Level 1, GL Level 2, and GL Level 3 data from ConsolidatedGL
+    gl_level_1 = ConsolidatedGL.objects.values('gl_level_1_id', 'gl_level_1_name').distinct()
+    gl_level_2 = ConsolidatedGL.objects.values('gl_level_2_id', 'gl_level_2_name').distinct()
+    gl_level_3 = ConsolidatedGL.objects.values('gl_level_3_id', 'gl_level_3_name').distinct()
 
      # Print the pre-signed URL for debugging
     print("Generated S3 URL:", s3_url)
@@ -161,16 +162,42 @@ def edit_line_item(request, line_item_id):
 
 
 
+
 @login_required(login_url='loginPage')
 def general_ledger_accounts(request):
-    gl_level_1 = GLLevel1.objects.all()
-    gl_level_2 = GLLevel2.objects.all()
-    gl_level_3 = GLLevel3.objects.all()
+    gl_level_1 = ConsolidatedGL.objects.values('gl_level_1_id', 'gl_level_1_name').distinct()
+    gl_level_3 = ConsolidatedGL.objects.all()
     
     context = {
         'gl_level_1': gl_level_1,
-        'gl_level_2': gl_level_2,
         'gl_level_3': gl_level_3,
     }
     
     return render(request, 'invoice/general_ledger_accounts.html', context)
+
+
+@login_required(login_url='loginPage')
+def get_gl_level_2(request):
+    gl1_id = request.GET.get('gl1_id')
+    if gl1_id:
+        gl2_items = GLLevel2.objects.filter(parent_id=gl1_id).values('id', 'name')  # Filter based on GL Level 1 ID
+        gl2_data = list(gl2_items)  # Convert queryset to list
+        return JsonResponse(gl2_data, safe=False)
+    return JsonResponse({"error": "GL Level 1 ID not provided"}, status=400)
+
+@login_required(login_url='loginPage')
+def gl_level_3_by_gl1(request):
+    gl1_id = request.GET.get('gl1_id')
+    if gl1_id:
+        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name')
+        return JsonResponse(list(gl3_items), safe=False)
+    return JsonResponse({"error": "GL Level 1 ID not provided"}, status=400)
+
+@login_required(login_url='loginPage')
+def gl_level_3_by_gl2(request):
+    gl1_id = request.GET.get('gl1_id')
+    gl2_id = request.GET.get('gl2_id')
+    if gl1_id and gl2_id:
+        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id, gl_level_2_id=gl2_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name')
+        return JsonResponse(list(gl3_items), safe=False)
+    return JsonResponse({"error": "GL Level 1 ID or GL Level 2 ID not provided"}, status=400)

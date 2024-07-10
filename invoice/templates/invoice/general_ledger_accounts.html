@@ -8,47 +8,39 @@
 {% block content %}
 <div class="container2">
     <h2>General Ledger Accounts</h2>
-    <div class="filters">
-        <div class="field">
-            <label for="gl_level_1">GL Level 1</label>
-            <select id="gl_level_1">
-                <option value="">Select GL Level 1</option>
-                {% for gl1 in gl_level_1 %}
-                    <option value="{{ gl1.id }}">{{ gl1.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="field">
-            <label for="gl_level_2">GL Level 2</label>
-            <select id="gl_level_2" >
-                <option value="">Select GL Level 2</option>
-                {% for gl2 in gl_level_2 %}
-                    <option value="{{ gl2.id }}" data-parent="{{ gl2.parent_id }}">{{ gl2.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
+    <div class="filter-section">
+        <label for="gl_level_1">GL Level 1</label>
+        <select id="gl_level_1">
+            <option value="">Select GL Level 1</option>
+            {% for gl1 in gl_level_1 %}
+                <option value="{{ gl1.gl_level_1_id }}">{{ gl1.gl_level_1_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="gl_level_2">GL Level 2</label>
+        <select id="gl_level_2" disabled>
+            <option value="">Select GL Level 2</option>
+        </select>
+
         
     </div>
-    
+
     <div class="gl3-table">
-        <h3>GL Level 3 Accounts</h3>
-        <table id="gl3_table">
+        <table id="gl_table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>GL Level 1</th>
                     <th>GL Level 2</th>
                     <th>GL Level 3</th>
                 </tr>
             </thead>
             <tbody>
-                {% for gl3 in gl_level_3 %}
-                    <tr data-gl1="{{ gl3.parent.parent.id }}" data-gl2="{{ gl3.parent.id }}">
-                        <td>{{ gl3.id }}</td>
-                        <td>{{ gl3.parent.parent.name }}</td>
-                        <td>{{ gl3.parent.name }}</td>
-                        <td>{{ gl3.name }}</td>
-                    </tr>
+                {% for gl in gl_level_3 %}
+                <tr>
+                    <td>{{ gl.gl_level_1_name }}</td>
+                    <td>{{ gl.gl_level_2_name }}</td>
+                    <td>{{ gl.gl_level_3_name }}</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>

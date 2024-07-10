@@ -162,16 +162,42 @@ def edit_line_item(request, line_item_id):
 
 
 
+
 @login_required(login_url='loginPage')
 def general_ledger_accounts(request):
-    gl_level_1 = GLLevel1.objects.all()
-    gl_level_2 = GLLevel2.objects.all()
-    gl_level_3 = GLLevel3.objects.all()
+    gl_level_1 = ConsolidatedGL.objects.values('gl_level_1_id', 'gl_level_1_name').distinct()
+    gl_level_3 = ConsolidatedGL.objects.all()
     
     context = {
         'gl_level_1': gl_level_1,
-        'gl_level_2': gl_level_2,
         'gl_level_3': gl_level_3,
     }
     
     return render(request, 'invoice/general_ledger_accounts.html', context)
+
+
+@login_required(login_url='loginPage')
+def get_gl_level_2(request):
+    gl1_id = request.GET.get('gl1_id')
+    if gl1_id:
+        gl2_items = GLLevel2.objects.filter(parent_id=gl1_id).values('id', 'name')  # Filter based on GL Level 1 ID
+        gl2_data = list(gl2_items)  # Convert queryset to list
+        return JsonResponse(gl2_data, safe=False)
+    return JsonResponse({"error": "GL Level 1 ID not provided"}, status=400)
+
+@login_required(login_url='loginPage')
+def gl_level_3_by_gl1(request):
+    gl1_id = request.GET.get('gl1_id')
+    if gl1_id:
+        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name')
+        return JsonResponse(list(gl3_items), safe=False)
+    return JsonResponse({"error": "GL Level 1 ID not provided"}, status=400)
+
+@login_required(login_url='loginPage')
+def gl_level_3_by_gl2(request):
+    gl1_id = request.GET.get('gl1_id')
+    gl2_id = request.GET.get('gl2_id')
+    if gl1_id and gl2_id:
+        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id, gl_level_2_id=gl2_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name')
+        return JsonResponse(list(gl3_items), safe=False)
+    return JsonResponse({"error": "GL Level 1 ID or GL Level 2 ID not provided"}, status=400)

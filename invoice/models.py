@@ -77,3 +77,18 @@ class ProcessedLineItem(models.Model):
 
     class Meta:
         db_table = 'out_line_item_processed'
+
+
+class ConsolidatedGL(models.Model):
+    gl_level_1_id = models.IntegerField()
+    gl_level_1_name = models.CharField(max_length=100)
+    gl_level_2_id = models.IntegerField()
+    gl_level_2_name = models.CharField(max_length=100)
+    gl_level_3_id = models.IntegerField()
+    gl_level_3_name = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'inventory_app_consolidated_gl'  # The name of the existing table in your database
+
+    def __str__(self):
+        return f'{self.gl_level_1_name} > {self.gl_level_2_name} > {self.gl_level_3_name}'

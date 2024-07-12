@@ -122,71 +122,116 @@
         </form>
 
 
-        <!-- Mapping and Enhancements Section -->
-<div class="enhancements-section">
-    <h2>Mapping and Enhancements</h2>
-        <div class="filter-section">
-            <label for="gl_level_1">GL L1</label>
-            <select id="gl_level_1">
-                <option value="">Select GL Level 1</option>
-                {% for gl1 in gl_level_1 %}
-                    <option value="{{ gl1.gl_level_1_id }}">{{ gl1.gl_level_1_name }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="gl_level_2">GL L2</label>
-            <select id="gl_level_2" disabled>
-                <option value="">Select GL Level 2</option>
-            </select>
-
-            <label for="gl_level_3">GL L3</label>
-            <select id="gl_level_3" disabled>
-                <option value="">Select GL Level 3</option>
-            </select>
-        </div>
-
-    <div class="gl3-table">
-            <h3>GL Level 3 Accounts</h3>
-            <table id="gl_table">
-                <thead>
-                    <tr>
-                        <th>GL Level 1</th>
-                        <th>GL Level 2</th>
-                        <th>GL Level 3</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for gl in gl_level_3 %}
-                    <tr>
-                        <td>{{ gl.gl_level_1_name }}</td>
-                        <td>{{ gl.gl_level_2_name }}</td>
-                        <td>{{ gl.gl_level_3_name }}</td>
-                    </tr>
+            <!-- Mapping and Enhancements Section -->
+    <div class="enhancements-section">
+        <h2>Mapping and Enhancements</h2>
+            <div class="filter-section">
+                <label for="gl_level_1">GL L1</label>
+                <select id="gl_level_1">
+                    <option value="">Select GL Level 1</option>
+                    {% for gl1 in gl_level_1 %}
+                        <option value="{{ gl1.gl_level_1_id }}">{{ gl1.gl_level_1_name }}</option>
                     {% endfor %}
-                </tbody>
-            </table>
-        </div>
-            
-    
-    </div>
+                </select>
 
+                <label for="gl_level_2">GL L2</label>
+                <select id="gl_level_2" disabled>
+                    <option value="">Select GL Level 2</option>
+                </select>
+
+                <label for="gl_level_3">GL L3</label>
+                <select id="gl_level_3" disabled>
+                    <option value="">Select GL Level 3</option>
+                </select>
+            </div>
+
+        <div class="gl3-table">
+                <h3>GL Level 3 Accounts</h3>
+                <table id="gl_table">
+                    <thead>
+                        <tr>
+                            <th>GL Level 1</th>
+                            <th>GL Level 2</th>
+                            <th>GL Level 3</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gl in gl_level_3 %}
+                        <tr>
+                            <td>{{ gl.gl_level_1_name }}</td>
+                            <td>{{ gl.gl_level_2_name }}</td>
+                            <td>{{ gl.gl_level_3_name }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+        </div>
+
+        <!-- AI Product Name & Details Section -->
+        <div class="ai-product-section">
+            <h3 class="ai-section-title"> <img src="{% static 'users/Cost Curve Logo.png' %}" alt="Logo" style="height: 21px; ">AI-Powered Product Generation and Mapping</h3>
+            <button id="generate-ai-product-name" type="button" class="ai-button">Generate Product Name</button>
+            <div id="ai-product-name" class="ai-result"></div>
+            <button id="generate-ai-product-details" type="button" class="ai-button"> ✨Enhance Product Details</button>
+            
+            <div id="ai-product-details" class="ai-result"></div>
+        </div>
+    </div>            
 </div>
+
 
 <!-- Include the new JavaScript file -->
 <script src="{% static 'invoice/edit_line_item.js' %}"></script>
-
-    </div>
-</div>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         console.log('GL Level 1 Element:', document.getElementById('gl_level_1'));
         console.log('GL Level 2 Element:', document.getElementById('gl_level_2'));
         console.log('GL Level 3 Element:', document.getElementById('gl_level_3'));
     });
-</script>       
+</script> 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Your existing code here
 
+        function typeEffect(element, text, callback) {
+            element.innerHTML = '';
+            let i = 0;
+            let timer = setInterval(function() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(timer);
+                    if (callback) callback();
+                }
+            }, 50);
+        }
 
-    </div>
-</div>
+        function showGenerating(element) {
+            element.innerHTML = '<div class="generating-container">Generating...</div>';
+        }
+
+        document.getElementById('generate-ai-product-name').addEventListener('click', function() {
+            const resultElement = document.getElementById('ai-product-name');
+            showGenerating(resultElement);
+            // Simulate fetching AI result
+            setTimeout(() => {
+                const aiProductName = 'Beef Strip-loin';
+                typeEffect(resultElement, aiProductName);
+            }, 1000);
+        });
+
+        document.getElementById('generate-ai-product-details').addEventListener('click', function() {
+            const resultElement = document.getElementById('ai-product-details');
+            showGenerating(resultElement);
+            // Simulate fetching AI result
+            setTimeout(() => {
+                const aiProductDetails = 'Beef Strip-loin, 13# Average, Premium Quality';
+                typeEffect(resultElement, aiProductDetails);
+            }, 1000);
+        });
+    });
+</script>
+
+ 
 {% endblock %}

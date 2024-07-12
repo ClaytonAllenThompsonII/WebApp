@@ -1,12 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     const glLevel1Select = document.getElementById('gl_level_1');
     const glLevel2Select = document.getElementById('gl_level_2');
+    const glLevel3Select = document.getElementById('gl_level_3');
     const glTableBody = document.querySelector('#gl_table tbody');
 
-    // Function to filter the table based on GL Level 1 and GL Level 2 selections
-    function filterTable(gl1Id, gl2Id) {
+    function filterTable(gl1Id, gl2Id, gl3Id) {
         let url = '/invoice/gl_level_3_by_gl1/';
-        if (gl1Id && gl2Id) {
+        if (gl1Id && gl2Id && gl3Id) {
+            url = `/invoice/gl_level_3_by_gl3/?gl1_id=${gl1Id}&gl2_id=${gl2Id}&gl3_id=${gl3Id}`;
+        } else if (gl1Id && gl2Id) {
             url = `/invoice/gl_level_3_by_gl2/?gl1_id=${gl1Id}&gl2_id=${gl2Id}`;
         } else if (gl1Id) {
             url = `/invoice/gl_level_3_by_gl1/?gl1_id=${gl1Id}`;

@@ -1,8 +1,9 @@
 """ Views for invoice app """
 import logging
 from django.db import IntegrityError, DatabaseError
-from django.utils import timezone
 from django.http import JsonResponse
+from django.utils import timezone
+
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -180,16 +181,15 @@ def general_ledger_accounts(request):
 def get_gl_level_2(request):
     gl1_id = request.GET.get('gl1_id')
     if gl1_id:
-        gl2_items = GLLevel2.objects.filter(parent_id=gl1_id).values('id', 'name')  # Filter based on GL Level 1 ID
-        gl2_data = list(gl2_items)  # Convert queryset to list
-        return JsonResponse(gl2_data, safe=False)
+        gl2_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id).values('gl_level_2_id', 'gl_level_2_name').distinct()  # Filter based on GL Level 1 ID
+        return JsonResponse(list(gl2_items), safe=False)
     return JsonResponse({"error": "GL Level 1 ID not provided"}, status=400)
 
 @login_required(login_url='loginPage')
 def gl_level_3_by_gl1(request):
     gl1_id = request.GET.get('gl1_id')
     if gl1_id:
-        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name')
+        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name', 'gl_level_3_id')
         return JsonResponse(list(gl3_items), safe=False)
     return JsonResponse({"error": "GL Level 1 ID not provided"}, status=400)
 

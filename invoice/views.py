@@ -198,6 +198,17 @@ def gl_level_3_by_gl2(request):
     gl1_id = request.GET.get('gl1_id')
     gl2_id = request.GET.get('gl2_id')
     if gl1_id and gl2_id:
-        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id, gl_level_2_id=gl2_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name')
+        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id, gl_level_2_id=gl2_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name', 'gl_level_3_id')
         return JsonResponse(list(gl3_items), safe=False)
     return JsonResponse({"error": "GL Level 1 ID or GL Level 2 ID not provided"}, status=400)
+
+@login_required(login_url='loginPage')
+def gl_level_3_by_gl3(request):
+    gl1_id = request.GET.get('gl1_id')
+    gl2_id = request.GET.get('gl2_id')
+    gl3_id = request.GET.get('gl3_id')
+    if gl1_id and gl2_id and gl3_id:
+        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id, gl_level_2_id=gl2_id, gl_level_3_id=gl3_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name', 'gl_level_3_id')
+        return JsonResponse(list(gl3_items), safe=False)
+    return JsonResponse({"error": "GL Level 1 ID, GL Level 2 ID, or GL Level 3 ID not provided"}, status=400)
+

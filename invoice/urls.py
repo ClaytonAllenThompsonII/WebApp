@@ -36,6 +36,8 @@ urlpatterns = [
     path('gl_level_2_by_gl1/', views.get_gl_level_2, name='gl_level_2_by_gl1'),
     path('gl_level_3_by_gl1/', views.gl_level_3_by_gl1, name='gl_level_3_by_gl1'),
     path('gl_level_3_by_gl2/', views.gl_level_3_by_gl2, name='gl_level_3_by_gl2'),
+    path('gl_level_3_by_gl3/', views.gl_level_3_by_gl3, name='gl_level_3_by_gl3'),
+    path('get_gl_level_2/', views.get_gl_level_2, name='get_gl_level_2')
 
     # Add other URL patterns as needed
 ]

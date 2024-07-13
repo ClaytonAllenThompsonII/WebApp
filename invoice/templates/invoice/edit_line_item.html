@@ -118,15 +118,16 @@
                     {{ form.weight }}
                 </div>
             </div>
-            <button type="submit">Save</button>
-        </form>
+            <div class="section-title">Accounting</div>
+            <!-- Section for selected GL3 record -->
+            <div class="selected-gl3" id="selected-gl3">
+                <div class="field">
+                    <label>Selected GL Level 3</label>
+                    <div class="value" id="selected-gl3-name"></div>
+                </div>
+            </div>
 
-
-            <!-- Mapping and Enhancements Section -->
-    <div class="enhancements-section">
-        <h2>Mapping and Enhancements</h2>
             <div class="filter-section">
-                <label for="gl_level_1">GL L1</label>
                 <select id="gl_level_1">
                     <option value="">Select GL Level 1</option>
                     {% for gl1 in gl_level_1 %}
@@ -134,19 +135,19 @@
                     {% endfor %}
                 </select>
 
-                <label for="gl_level_2">GL L2</label>
                 <select id="gl_level_2" disabled>
                     <option value="">Select GL Level 2</option>
                 </select>
 
-                <label for="gl_level_3">GL L3</label>
                 <select id="gl_level_3" disabled>
                     <option value="">Select GL Level 3</option>
                 </select>
             </div>
+            
 
-        <div class="gl3-table">
-                <h3>GL Level 3 Accounts</h3>
+            <div class="gl3-table">
+                <h3>L3 general ledger accounts
+                </h3>
                 <table id="gl_table">
                     <thead>
                         <tr>
@@ -157,7 +158,7 @@
                     </thead>
                     <tbody>
                         {% for gl in gl_level_3 %}
-                        <tr>
+                        <tr onclick="selectGL3(this, '{{ gl.gl_level_3_name }}')">
                             <td>{{ gl.gl_level_1_name }}</td>
                             <td>{{ gl.gl_level_2_name }}</td>
                             <td>{{ gl.gl_level_3_name }}</td>
@@ -166,6 +167,12 @@
                     </tbody>
                 </table>
         </div>
+
+
+
+            <button type="submit">Save</button>
+        </form>
+
 
         <!-- AI Product Name & Details Section -->
         <div class="ai-product-section">

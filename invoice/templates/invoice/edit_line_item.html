@@ -118,15 +118,16 @@
                     {{ form.weight }}
                 </div>
             </div>
-            <button type="submit">Save</button>
-        </form>
+            <div class="section-title">Accounting</div>
+            <!-- Section for selected GL3 record -->
+            <div class="selected-gl3" id="selected-gl3">
+                <div class="field">
+                    <label>Selected GL Level 3</label>
+                    <div class="value" id="selected-gl3-name"></div>
+                </div>
+            </div>
 
-
-            <!-- Mapping and Enhancements Section -->
-    <div class="enhancements-section">
-        <h2>Mapping and Enhancements</h2>
             <div class="filter-section">
-                <label for="gl_level_1">GL L1</label>
                 <select id="gl_level_1">
                     <option value="">Select GL Level 1</option>
                     {% for gl1 in gl_level_1 %}
@@ -134,19 +135,19 @@
                     {% endfor %}
                 </select>
 
-                <label for="gl_level_2">GL L2</label>
                 <select id="gl_level_2" disabled>
                     <option value="">Select GL Level 2</option>
                 </select>
 
-                <label for="gl_level_3">GL L3</label>
                 <select id="gl_level_3" disabled>
                     <option value="">Select GL Level 3</option>
                 </select>
             </div>
+            
 
-        <div class="gl3-table">
-                <h3>GL Level 3 Accounts</h3>
+            <div class="gl3-table">
+                <h3>L3 general ledger accounts
+                </h3>
                 <table id="gl_table">
                     <thead>
                         <tr>
@@ -157,7 +158,7 @@
                     </thead>
                     <tbody>
                         {% for gl in gl_level_3 %}
-                        <tr>
+                        <tr onclick="selectGL3(this, '{{ gl.gl_level_3_name }}')">
                             <td>{{ gl.gl_level_1_name }}</td>
                             <td>{{ gl.gl_level_2_name }}</td>
                             <td>{{ gl.gl_level_3_name }}</td>
@@ -166,6 +167,12 @@
                     </tbody>
                 </table>
         </div>
+
+
+
+            <button type="submit">Save</button>
+        </form>
+
 
         <!-- AI Product Name & Details Section -->
         <div class="ai-product-section">
@@ -182,13 +189,54 @@
 
 <!-- Include the new JavaScript file -->
 <script src="{% static 'invoice/edit_line_item.js' %}"></script>
+
 <script>
+    function selectGL3(row, gl3Name) {
+        console.log('Selected GL Level 3:', gl3Name); // Debugging line
+        document.getElementById('selected-gl3-name').textContent = gl3Name;
+        document.getElementById('selected-gl3').style.display = 'block';
+        
+        // Remove the 'selected' class from all rows
+        const rows = document.querySelectorAll('#gl_table tbody tr');
+        rows.forEach(r => r.classList.remove('selected'));
+
+        // Add the 'selected' class to the clicked row
+        row.classList.add('selected');
+    }
+
+    function attachRowClickHandlers() {
+        const rows = document.querySelectorAll('#gl_table tbody tr');
+        rows.forEach(row => {
+            row.addEventListener('click', function() {
+                const gl3Name = this.querySelector('td:last-child').textContent;
+                selectGL3(this, gl3Name);
+            });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         console.log('GL Level 1 Element:', document.getElementById('gl_level_1'));
         console.log('GL Level 2 Element:', document.getElementById('gl_level_2'));
         console.log('GL Level 3 Element:', document.getElementById('gl_level_3'));
+
+        attachRowClickHandlers();
+
+        // Attach the click handlers again if the table is updated
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    attachRowClickHandlers();
+                }
+            });
+        });
+
+        observer.observe(document.getElementById('gl_table').getElementsByTagName('tbody')[0], {
+            childList: true,
+            subtree: true
+        });
     });
-</script> 
+</script>
+ 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Your existing code here

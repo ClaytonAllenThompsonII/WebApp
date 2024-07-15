@@ -15,194 +15,161 @@
 </head>
 
 <body>
-    <!-- Header Section -->
     <header>
-        <h5> Inventory Processing </h5>
+        <h1>Inventory Processing Hub</h1>
     </header>
-
-    <!-- Main Content Section -->
-<div class="inventory-layout">
-    <main> 
-                <!-- Display messages from Django's messaging framework -->
+    <div class="inventory-layout">
+        <div class="main-column">
+            <section class="messages">
                 {% if messages %}
-                <section class="messages">
                     {% for message in messages %}
                         <div class="alert alert-{{ message.tags }}">
                             {{ message }}
                         </div>
                     {% endfor %}
-                </section>
-            {% endif %}
-    
-        <section id="welcome">
-            <p>Welcome, <b>{{ request.user.username }}</b> to <img src="{% static 'users/Cost Curve Logo.png' %}" 
-                alt="CostCurve.ai Logo" style="width: 25px; height: auto;"></a>Cost Curve's Inventory Processing Hub.  
-            </p>
-    
-        </section>
-        
-        <section id="instruction">
-            <h2>Start with Image Upload</h2>
-            <form id="upload-form" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-    
-                <div class="input-group">
-                    <label for="image">Upload Product Image:</label>
-                    <input type="file" id="image" name="image" accept="image/*">
+                {% endif %}
+            </section>
+
+            <section id="welcome">
+                <p>Welcome, <b>{{ request.user.username }}</b> to <img src="{% static 'users/Cost Curve Logo.png' %}" 
+                alt="CostCurve.ai Logo" style="width: 25px; height: auto;"> Cost Curve's Inventory Processing Hub.</p>
+            </section>
+
+            <section id="instruction">
+                <h2>Start with Image Upload</h2>
+                <form id="upload-form" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <label for="image">Upload Product Image:</label>
+                        <input type="file" id="image" name="image" accept="image/*">
+                    </div>
+                    <div class="preview">
+                        <p>Image Preview:</p>
+                        <img id="uploaded-image" src="" alt="Uploaded image preview">
+                    </div>
+                </form>
+            </section>
+
+            <section id="image-classification">
+                <h3>⚡️ Inference API</h3>
+                <div class="drag-drop-area">
+                    <p>Drag image file here or click to browse from your device</p>
+                    <input type="file" id="classification-image" name="classification_image" accept="image/*">
                 </div>
-                <div class="preview">
-                    <p>Image Preview:</p>
-                    <img id="uploaded-image" src="" alt="Uploaded image preview">
-                </div>
-    
-    
-                <div class="form-partition">
-                    <h3>Select GL & Product Labels</h3> <!-- Title for Partition 2 -->
-                    <!-- Step 3: GL Level 1 Selection -->
+                <div id="classification-result"></div>
+            </section>
+        </div>
+
+        <div class="right-column">
+            <section id="gl-product-labels">
+                <h5>Categorize & Label Inventory
+                    <span style="position: relative; display: inline-block; color: #007bff; cursor: pointer; font-size: 12px;" 
+      data-tooltip="Select the appropriate General Ledger (GL) categories and product classification for accurate inventory tracking.">
+    &#9432;
+</span>
+                </h5>
+                <div class="form-partition compact">
                     <div class="step">
-                        <p>Step 3. Select the appropriate GL Level 1 Category.</p>
+                        <p>Select GL Level 1 Category.</p>
                         <select id="gl-level-1" name="gl_level_1">
                             <option value="">-- Select GL Level 1 --</option>
                             {% for gl1 in gl_level1_objects %}
-                            <option value="{{ gl1.id }}">{{ gl1.name }}</option>
+                                <option value="{{ gl1.id }}">{{ gl1.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-            
-                    <!-- Step 4: GL Level 2 Selection -->
                     <div class="step">
-                        <p>Step 4. Select the appropriate GL Level 2 Category.</p>
+                        <p>Select GL Level 2 Category.</p>
                         <select id="gl-level-2" name="gl_level_2" disabled>
                             <option value="">-- Select GL Level 2 --</option>
                         </select>
                     </div>
-            
-                    <!-- Step 5: GL Level 3 Selection -->
                     <div class="step">
-                        <p>Step 5. Select the appropriate GL Level 3 Category.</p>
+                        <p>Select GL Level 3 Category.</p>
                         <select id="gl-level-3" name="gl_level_3" disabled>
                             <option value="">-- Select GL Level 3 --</option>
                         </select>
                     </div>
-            
-                    <!-- Step 6: Product Selection -->
                     <div class="step">
-                        <p>Step 6. Select the Inventory Product Classification that matches the inventory product.</p>
+                        <p>Select Inventory Product Classification.</p>
                         <select id="product" name="product" disabled>
                             <option value="">-- Select a Product --</option>
                         </select>
                     </div>
+                    <div class="step">
+                        <p>Press the upload button.</p>
+                        <button type="submit" form="upload-form">Upload Label</button>
+                    </div>
                 </div>
-    
-    
-                <section id="upload-inventory">
-                    <!-- Partition 3: Upload the Image -->
-                    <div class="form-partition">
-                       <h3>Upload</h3> <!-- Title for Partition 3 -->
-                       <div class="step">
-                           <p>Step 7. Press the upload button. ↙️</p>
-                           <button type="submit">Upload</button>
-                       </div>
-                   </div>
-               
-               </section>
-                <!-- Remaining form parts here -->
-            </form>
-        </section>
-    </main>
+            </section>
 
-    <aside class="inventory-sidebar">
-        <section id="count-list">
-            <div class="count-list">
+            <section id="inventory-size">
+                <h5>⚖️Measure Inventory Size 
+
+                    <span class="info-icon" data-tooltip="Enter the size and select the unit of measurement. You can also get the size from the IoT Scale.">
+                        &#9432;
+                    </span>
+                </h5>
+                <label for="weightInput">Enter Size (lbs, kg, etc.):</label>
+                <input type="number" id="sizeInput" name="size" step="0.1" placeholder="Enter size...">
+                
+                <label for="unitSelect">Select Unit:</label>
+                <select id="unitSelect" name="unit">
+                    <option value="lbs">lbs</option>
+                    <option value="kg">kg</option>
+                    <option value="units">units</option>
+                    <option value="liters">liters</option>
+                    <!-- Add more units as necessary -->
+                </select>
+                
+                <br>
+                <button type="button" id="getWeightButton">Get Size from IoT Scale</button>
+            </section>
+        </div>
+
+        <div class="count-list-column">
+            <section id="count-list">
                 <h5>Products to Measure</h5>
                 <p>Coming soon: A dynamic list of items that require counting and/or weighting based on inventory data, invoice data, sales data, and enhanced fields like estimated expiration.</p>
-            </div>
-            
-        </section>
-    
-        <section id="IoT-scale">
-            <h3>Input Weight Data ⚖️</h3> 
-            
-            <label for="weightInput">Enter Weight (lbs):</label>
-            <input type="number" id="weightInput" name="weight" step="0.1" placeholder="Enter weight in lbs...">
-            <!-- Trigger Button to Get Weight from Scale -->
-            <br>
-            <button type="button" id="getWeightButton">Get Weight from Scale</button>
-            <div class="inference-widget">
-                <h3>Image Classification</h3>
-                <p>Drop an image of food, and our model will classify it. Coming soon.</p>
-                <!-- Placeholder for HuggingFace Inference Widget -->
-                <div id="huggingface-widget-placeholder"></div>
-            </div>
-            
-        </section>
-        
-        <section id="trailing-2day">
-            <!-- New Partition/Div for Uploaded Items Table -->
-            <div class="form-partition" style="flex: 1;">
-                <h3>Trailing 2-Day Upload History </h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>GL1</th>
-                            <th>GL2</th>
-                            <th>GL3</th>
-                            <th>Product Label</th>
-                            <th>Image Filename</th>
-                            <th>Date <a href="?sort=timestamp_desc"> ⬇️ </a> | <a href="?sort=timestamp_asc">⬆️</a></th> 
-        
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for upload in user_uploads %}
-                        <tr>
-                            <td>{{ upload.gl_level_1.name }}</td>
-                            <td>{{ upload.gl_level_2.name }}</td>
-                            <td>{{ upload.gl_level_3.name }}</td>
-                            <td>{{ upload.product.name }}</td>
-                            <td>{{ upload.filename }}</td>
-                            <td>{{ upload.timestamp|date:"Y-m-d H:i" }}</td>
-        
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3">No uploads found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </aside>
+            </section>
+        </div>
+    </div>
 
-</div>
-  
     <footer>
         <p>© Cost Curve Inventory</p>
     </footer>
 
+    <script src="{% static 'inventory/inventory.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var imageInput = document.getElementById('image');
+            var imagePreview = document.getElementById('uploaded-image');
+            var classificationImageInput = document.getElementById('classification-image');
+            var classificationResult = document.getElementById('classification-result');
 
-<!-- Your existing JavaScript file reference if any -->
-<script src="{% static 'inventory/inventory.js' %}"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var imageInput = document.getElementById('image');
-        var imagePreview = document.getElementById('uploaded-image');
-    
-        imageInput.addEventListener('change', function(event) {
-            var files = event.target.files;
-            if (files && files[0]) {
-                var reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.alt = "Preview of uploaded image";
+            imageInput.addEventListener('change', function(event) {
+                var files = event.target.files;
+                if (files && files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.alt = "Preview of uploaded image";
+                    }
+                    reader.readAsDataURL(files[0]);
                 }
-                
-                reader.readAsDataURL(files[0]);
-            }
+            });
+
+            classificationImageInput.addEventListener('change', function(event) {
+                var files = event.target.files;
+                if (files && files[0]) {
+                    // Simulate an API call for classification result
+                    setTimeout(function() {
+                        classificationResult.innerHTML = '<p>Classification Result: Sample Product</p>';
+                        classificationResult.style.display = 'block';
+                    }, 1000);
+                }
+            });
         });
-    });
     </script>
 </body>
 </html>

@@ -27,3 +27,7 @@ CREATE TABLE out_line_item (
     CONSTRAINT fk_invoice FOREIGN KEY (invoice_id) REFERENCES out_invoice(invoice_id) ON DELETE CASCADE ON UPDATE CASCADE, -- Foreign key constraint
     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES out_product(product_id) ON DELETE CASCADE ON UPDATE CASCADE -- Foreign key constraint
 );
+
+
+-- Add GL3 Name. 
+-- Add GL3 ID. 

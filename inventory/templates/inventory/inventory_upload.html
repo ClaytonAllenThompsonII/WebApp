@@ -35,19 +35,30 @@
                 alt="CostCurve.ai Logo" style="width: 25px; height: auto;"> Cost Curve's Inventory Processing Hub.</p>
             </section>
 
-            <section id="image-upload-classification">
-                <h3>⚡️ Image Upload & Classification <span class="info-icon" data-tooltip="This tool allows you to upload and classify images for inventory management.">&#9432;</span></h3>
-                <form id="image-upload-form" method="post" enctype="multipart/form-data">
+            <section id="instruction">
+                <h2>Start with Image Upload</h2>
+                <form id="upload-form" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="input-group">
-                        <label for="product-image">Upload Product Image:</label>
-                        <input type="file" id="product-image" name="image" accept="image/*">
+                        <label for="image">Upload Product Image:</label>
+                        <input type="file" id="image" name="image" accept="image/*">
                     </div>
                     <div class="preview">
-                        <h5>Image Classification:</h5>
-                        <p>This model is a fine-tuned version of google/vit-base-patch16-224-in21k on the Cost Curve dataset.</p>
+                        <p>Image Preview:</p>
+                        <img id="uploaded-image" src="" alt="Uploaded image preview">
+                    </div>
+                </form>
+            </section>
 
-                        <img id="product-image-preview" src="" alt="Uploaded image preview" width="350" height="350">
+            <section id="image-classification">
+                <h3>⚡️ Inference API <span class="info-icon" data-tooltip="This tool allows you to classify images using our model.">&#9432;</span></h3>
+                <div class="drag-drop-area">
+                    <p>Drag image file here or click to browse from your device</p>
+                    <input type="file" id="classification-image" name="classification_image" accept="image/*">
+                </div>
+                <div id="classification-result">
+                    <div class="classification-image-preview">
+                        <img id="classification-preview-image" src="" alt="Classification image preview">
                     </div>
                     <div class="classification-result">
                         <p>Computation time: <span id="computation-time">0.320 s</span></p>
@@ -65,7 +76,7 @@
                             <!-- Add more classification items here as needed -->
                         </div>
                     </div>
-                </form>
+                </div>
             </section>
         </div>
 
@@ -138,39 +149,8 @@
 
         <div class="count-list-column">
             <section id="count-list">
-                <h5>Inventory Collection Queue
-                    <span class="info-icon" data-tooltip="This list shows the products that need to be measured for inventory.">
-                        &#9432;
-                    </span>
-                </h5>
-                <table class="inventory-table">
-                    <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>GL Category</th>
-                            <th>Measurement Type</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Beef Striploin</td>
-                            <td>Meat</td>
-                            <td>Weight</td>
-                            <td>Pending</td>
-                            <td><button class="action-button">Start Measurement</button></td>
-                        </tr>
-                        <tr>
-                            <td>Chicken Breast</td>
-                            <td>Poultry</td>
-                            <td>Count</td>
-                            <td>Pending</td>
-                            <td><button class="action-button">Start Measurement</button></td>
-                        </tr>
-                        <!-- Add more rows as needed -->
-                    </tbody>
-                </table>
+                <h5>Pending Inventory Measurements</h5>
+                <p>Coming soon: A dynamic list of items that require counting and/or weighting based on inventory data, invoice data, sales data, and enhanced fields like estimated expiration.</p>
             </section>
         </div>
     </div>
@@ -182,9 +162,11 @@
     <script src="{% static 'inventory/inventory.js' %}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var imageInput = document.getElementById('product-image');
-            var imagePreview = document.getElementById('product-image-preview');
+            var imageInput = document.getElementById('image');
+            var imagePreview = document.getElementById('uploaded-image');
+            var classificationImageInput = document.getElementById('classification-image');
             var classificationResult = document.getElementById('classification-result');
+            var classificationPreviewImage = document.getElementById('classification-preview-image');
 
             imageInput.addEventListener('change', function(event) {
                 var files = event.target.files;
@@ -193,11 +175,19 @@
                     reader.onload = function(e) {
                         imagePreview.src = e.target.result;
                         imagePreview.alt = "Preview of uploaded image";
+                    }
+                    reader.readAsDataURL(files[0]);
+                }
+            });
 
-                        // Simulate classification result display
-                        setTimeout(function() {
-                            classificationResult.style.display = 'block';
-                        }, 1000);
+            classificationImageInput.addEventListener('change', function(event) {
+                var files = event.target.files;
+                if (files && files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        classificationPreviewImage.src = e.target.result;
+                        classificationPreviewImage.alt = "Classification image preview";
+                        classificationResult.style.display = 'block';
                     }
                     reader.readAsDataURL(files[0]);
                 }

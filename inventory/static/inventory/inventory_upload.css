@@ -1,3 +1,5 @@
+/* Existing CSS */
+
 body {
     font-family: 'Verdana', 'Arial', sans-serif;
     margin: 0;
@@ -19,7 +21,7 @@ header h1 {
 
 .inventory-layout {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
     padding: 20px;
     max-width: 1200px;
@@ -33,112 +35,37 @@ header h1 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#image-upload-classification {
-    background-color: #ffffff;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-top: 15px;
-}
-
-#image-upload-classification h3 {
+#upload-form {
     display: flex;
-    align-items: center;
-    font-size: 1.5em;
-    margin-top: 0;
-}
-
-#image-upload-classification h3 .info-icon {
-    margin-left: 10px;
-    font-size: 0.75em;
-    cursor: pointer;
+    flex-direction: column;
 }
 
 .input-group {
     margin-bottom: 15px;
 }
 
-.input-group label {
-    font-weight: bold;
-    margin-bottom: 5px;
-    display: block;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
 .preview {
     margin-bottom: 15px;
-    text-align: center;
 }
 
-.preview p {
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.preview img {
-    max-width: 50px; /* Set a fixed maximum width */
-    max-height: 50px; /* Set a fixed maximum height */
+#uploaded-image {
+    max-width: 100%;
     border: 1px solid #ddd;
     padding: 0.5rem;
-    border-radius: 8px;
+    width: 20px; /* Adjust this value as needed */
+    height: auto; /* Ensure the aspect ratio is maintained */
 }
 
-.img {
-    max-width: 50px; /* Set a fixed maximum width */
-    max-height: 50px; /* Set a fixed maximum height */
+#image-classification {
+    background-color: #f9f9f9;
+    padding: 20px;
     border: 1px solid #ddd;
-    padding: 0.5rem;
     border-radius: 8px;
-}
-
-.classification-result {
-    display: none;
-    padding: 10px;
-    background-color: #eef4ff;
-    border-left: 5px solid #007bff;
-    border-radius: 5px;
     margin-top: 15px;
 }
 
-.classification-result p {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.classification-scores {
-    margin-top: 10px;
-}
-
-.classification-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-}
-
-.classification-label {
-    flex: 1;
-    font-weight: bold;
-    margin-right: 10px;
-}
-
-.classification-bar {
-    height: 10px;
-    background-color: #007bff;
-    border-radius: 5px;
-    margin-right: 10px;
-    flex: 3;
-}
-
-.classification-score {
-    flex: 0 0 50px;
-    text-align: right;
+#image-classification h3 {
+    margin-top: 0;
 }
 
 .drag-drop-area {
@@ -149,17 +76,15 @@ header h1 {
     margin-bottom: 15px;
 }
 
-.drag-drop-area input {
-    display: none;
+#classification-result {
+    padding: 10px;
+    background-color: #eef4ff;
+    border-left: 5px solid #007bff;
+    border-radius: 5px;
+    display: none; /* Initially hidden, shown after classification */
 }
 
-.right-column {
-    position: -webkit-sticky; /* Safari */
-    position: sticky;
-    top: 20px;
-}
-
-#gl-product-labels, #inventory-size, #count-list {
+#count-list, #weight-input, #gl-product-labels {
     margin-bottom: 20px; /* Space between sections */
 }
 
@@ -211,7 +136,7 @@ button:hover {
     margin-left: 5px;
     color: #007bff;
     cursor: pointer;
-    font-size: 10px; /* Adjust font size to make it smaller */
+    font-size: 12px; /* Adjust font size to make it smaller */
     position: relative;
 }
 
@@ -240,23 +165,35 @@ button:hover {
     opacity: 1;
 }
 
-/* Specific CSS for the measure inventory section */
-.measure-inventory-container {
+#inventory-size {
+    background-color: #f9f9f9;
     padding: 20px;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 8px;
-    background-color: #f0f0f0;
+    margin-top: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
 }
 
-.measure-inventory-container label {
-    font-weight: bold;
+#inventory-size h5 {
+    margin-top: 0;
+    font-size: 18px;
     color: #333;
+    font-weight: bold;
+}
+
+#inventory-size .size-inputs {
+    margin-bottom: 15px; /* Space between inputs and button */
+}
+
+#inventory-size label {
     display: block;
     margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
 }
 
-.measure-inventory-container input, 
-.measure-inventory-container select {
+#inventory-size input[type="number"],
+#inventory-size select {
     width: 100%;
     padding: 8px;
     margin-bottom: 10px;
@@ -264,17 +201,17 @@ button:hover {
     border-radius: 4px;
 }
 
-.measure-inventory-container button {
+#inventory-size button {
     background-color: #007bff;
     color: #fff;
-    padding: 6px 10px; /* Smaller padding for a smaller button */
+    padding: 6px 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    font-size: 12px; /* Smaller font size */
+    font-size: 12px;
 }
 
-.measure-inventory-container button:hover {
+#inventory-size button:hover {
     background-color: #0056b3;
 }

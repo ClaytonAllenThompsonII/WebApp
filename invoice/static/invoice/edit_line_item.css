@@ -270,9 +270,8 @@ form button:hover {
     border-radius: 8px;
     background-color: #f0f0f0;
     display: none; /* Initially hidden */
-    width: 300px; /* Set a fixed width */
-    text-align: center; /* Center the text */
-    margin: 0 auto; /* Center the div horizontally */
+    width: fit-content; /* Adjust width to fit content */
+    text-align: left; /* Align text to the left */
 }
 
 .selected-gl3 .field {
@@ -294,7 +293,7 @@ form button:hover {
     background-color: #fff;
     padding: 10px;
     border-radius: 4px;
-    text-align: center;
+    text-align: left; /* Align text to the left */
     border: 1px solid #ddd; /* Add a border to the value box */
 }
 
@@ -306,4 +305,38 @@ form button:hover {
 .gl3-table tr.selected {
     border-left: 5px solid #007bff;
     background-color: #d1e7ff;
+}
+
+.info-icon {
+    display: inline-block;
+    margin-left: 5px;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 12px;
+    position: relative;
+}
+
+/* Tooltip styling */
+.info-icon::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%; /* Position above the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+    z-index: 1;
+    font-size: 12px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+/* Show the tooltip on hover */
+.info-icon:hover::after {
+    visibility: visible;
+    opacity: 10;
 }

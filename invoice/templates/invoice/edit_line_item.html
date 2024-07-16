@@ -118,12 +118,16 @@
                     {{ form.weight }}
                 </div>
             </div>
-            <div class="section-title">Accounting</div>
+            <div class="section-title">Accounting
+                <span class="info-icon" data-tooltip="Select the appropriate GL categories for accurate accounting.">
+                    &#9432;
+                </span>
+            </div>
             <!-- Section for selected GL3 record -->
-            <div class="selected-gl3" id="selected-gl3">
-                <div class="field">
-                    <label>Selected GL Level 3</label>
-                    <div class="value" id="selected-gl3-name"></div>
+            <div class="selected-gl3" id="selected-gl3" style="margin: 20px 0; padding: 10px; border: 4px solid #ddd; border-radius: 8px; background-color: #f0f0f0; display: none; width: fit-content; text-align: left;">
+                <div class="field" style="margin: 0; padding: 5px; display: block; width: 100%;">
+                    <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">Selected GL Level 3</label>
+                    <div class="value" id="selected-gl3-name" style="color: #555; background-color: #fff; padding: 10px; border-radius: 4px; text-align: left; border: 1px solid #ddd;"></div>
                 </div>
             </div>
 

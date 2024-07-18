@@ -3,11 +3,11 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'invoice/invoice_list.css' %}">
+<link rel="stylesheet" href="{% static 'invoice/invoice_repo.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container2">
+<div class="invoice-repo-container">
     <!-- Sorting Controls -->
     <section class="sorting-controls">
         <form method="get" action="{% url 'invoice_repo' %}">

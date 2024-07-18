@@ -1,0 +1,40 @@
+/* New container for the line items by invoice page */
+.line-items-invoice-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 1200px;
+    margin: 9px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Table Enhancements */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    border: 1px solid #9E9E9E; /* Smooth dark borders for contrast */
+  }
+  
+  th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+    font-size: 11px; /* Adjusted for consistency and readability */
+    border-right: 1px solid #9E9E9E;
+  }
+  
+  td {
+    font-size: 14px; /* Slightly larger text for content */
+  }
+  
+  .table-hover tbody tr:hover {
+    background-color: #f5f5f5; /* Light grey background on hover */
+  }
+  

@@ -2,11 +2,11 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'invoice/invoice_list.css' %}">
+<link rel="stylesheet" href="{% static 'invoice/line_items_by_invoice.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container2">
+<div class="line-items-invoice-container">
     <h2>Line Items for Invoice 🧾 {{ invoice.invoice_number }}</h2>
     <table class="table-hover" id="lineItemsTable">
         <thead>

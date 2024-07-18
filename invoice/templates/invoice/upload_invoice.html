@@ -1,3 +1,4 @@
+<!-- templates/invoice/upload_invoice.html -->
 {% extends 'users/main.html' %}
 {% load static %}
 
@@ -7,9 +8,9 @@
 
 {% block content %}
 
-<div class="container2"> 
+<div class="invoice-upload-container"> 
     <!-- Upload Section -->
-    <section class="upload-section" >
+    <section class="upload-section">
         <div class="card shadow-lg">
             <div class="card-body">
                 <!-- Add messages here -->
@@ -19,37 +20,37 @@
                     <div class="alert alert-{{ message.tags }} mb-4">
                         {{ message }}
                     </div>
-                        {% endfor %}
+                    {% endfor %}
                 </div>
                 {% endif %}
 
                 <h5 class="card-title text-center mb-4">Upload Invoice</h5>
                 <form method="post" enctype="multipart/form-data" class="upload-form">
-                        {% csrf_token %}
-                        <div class="input-group custom-upload-group">
-                            <input type="file" class="custom-file-input" id="pdf_file" name="pdf_file">
-                            <label class="custom-file-label" for="pdf_file">Select Invoice PDF</label>
-                            <button type="submit" class="btn btn-upload">Upload</button>
-                        </div>
+                    {% csrf_token %}
+                    <div class="input-group custom-upload-group">
+                        <label class="custom-file-label" for="pdf_file">Select Invoice PDF</label>
+                        <input type="file" class="custom-file-input" id="pdf_file" name="pdf_file">
+                        <button type="submit" class="btn btn-upload">Upload</button>
+                    </div>
                 </form>
             </div>
         </div>
     </section>
-    <section class="invoice-table" >
+    <section class="invoice-table">
         {% include 'invoice/invoice_list.html' %}
     </section>
 </div>
-  
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var fileInput = document.getElementById('pdf_file');
         var fileLabel = document.querySelector('.custom-file-label'); // Note the change here
-                            
+                        
         fileInput.addEventListener('change', function(event) {
             var fileName = event.target.files[0].name;
             fileLabel.textContent = fileName;
             fileLabel.classList.add('file-selected'); // Add class when file is selected
-            });
+        });
     });
-    </script>
+</script>
 {% endblock %}

@@ -1,0 +1,89 @@
+:root {
+    --sidebar-bg-color: #f2f2f2;
+    --sidebar-text-color: #0b2839;
+    --content-bg-color: #ffffff; /* Changed to white */
+    --hover-bg-color: #b4dcf7;
+    --menu-text-color: #1b1c1cb0;
+    --link-hover-color: #2980b9;
+    --parent-item-border-color: #0b2839; /* Faint border for parent items */
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: Verdana;
+}
+
+.vnavbar-container {
+    display: flex;
+    width: 100%; /* Ensure container fills the width */
+    max-width: 100vw; /* Prevent horizontal overflow */
+    margin: 0 auto; /* Align container in the center */
+    padding: 2px 2px; /* Adjust padding as necessary */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.sidebar {
+    flex: 0 0 200px; /* Adjust sidebar width */
+    padding: 4px;
+    background-color: var(--sidebar-bg-color);
+    color: var(--sidebar-text-color);
+    box-sizing: border-box; /* Include padding in width calculation */
+    position: fixed;
+    top: 70px; /* Adjust based on navbar height */
+    bottom: 0;
+    overflow-y: auto;
+}
+
+.content {
+    flex-grow: 1; /* Allows content to fill remaining space */
+    padding: 4px;
+    background-color: var(--content-bg-color);
+    box-sizing: border-box; /* Include padding in width calculation */
+    margin-left: 220px; /* Adjust based on sidebar width */
+}
+
+.menu-list li {
+    padding: 10px;
+    transition: background-color 0.3s ease;
+    font-size: 15px;
+}
+
+.menu-list > li {
+    border-top: 1px solid var(--parent-item-border-color);
+}
+
+.menu-list > li:first-child {
+    border-top: none; /* Remove border for the first parent to avoid double borders */
+}
+
+.menu-list li:hover {
+    background-color: var(--hover-bg-color);
+}
+
+.menu-list li ul {
+    padding: 0;
+}
+
+/* Adjustments for child menu items */
+.menu-list li ul li {
+    padding-left: 3px; /* Reduced left padding for submenu items */
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 12px;
+}
+
+.menu-list a {
+    text-decoration: none;
+    color: var(--menu-text-color);
+    transition: color 0.3s ease;
+}
+
+/* Style adjustments for a cleaner, more minimalist look */
+.menu-list, .menu-list ul {
+    list-style-type: none; /* Removes list style */
+    margin: 0;
+    padding: 0;
+}

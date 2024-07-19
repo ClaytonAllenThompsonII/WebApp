@@ -149,8 +149,39 @@
 
         <div class="count-list-column">
             <section id="count-list">
-                <h5>Pending Inventory Measurements</h5>
-                <p>Coming soon: A dynamic list of items that require counting and/or weighting based on inventory data, invoice data, sales data, and enhanced fields like estimated expiration.</p>
+                <h5>Inventory Collection Queue
+                    <span class="info-icon" data-tooltip="This list shows the products that need to be measured for inventory.">
+                        &#9432;
+                    </span>
+                </h5>
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>GL Category</th>
+                            <th>Measurement Type</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Beef Striploin</td>
+                            <td>Meat</td>
+                            <td>Weight</td>
+                            <td>Pending</td>
+                            <td><button class="action-button">Start Measurement</button></td>
+                        </tr>
+                        <tr>
+                            <td>Chicken Breast</td>
+                            <td>Poultry</td>
+                            <td>Count</td>
+                            <td>Pending</td>
+                            <td><button class="action-button">Start Measurement</button></td>
+                        </tr>
+                        <!-- Add more rows as needed -->
+                    </tbody>
+                </table>
             </section>
         </div>
     </div>

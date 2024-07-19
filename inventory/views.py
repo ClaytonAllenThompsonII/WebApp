@@ -163,7 +163,7 @@ def inventory_view(request):
                'user_uploads': user_uploads,
                 'gl_level1_objects': gl_level1_objects,
                 }
-    return render(request, 'inventory/training_data.html', context)
+    return render(request, 'inventory/inventory_upload.html', context)
 
 
 @login_required(login_url='loginPage')

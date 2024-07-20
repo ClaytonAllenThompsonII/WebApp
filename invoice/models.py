@@ -74,6 +74,8 @@ class ProcessedLineItem(models.Model):
     unit = models.TextField(null=True, blank=True)
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     expense_row = models.TextField(null=True, blank=True)
+    gl3_id = models.IntegerField(null=True, blank=True)
+    gl3_name = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         db_table = 'out_line_item_processed'

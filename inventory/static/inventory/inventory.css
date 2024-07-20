@@ -23,7 +23,7 @@ header h1 {
     gap: 20px;
     padding: 20px;
     max-width: 1200px;
-    margin: 20px auto;
+    margin: 20px 8px;
 }
 
 .main-column, .right-column, .count-list-column {
@@ -276,5 +276,44 @@ button:hover {
 }
 
 .measure-inventory-container button:hover {
+    background-color: #0056b3;
+}
+
+
+.inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.inventory-table th, .inventory-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.inventory-table th {
+    background-color: #f2f2f2;
+    color: #333;
+}
+
+.inventory-table td {
+    background-color: #fff;
+    color: #333;
+}
+
+.inventory-table tr:hover {
+    background-color: #e7f2fb;
+}
+
+.action-button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.action-button:hover {
     background-color: #0056b3;
 }

@@ -10,7 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Upload with Inventory Product Classification</title>
-    <link rel="stylesheet" href="{% static 'inventory/inventory.css' %}">
+    <link rel="stylesheet" href="{% static 'inventory/inventory_upload.css' %}">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> <!-- Include jQuery -->
 </head>
 
@@ -31,8 +31,8 @@
             </section>
 
             <section id="welcome">
-                <p>Welcome, <b>{{ request.user.username }}</b> to <img src="{% static 'users/Cost Curve Logo.png' %}" 
-                alt="CostCurve.ai Logo" style="width: 25px; height: auto;"> Cost Curve's Inventory Processing Hub.</p>
+                <p>Welcome, <b>{{ request.user.username }}</b> to the <img src="{% static 'users/Cost Curve Logo.png' %}" 
+                alt="CostCurve.ai Logo" style="width: 25px; height: auto;"> Cost Curve Inventory Processing Hub.</p>
             </section>
 
             <section id="image-upload-classification">
@@ -49,7 +49,8 @@
 
                         <img id="product-image-preview" src="" alt="Uploaded image preview" width="350" height="350">
                     </div>
-                    <div class="classification-result">
+
+                    <div id="classification-result" class="classification-result">
                         <p>Computation time: <span id="computation-time">0.320 s</span></p>
                         <div class="classification-scores">
                             <div class="classification-item">
@@ -65,10 +66,11 @@
                             <!-- Add more classification items here as needed -->
                         </div>
                     </div>
+                
                 </form>
             </section>
+    
         </div>
-
         <div class="right-column">
             <section id="gl-product-labels">
                 <h5>Categorize & Label Inventory
@@ -132,9 +134,15 @@
                     
                     <br>
                     <button type="button" id="getWeightButton">Get Size from IoT Scale</button>
+
+                    <div class="digital-scale">
+                        <span id="digital-weight-display">00.00</span> <span id="digital-unit-display">lbs</span>
+                    </div>
                 </div>
             </section>
         </div>
+
+       
 
         <div class="count-list-column">
             <section id="count-list">
@@ -143,6 +151,13 @@
                         &#9432;
                     </span>
                 </h5>
+                <div class="filter-controls">
+                    <label for="percentile-filter">View:</label>
+                    <select id="percentile-filter" name="percentile">
+                        <option value="top50">Top 50% by Spend</option>
+                        <option value="all">All Products</option>
+                    </select>
+                </div>
                 <table class="inventory-table">
                     <thead>
                         <tr>
@@ -150,6 +165,8 @@
                             <th>GL Category</th>
                             <th>Measurement Type</th>
                             <th>Status</th>
+                            <th>Inventory Level</th>
+                            <th>Est. Depletion</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -159,13 +176,18 @@
                             <td>Meat</td>
                             <td>Weight</td>
                             <td>Pending</td>
+                            <td>50 lb</td>
+                            <td>24 lb</td>
                             <td><button class="action-button">Start Measurement</button></td>
                         </tr>
                         <tr>
                             <td>Chicken Breast</td>
                             <td>Poultry</td>
-                            <td>Count</td>
+                            <td>Weight</td>
                             <td>Pending</td>
+                            <td>43.3 lb</td>
+                            <td>40 lb</td>
+
                             <td><button class="action-button">Start Measurement</button></td>
                         </tr>
                         <!-- Add more rows as needed -->
@@ -204,6 +226,32 @@
             });
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    var sizeInput = document.getElementById('sizeInput');
+    var unitSelect = document.getElementById('unitSelect');
+    var weightDisplay = document.getElementById('digital-weight-display');
+    var unitDisplay = document.getElementById('digital-unit-display');
+
+    sizeInput.addEventListener('input', function() {
+        updateDisplay();
+    });
+
+    unitSelect.addEventListener('change', function() {
+        updateDisplay();
+    });
+
+    function updateDisplay() {
+        var weight = parseFloat(sizeInput.value).toFixed(2);
+        var unit = unitSelect.value;
+
+        weightDisplay.textContent = isNaN(weight) ? '00.00' : weight;
+        unitDisplay.textContent = unit;
+    }
+});
+    </script>
+
+
 </body>
 </html>
 {% endblock %}

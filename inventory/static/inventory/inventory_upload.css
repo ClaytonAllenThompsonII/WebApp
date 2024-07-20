@@ -1,41 +1,60 @@
-/* Existing CSS */
-
-body {
-    font-family: 'Verdana', 'Arial', sans-serif;
+body, html {
     margin: 0;
     padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Roboto', sans-serif; /* Updated font */
     background-color: #f2f2f2;
 }
 
 header {
     background-color: #e2e2e2;
     color: black;
-    padding: 20px;
-    text-align: center;
+    padding:  10px;
+    text-align: left;
+    border-bottom: 2px solid #ddd; /* Subtle border */
+
 }
 
 header h1 {
     margin: 0;
-    font-size: 28px;
+    font-size: 28px; /* Increased font size */
+    font-weight: 500; /* Bold font */
+    color: #333; /* Darker color for contrast */
+    text-transform: uppercase; /* Uppercase for strong impact */
+    letter-spacing: 1.5px; /* Increased letter spacing */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow */
+    position: relative;
+    display: inline-block;
+}
+
+header h1::after {
+    content: "";
+    display: block;
+    width: 50%;
+    height: 4px;
+    background-color: #007bff;
+    margin: 10px auto 0; /* Margin to separate line from text */
+    border-radius: 2px; /* Rounded corners */
 }
 
 .inventory-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
-    padding: 20px;
-    max-width: 1200px;
-    margin: 20px auto;
+    grid-template-columns: 2fr 1fr; /* Adjusted to balance the columns */
+    gap: 10px;
+    padding: 10px;
+    max-width: 1700px;
+    margin: 0 8px; /* Centering the layout */
 }
 
 .main-column, .right-column, .count-list-column {
     background-color: #ffffff;
-    padding: 20px;
+    padding: 10px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#upload-form {
+#image-upload-form {
     display: flex;
     flex-direction: column;
 }
@@ -48,44 +67,148 @@ header h1 {
     margin-bottom: 15px;
 }
 
-#uploaded-image {
+#product-image-preview {
     max-width: 100%;
     border: 1px solid #ddd;
     padding: 0.5rem;
-    width: 20px; /* Adjust this value as needed */
-    height: auto; /* Ensure the aspect ratio is maintained */
+    width: 350px; /* Fixed width */
+    height: 350px; /* Fixed height */
 }
 
-#image-classification {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-top: 15px;
-}
-
-#image-classification h3 {
-    margin-top: 0;
-}
-
-.drag-drop-area {
-    border: 2px dashed #ccc;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    margin-bottom: 15px;
-}
-
-#classification-result {
-    padding: 10px;
+.classification-result {
     background-color: #eef4ff;
+    padding: 10px;
     border-left: 5px solid #007bff;
     border-radius: 5px;
     display: none; /* Initially hidden, shown after classification */
+    margin-top: 15px;
 }
 
-#count-list, #weight-input, #gl-product-labels {
-    margin-bottom: 20px; /* Space between sections */
+.classification-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.classification-label {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.classification-bar {
+    flex: 3;
+    height: 10px;
+    background-color: #007bff;
+    border-radius: 5px;
+}
+
+.classification-score {
+    flex: 1;
+    text-align: right;
+    margin-left: 10px;
+}
+
+.info-icon {
+    display: inline-block;
+    margin-left: 5px;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 12px;
+    position: relative;
+}
+
+.info-icon::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%; /* Position above the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+    z-index: 1;
+    font-size: 12px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.info-icon:hover::after {
+    visibility: visible;
+    opacity: 1;
+}
+
+#gl-product-labels, #inventory-size, #count-list {
+    margin-bottom: 20px;
+}
+
+#gl-product-labels select, #inventory-size input, #inventory-size select, #inventory-size button {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 12px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.inventory-table th, .inventory-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    white-space: nowrap; /* Prevent text wrapping */
+
+}
+
+.inventory-table th {
+    background-color: #f2f2f2;
+    color: #333;
+    font-size: 10px;
+}
+
+.inventory-table td {
+    background-color: #fff;
+    color: #333;
+    font-size: 10px;
+}
+
+.inventory-table tr:hover {
+    background-color: #e7f2fb;
+}
+
+.action-button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    border-color: #333;
+}
+
+.action-button:hover {
+    background-color: #0056b3;
 }
 
 footer {
@@ -96,7 +219,7 @@ footer {
 }
 
 h5 {
-    font-size: 18px;
+    font-size: 16px;
     margin-top: 0;
 }
 
@@ -114,104 +237,65 @@ input[type="number"], select, input[type="file"] {
     border-radius: 4px;
 }
 
-/* Smaller button styling */
-button {
-    background-color: #007bff;
-    color: #fff;
-    padding: 6px 10px; /* Smaller padding for a smaller button */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 12px; /* Smaller font size */
+input[type="number"]:focus, select:focus, input[type="file"]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
-button:hover {
-    background-color: #0056b3;
+/* Filter Controls */
+.filter-controls {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px; /* Space between the filter controls and the table */
+    font-family: 'Roboto', sans-serif; /* Consistent font */
+    justify-content: flex-start; /* Align items to the start */
+
 }
 
-/* Styling for the info icon */
-.info-icon {
-    display: inline-block;
-    margin-left: 5px;
-    color: #007bff;
-    cursor: pointer;
-    font-size: 12px; /* Adjust font size to make it smaller */
-    position: relative;
+.filter-controls label {
+    font-weight: bold;
+    margin-right: 10px; /* Space between label and select box */
+    font-size: 14px; /* Font size for the label */
+    color: #333; /* Color for the label */
 }
 
-/* Tooltip styling */
-.info-icon::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%; /* Position above the icon */
-    left: 50%;
-    transform: translateX(-50%);
+.filter-controls select {
+    padding: 6px; /* Padding inside the select box */
+    font-size: 14px; /* Font size for the select box */
+    border: 1px solid #ccc; /* Border for the select box */
+    border-radius: 4px; /* Rounded corners for the select box */
+    font-family: 'Roboto', sans-serif; /* Consistent font */
+    background-color: #fff; /* Background color for the select box */
+    color: #333; /* Text color for the select box */
+    transition: border-color 0.3s ease; /* Smooth transition for border color */
+}
+
+.filter-controls select:focus {
+    border-color: #007bff; /* Border color on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Shadow on focus */
+    outline: none; /* Remove default outline */
+}
+
+.digital-scale {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background-color: #333;
-    color: #fff;
-    padding: 5px; /* Adjust padding for better fit */
-    border-radius: 5px;
-    white-space: nowrap;
-    z-index: 1;
-    font-size: 12px; /* Adjust font size as needed */
-    visibility: hidden; /* Initially hidden */
-    opacity: 0; /* Initially transparent */
-    transition: opacity 0.2s;
-}
-
-/* Show the tooltip on hover */
-.info-icon:hover::after {
-    visibility: visible;
-    opacity: 1;
-}
-
-#inventory-size {
-    background-color: #f9f9f9;
+    color: #00ff00;
+    font-family: 'Digital-7', monospace;
+    font-size: 44px; /* Large numbers */
     padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin-top: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
-}
-
-#inventory-size h5 {
-    margin-top: 0;
-    font-size: 18px;
-    color: #333;
-    font-weight: bold;
-}
-
-#inventory-size .size-inputs {
-    margin-bottom: 15px; /* Space between inputs and button */
-}
-
-#inventory-size label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #333;
-}
-
-#inventory-size input[type="number"],
-#inventory-size select {
+    border-radius: 10px;
+    margin-top: 20px;
     width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    max-width: 300px; /* Adjust as necessary */
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-#inventory-size button {
-    background-color: #007bff;
-    color: #fff;
-    padding: 6px 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 12px;
-}
-
-#inventory-size button:hover {
-    background-color: #0056b3;
+@font-face {
+    font-family: 'Digital-7';
+    src: url('https://fonts.gstatic.com/s/digital7/o-0IIpQlx3QUlC5A.ttf') format('truetype');
 }

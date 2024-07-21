@@ -28,6 +28,9 @@ class InvoiceForm(forms.ModelForm):
 class ProcessedLineItemForm(forms.ModelForm):
     class Meta:
         model = ProcessedLineItem
-        fields = [ 'brand', 'item_description', 'unit_price', 'net_amount', 'taxes', 'discount', 'quantity', 'price', 'unit_of_measure', 'pack', 'size', 'unit', 'weight']
+        fields = [ 'brand', 'item_description', 'unit_price', 
+                  'net_amount', 'taxes', 'discount', 'quantity', 
+                  'price', 'unit_of_measure', 'pack', 'size', 'unit', 
+                  'weight', 'gl3_id','gl3_name']
 
         # need to add GL3 name, GL3 ID to map line item. 

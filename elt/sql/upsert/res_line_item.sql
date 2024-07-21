@@ -22,7 +22,9 @@ INSERT INTO out_line_item (
     size,
     unit,
     weight,
-    expense_row
+    expense_row,
+    gl3_id, -- New field
+    gl3_name -- New field
 )
 SELECT
     pli.in_invoice_processing_id,
@@ -47,7 +49,9 @@ SELECT
     pli.size,
     pli.unit,
     pli.weight,
-    pli.expense_row
+    pli.expense_row,
+    NULL, -- Initial value for gl3_id
+    NULL  -- Initial value for gl3_name Make sure to check on conflict closer for these new fields. 
 FROM 
     pro_line_item_with_product_id pli
 JOIN 
@@ -76,4 +80,6 @@ ON CONFLICT (line_item_id) DO UPDATE SET
     unit = EXCLUDED.unit,
     weight = EXCLUDED.weight,
     expense_row = EXCLUDED.expense_row,
-    product_id = EXCLUDED.product_id;
+    product_id = EXCLUDED.product_id,
+    gl3_id = EXCLUDED.gl3_id, -- Include in conflict resolution
+    gl3_name = EXCLUDED.gl3_name; -- Include in conflict resolution

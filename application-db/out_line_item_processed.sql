@@ -24,6 +24,9 @@ CREATE TABLE out_line_item_processed (
     unit TEXT,
     weight NUMERIC,
     expense_row TEXT
+    gl3_id INT,
+    gl3_name TEXT;
+
 );
 
 
@@ -31,8 +34,4 @@ CREATE TABLE out_line_item_processed (
 psql -h localhost -U your_username -d your_database -c 
 
 -- update this file and fields. 
-\copy out_line_item_processed(line_item_id, in_invoice_processing_id, s3_object_key, 
-upload_date, invoice_id, invoice_receipt_id, expense_document_index, line_item_index, 
-product_id, product_code, brand, item_description, unit_price, net_amount, taxes, discount, 
-quantity, price, unit_of_measure, pack, size, unit, weight, expense_row) 
-FROM 'path/to/your/out_line_item.csv' DELIMITER ',' CSV HEADER NULL AS 'NULL';
+\copy out_line_item_processed(line_item_id, in_invoice_processing_id, s3_object_key, upload_date, invoice_id, invoice_receipt_id, expense_document_index, line_item_index, product_id, product_code, brand, item_description, unit_price, net_amount, taxes, discount, quantity, price, unit_of_measure, pack, size, unit, weight, expense_row, gl3_id, gl3_name) FROM '/Users/claytonthompson/Desktop/out_line_item.csv' DELIMITER ',' CSV HEADER NULL AS 'NULL';

@@ -31,3 +31,9 @@ CREATE TABLE out_line_item (
 
 -- Add GL3 Name. 
 -- Add GL3 ID. 
+
+ALTER TABLE out_line_item
+ADD COLUMN gl3_id INT,
+ADD COLUMN gl3_name TEXT;
+
+-- made this change, need to decide to keep or not. 

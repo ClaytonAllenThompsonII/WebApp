@@ -26,6 +26,7 @@
                 <th scope="col">Size</th>
                 <th scope="col">Unit</th>
                 <th scope="col">Weight</th>
+                <th scope="col">GL3 Name</th> <!-- New column for GL3 Name -->
             </tr>
         </thead>
         <tbody>
@@ -46,6 +47,7 @@
                 <td>{{ line_item.size }}</td>
                 <td>{{ line_item.unit }}</td>
                 <td>{{ line_item.weight }}</td>
+                <td>{{ line_item.gl3_name }}</td> <!-- New data field for GL3 Name -->
             </tr>
             {% endfor %}
         </tbody>

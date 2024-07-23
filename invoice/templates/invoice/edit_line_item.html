@@ -117,15 +117,7 @@
                     <label>{{ form.weight.label }}</label>
                     {{ form.weight }}
                 </div>
-                <!-- New fields for GL3 Name and GL3 ID -->
-                <div class="field">
-                    <label for="id_gl3_name">GL Level 3 Name</label>
-                    <input type="text" id="id_gl3_name" name="gl3_name" value="{{ line_item.gl3_name }}" readonly>
-                </div>
-                <div class="field">
-                    <label for="id_gl3_id">GL Level 3 ID</label>
-                    <input type="text" id="id_gl3_id" name="gl3_id" value="{{ line_item.gl3_id }}" readonly>
-                </div>
+                
 
 
             </div>
@@ -133,6 +125,16 @@
                 <span class="info-icon" data-tooltip="Select the appropriate GL categories for accurate accounting.">
                     &#9432;
                 </span>
+            </div>
+
+            <!-- New fields for GL3 Name and GL3 ID -->
+            <div class="field">
+                <label for="id_gl3_name">GL Level 3 Name</label>
+                <input type="text" id="id_gl3_name" name="gl3_name" value="{{ line_item.gl3_name }}" readonly>
+            </div>
+            <div class="field">
+                <label for="id_gl3_id">GL Level 3 ID</label>
+                <input type="text" id="id_gl3_id" name="gl3_id" value="{{ line_item.gl3_id }}" readonly>
             </div>
             <!-- Section for selected GL3 record -->
             <div class="selected-gl3" id="selected-gl3" style="margin: 20px 0; padding: 10px; border: 4px solid #ddd; border-radius: 8px; background-color: #f0f0f0; width: fit-content; text-align: left; display: {% if line_item.gl3_name %}block{% else %}none{% endif %};">

@@ -133,6 +133,38 @@ def edit_line_item(request, line_item_id):
     # Generate the pre-signed URL
     s3_url = s3_backend.generate_presigned_url(line_item.s3_object_key)
 
+    # Fetch GL Level 1, GL Level 2, and GL Level 3 data from ConsolidatedGL
+    gl_level_1 = ConsolidatedGL.objects.values('gl_level_1_id', 'gl_level_1_name').distinct()
+    gl_level_2 = ConsolidatedGL.objects.values('gl_level_2_id', 'gl_level_2_name').distinct()
+    gl_level_3 = ConsolidatedGL.objects.values('gl_level_3_id', 'gl_level_3_name').distinct()
+
+    if request.method == 'POST':
+        form = ProcessedLineItemForm(request.POST, instance=line_item)
+        if form.is_valid():
+            print("Form is valid. Data:", form.cleaned_data)  # Debugging line
+            form.save()
+            return redirect('line_items_by_invoice', invoice_id=line_item.invoice_id)
+        else:
+            print("Form is invalid. Errors:", form.errors)  # Debugging line
+    else:
+        form = ProcessedLineItemForm(instance=line_item)
+    
+    context = {
+        'line_item': line_item,
+        'form': form,
+        's3_url': s3_url,
+        'gl_level_1': gl_level_1,  # Pass GL Level 1 data to the template
+        'gl_level_2': gl_level_2,  # Pass GL Level 2 data to the template
+        'gl_level_3': gl_level_3,  # Pass GL Level 3 data to the template
+    }
+    return render(request, 'invoice/edit_line_item.html', context)
+    line_item = get_object_or_404(ProcessedLineItem, line_item_id=line_item_id)
+    
+    # Initialize the S3 storage backend
+    s3_backend = S3StorageBackend()
+    # Generate the pre-signed URL
+    s3_url = s3_backend.generate_presigned_url(line_item.s3_object_key)
+
      # Fetch GL Level 1, GL Level 2, and GL Level 3 data from ConsolidatedGL
     gl_level_1 = ConsolidatedGL.objects.values('gl_level_1_id', 'gl_level_1_name').distinct()
     gl_level_2 = ConsolidatedGL.objects.values('gl_level_2_id', 'gl_level_2_name').distinct()

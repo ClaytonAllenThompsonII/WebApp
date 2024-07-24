@@ -142,6 +142,8 @@ def edit_line_item(request, line_item_id):
         form = ProcessedLineItemForm(request.POST, instance=line_item)
         if form.is_valid():
             print("Form is valid. Data:", form.cleaned_data)  # Debugging line
+            print(f"Received gl3_id: {request.POST.get('gl3_id')}")
+            print(f"Received gl3_name: {request.POST.get('gl3_name')}")
             form.save()
             return redirect('line_items_by_invoice', invoice_id=line_item.invoice_id)
         else:

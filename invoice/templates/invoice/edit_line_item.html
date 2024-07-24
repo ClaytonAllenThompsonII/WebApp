@@ -128,13 +128,10 @@
             </div>
 
             <!-- New fields for GL3 Name and GL3 ID -->
+            
             <div class="field">
                 <label for="id_gl3_name">GL Level 3 Name</label>
-                <input type="text" id="id_gl3_name" name="gl3_name" value="{{ line_item.gl3_name }}" readonly>
-            </div>
-            <div class="field">
-                <label for="id_gl3_id">GL Level 3 ID</label>
-                <input type="text" id="id_gl3_id" name="gl3_id" value="{{ line_item.gl3_id }}" readonly>
+                <input type="text" id="id_gl3_name" name="gl3_name" value="{{ form.gl3_name.value }}">
             </div>
             <!-- Section for selected GL3 record -->
             <div class="selected-gl3" id="selected-gl3" style="margin: 20px 0; padding: 10px; border: 4px solid #ddd; border-radius: 8px; background-color: #f0f0f0; width: fit-content; text-align: left; display: {% if line_item.gl3_name %}block{% else %}none{% endif %};">
@@ -188,8 +185,7 @@
         </div>
 
              <!-- Hidden fields for GL3 ID and name -->
-            <input type="hidden" id="id_gl3_id" name="gl3_id">
-            <input type="hidden" id="id_gl3_name" name="gl3_name">
+            <input type="hidden" id="id_gl3_id" name="gl3_id" value="{{ form.gl3_id.value }}">
 
             <button type="submit">Save</button>
         </form>
@@ -214,7 +210,7 @@
     function selectGL3(row, gl3Name, gl3Id) {
     document.getElementById('selected-gl3-name').textContent = gl3Name;
     document.getElementById('selected-gl3').style.display = 'block';
-    document.getElementById('id_gl3_id').value = gl3Id; // Corrected assignment of gl3Id
+    document.getElementById('id_gl3_id').value = parseInt(gl3Id); // Ensure the value is an integer
     document.getElementById('id_gl3_name').value = gl3Name; // Set the hidden field value
 
     // Remove the 'selected' class from all rows

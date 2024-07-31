@@ -6,7 +6,7 @@ uploading invoice PDF files.
 
 """
 from django import forms
-from .models import Invoice, ProcessedLineItem
+from .models import Invoice, ProcessedLineItem, Product
 from inventory.models import GLLevel1, GLLevel2, GLLevel3
 
 class InvoiceForm(forms.ModelForm):
@@ -34,3 +34,14 @@ class ProcessedLineItemForm(forms.ModelForm):
                   'weight', 'gl3_id','gl3_name']
 
         # need to add GL3 name, GL3 ID to map line item. 
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = [
+            'item_description',
+            'brand',
+            'generated_product_name',
+            'enhanced_details',
+            'estimated_expiration'
+        ]

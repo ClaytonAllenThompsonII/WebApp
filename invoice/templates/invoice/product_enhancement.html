@@ -1,0 +1,89 @@
+{% extends 'users/main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'invoice/product_enhancement.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container2">
+    <div class="left-column">
+        <h2>Product Enhancement</h2>
+
+                <!-- AI Product Name & Details Section -->
+        <div class="ai-product-section">
+            <h3 class="ai-section-title"><img src="{% static 'users/Cost Curve Logo.png' %}" alt="Logo" style="height: 21px;"> AI-Powered Product Generation and Mapping</h3>
+            
+            <!-- Generate Product Name Button and Result -->
+            <button id="generate-ai-product-name" type="button" class="ai-button">🧙🏾‍♂️Generate Product Name</button>
+            <div id="ai-product-name" class="ai-result"></div>
+            
+            <!-- Enhance Product Details Button and Result -->
+            <button id="enhance-product-details" type="button" class="ai-button">✨Enhance Product Details</button>
+            <div id="ai-enhanced-product-details" class="ai-result"></div>
+        </div>
+
+        <form method="post" id="product-enhancement-form">
+            {% csrf_token %}
+            <div class="editable-fields">
+                <div class="section-title">Product Details</div>
+                <div class="field">
+                    <label for="id_item_description">Item Description</label>
+                    {{ form.item_description }}
+                </div>
+                <div class="field">
+                    <label for="id_brand">Brand</label>
+                    {{ form.brand }}
+                </div>
+                <div class="field">
+                    <label for="id_generated_product_name">Generated Product Name</label>
+                    {{ form.generated_product_name }}
+                </div>
+                <div class="field">
+                    <label for="id_enhanced_details">Enhanced Details</label>
+                    {{ form.enhanced_details }}
+                </div>
+                <div class="field">
+                    <label for="id_estimated_expiration">Estimated Expiration</label>
+                    {{ form.estimated_expiration }}
+                </div>
+                <!-- Hidden field to store product ID -->
+                <input type="hidden" id="id_product_id" name="product_id">
+            </div>
+            <button type="submit">Save</button>
+        </form>
+    </div>
+
+    <div class="right-column">
+        <h3>Product List</h3>
+        <table id="product-table">
+            <thead>
+                <tr>
+                    <th>Product ID</th>
+                    <th>Product Code</th>
+                    <th>Description</th>
+                    <th>Brand</th>
+                    <th>Generated Product Name</th>
+                    <th>Enhanced Details</th>
+                    <th>Estimated Expiration</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr data-product-id="{{ product.product_id }}" onclick="selectProduct(this, '{{ product.product_id }}', '{{ product.product_code }}', '{{ product.item_description }}', '{{ product.brand }}', '{{ product.generated_product_name }}', '{{ product.enhanced_details }}', '{{ product.estimated_expiration }}')">
+                    <td>{{ product.product_id }}</td>
+                    <td>{{ product.product_code }}</td>
+                    <td>{{ product.item_description }}</td>
+                    <td>{{ product.brand }}</td>
+                    <td>{{ product.generated_product_name }}</td>
+                    <td>{{ product.enhanced_details }}</td>
+                    <td>{{ product.estimated_expiration }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="{% static 'invoice/product_enhancement.js' %}"></script>
+{% endblock %}

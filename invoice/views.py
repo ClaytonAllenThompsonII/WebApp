@@ -234,6 +234,24 @@ def generate_product_name(request):
             product = Product.objects.get(product_id=product_id)
         except Product.DoesNotExist:
             return JsonResponse({'error': 'Product not found'}, status=404)
+        
+
+        # Fetch the related line item information
+        line_item = ProcessedLineItem.objects.filter(product_id=product_id).first()
+        # Generate the prompt
+        prompt = (
+            f"Generate a concise and appealing product name for the following details:\n"
+            f"Item Description: {product.item_description}\n"
+            f"Brand: {product.brand}\n"
+        )
+        # Add additional information if available
+        if line_item:
+            if line_item.gl3_name:
+                prompt += f"GL3 Name: {line_item.gl3_name}\n"
+            if line_item.expense_row:
+                prompt += f"Expense Row: {line_item.expense_row}\n"
+
+        prompt += "Focus on creating a name that is short, concise and clearly describes the product."
 
         # Call OpenAI API
         client = OpenAI(api_key=settings.OPENAI_API_KEY)
@@ -241,7 +259,7 @@ def generate_product_name(request):
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are an assistant skilled in generating product names."},
-                {"role": "user", "content": f"Generate a concise, appealing product name for the following details:\n\nItem Description: {product.item_description}\nBrand: {product.brand}"}
+                {"role": "user", "content": prompt}
             ]
         )
 

@@ -286,10 +286,28 @@ def enhance_product_details(request):
         except Product.DoesNotExist:
             return JsonResponse({'error': 'Product not found'}, status=404)
         
-        # Create the prompt using product details and line items
-        line_items_description = ' '.join([item.description for item in line_items])
-        prompt = f"Generate detailed, expansive enhanced details for the following product:\n\nItem Description: {product.item_description}\nBrand: {product.brand}\nLine Items: {line_items_description}"
-        
+       # Retrieve related data from ProcessedLineItems and other fields
+        line_items = ProcessedLineItem.objects.filter(product_id=product_id)
+        line_items_description = ", ".join([li.item_description for li in line_items])
+        expense_rows = ", ".join([li.expense_row for li in line_items if li.expense_row])
+        gl3_names = ", ".join([li.gl3_name for li in line_items if li.gl3_name])
+
+        # Generate the prompt
+        prompt = (
+            f"Generate a concise and clear enhanced description for the following product. "
+            f"Item descriptions on invoices can often be confusing, and we want to provide users "
+            f"with a clearer understanding of each product. Use the information available including "
+            f"item description, expense rows, and GL3 name (if any) to give a comprehensive description. "
+            f"Explain what any numbers or characters might mean relative to the product. Additionally, "
+            f"estimate the product's expiration range based on its storage requirements and typical shelf life.\n\n"
+            f"Item Description: {product.item_description}\n"
+            f"Brand: {product.brand}\n"
+            f" Make sure to ignore financial details in the expense_row"
+            f"Expense Rows: {expense_rows}\n"
+            f"GL3 Name: {gl3_names}\n"
+            f"Line Items: {line_items_description}\n"
+            f"Please be concise and avoid narrating the product. Focus on essential details only."
+        )
         # Call OpenAI API
         client = OpenAI(api_key=settings.OPENAI_API_KEY)
         response = client.chat.completions.create(

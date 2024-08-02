@@ -28,6 +28,9 @@ load_dotenv(dotenv_path=env_path)  # Load variables from .env file
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
+
 
 # AWS Configuration 
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')

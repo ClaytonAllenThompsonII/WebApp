@@ -77,8 +77,26 @@ class ProcessedLineItem(models.Model):
     gl3_id = models.IntegerField(null=True, blank=True)
     gl3_name = models.CharField(max_length=255, null=True, blank=True)
 
+
     class Meta:
         db_table = 'out_line_item_processed'
+
+
+class Product(models.Model):
+    product_id = models.IntegerField(primary_key=True)
+    product_code = models.TextField(unique=True)
+    item_description = models.TextField()
+    brand = models.TextField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    generated_product_name = models.TextField(null=True, blank=True)  # Field for OpenAI generated name
+    enhanced_details = models.TextField(null=True, blank=True)  # Field for OpenAI enhanced details
+    estimated_expiration = models.TextField(null=True, blank=True)  # Field for estimated expiration
+
+    class Meta:
+        db_table = 'out_product_enhanced'
+
+
+
 
 
 class ConsolidatedGL(models.Model):
@@ -94,3 +112,5 @@ class ConsolidatedGL(models.Model):
 
     def __str__(self):
         return f'{self.gl_level_1_name} > {self.gl_level_2_name} > {self.gl_level_3_name}'
+    
+

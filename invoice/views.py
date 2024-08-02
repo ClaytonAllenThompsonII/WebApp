@@ -199,6 +199,107 @@ def edit_line_item(request, line_item_id):
     return render(request, 'invoice/edit_line_item.html', context)
 
 
+@login_required(login_url='loginPage')
+def product_enhancement(request):
+    products = Product.objects.all()
+    
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')
+        product = get_object_or_404(Product, pk=product_id)
+        form = ProductForm(request.POST, instance=product)
+        
+        if form.is_valid():
+            form.save()
+            # You can add any additional actions here after saving the form
+    else:
+        form = ProductForm()
+    
+    context = {
+        'products': products,
+        'form': form,
+    }
+    return render(request, 'invoice/product_enhancement.html', context)
+
+@csrf_exempt
+@login_required(login_url='loginPage')
+def generate_product_name(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        product_id = data.get('product_id')
+        
+        if not product_id:
+            return JsonResponse({'error': 'Product ID not provided'}, status=400)
+
+        try:
+            product = Product.objects.get(product_id=product_id)
+        except Product.DoesNotExist:
+            return JsonResponse({'error': 'Product not found'}, status=404)
+
+        # Call OpenAI API
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an assistant skilled in generating product names."},
+                {"role": "user", "content": f"Generate a concise, appealing product name for the following details:\n\nItem Description: {product.item_description}\nBrand: {product.brand}"}
+            ]
+        )
+
+        # Accessing the generated name correctly
+        generated_name = response.choices[0].message.content.strip()
+        
+        return JsonResponse({'generated_product_name': generated_name})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+@csrf_exempt
+@login_required(login_url='loginPage')
+def enhance_product_details(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        product_id = data.get('product_id')
+        
+        if not product_id:
+            return JsonResponse({'error': 'Product ID not provided'}, status=400)
+
+        try:
+            product = Product.objects.get(product_id=product_id)
+            line_items = ProcessedLineItem.objects.filter(product_id=product_id)
+        except Product.DoesNotExist:
+            return JsonResponse({'error': 'Product not found'}, status=404)
+        
+        # Create the prompt using product details and line items
+        line_items_description = ' '.join([item.description for item in line_items])
+        prompt = f"Generate detailed, expansive enhanced details for the following product:\n\nItem Description: {product.item_description}\nBrand: {product.brand}\nLine Items: {line_items_description}"
+        
+        # Call OpenAI API
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an assistant skilled in enhancing product details."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        # Accessing the generated details correctly
+        generated_details = response.choices[0].message.content.strip()
+        
+        return JsonResponse({'enhanced_product_details': generated_details})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @login_required(login_url='loginPage')

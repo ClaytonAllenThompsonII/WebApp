@@ -1,19 +1,24 @@
 """ Views for invoice app """
 import logging
+import os
+import json
 from django.http import JsonResponse
-
+from django.views.decorators.csrf import csrf_exempt
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from botocore.exceptions import BotoCoreError, ClientError
+from openai import OpenAI
+from django.conf import settings
+
+
 from inventory.models import GLLevel1, GLLevel2, GLLevel3
 from .s3_storage_backend import S3StorageBackend
-from .models import Invoice, ProcessedInvoice, ProcessedLineItem, ConsolidatedGL
+from .models import Invoice, ProcessedInvoice, ProcessedLineItem, ConsolidatedGL, Product
+from .forms import ProcessedLineItemForm, InvoiceForm, ProductForm
 
-
-from .forms import ProcessedLineItemForm, InvoiceForm
-
+# Set the OpenAI API key
 
 logger = logging.getLogger(__name__)
 
@@ -192,6 +197,107 @@ def edit_line_item(request, line_item_id):
         'gl_level_3': gl_level_3,  # Pass GL Level 3 data to the template
     }
     return render(request, 'invoice/edit_line_item.html', context)
+
+
+@login_required(login_url='loginPage')
+def product_enhancement(request):
+    products = Product.objects.all()
+    
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')
+        product = get_object_or_404(Product, pk=product_id)
+        form = ProductForm(request.POST, instance=product)
+        
+        if form.is_valid():
+            form.save()
+            # You can add any additional actions here after saving the form
+    else:
+        form = ProductForm()
+    
+    context = {
+        'products': products,
+        'form': form,
+    }
+    return render(request, 'invoice/product_enhancement.html', context)
+
+@csrf_exempt
+@login_required(login_url='loginPage')
+def generate_product_name(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        product_id = data.get('product_id')
+        
+        if not product_id:
+            return JsonResponse({'error': 'Product ID not provided'}, status=400)
+
+        try:
+            product = Product.objects.get(product_id=product_id)
+        except Product.DoesNotExist:
+            return JsonResponse({'error': 'Product not found'}, status=404)
+
+        # Call OpenAI API
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an assistant skilled in generating product names."},
+                {"role": "user", "content": f"Generate a concise, appealing product name for the following details:\n\nItem Description: {product.item_description}\nBrand: {product.brand}"}
+            ]
+        )
+
+        # Accessing the generated name correctly
+        generated_name = response.choices[0].message.content.strip()
+        
+        return JsonResponse({'generated_product_name': generated_name})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+@csrf_exempt
+@login_required(login_url='loginPage')
+def enhance_product_details(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        product_id = data.get('product_id')
+        
+        if not product_id:
+            return JsonResponse({'error': 'Product ID not provided'}, status=400)
+
+        try:
+            product = Product.objects.get(product_id=product_id)
+            line_items = ProcessedLineItem.objects.filter(product_id=product_id)
+        except Product.DoesNotExist:
+            return JsonResponse({'error': 'Product not found'}, status=404)
+        
+        # Create the prompt using product details and line items
+        line_items_description = ' '.join([item.description for item in line_items])
+        prompt = f"Generate detailed, expansive enhanced details for the following product:\n\nItem Description: {product.item_description}\nBrand: {product.brand}\nLine Items: {line_items_description}"
+        
+        # Call OpenAI API
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an assistant skilled in enhancing product details."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        # Accessing the generated details correctly
+        generated_details = response.choices[0].message.content.strip()
+        
+        return JsonResponse({'enhanced_product_details': generated_details})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+
+
+
+
+
+
+
+
+
 
 
 

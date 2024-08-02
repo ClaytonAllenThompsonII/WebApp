@@ -37,7 +37,11 @@ urlpatterns = [
     path('gl_level_3_by_gl1/', views.gl_level_3_by_gl1, name='gl_level_3_by_gl1'),
     path('gl_level_3_by_gl2/', views.gl_level_3_by_gl2, name='gl_level_3_by_gl2'),
     path('gl_level_3_by_gl3/', views.gl_level_3_by_gl3, name='gl_level_3_by_gl3'),
-    path('get_gl_level_2/', views.get_gl_level_2, name='get_gl_level_2')
+    path('get_gl_level_2/', views.get_gl_level_2, name='get_gl_level_2'),
+    path('product-enhancement/', views.product_enhancement, name='product_enhancement'),
+    path('generate-product-name/', views.generate_product_name, name='generate_product_name'),
+    path('enhance-product-details/', views.enhance_product_details, name='enhance-product-details'),
+
 
     # Add other URL patterns as needed
 ]

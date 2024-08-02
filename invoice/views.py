@@ -1,19 +1,24 @@
 """ Views for invoice app """
 import logging
+import os
+import json
 from django.http import JsonResponse
-
+from django.views.decorators.csrf import csrf_exempt
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from botocore.exceptions import BotoCoreError, ClientError
+from openai import OpenAI
+from django.conf import settings
+
+
 from inventory.models import GLLevel1, GLLevel2, GLLevel3
 from .s3_storage_backend import S3StorageBackend
-from .models import Invoice, ProcessedInvoice, ProcessedLineItem, ConsolidatedGL
+from .models import Invoice, ProcessedInvoice, ProcessedLineItem, ConsolidatedGL, Product
+from .forms import ProcessedLineItemForm, InvoiceForm, ProductForm
 
-
-from .forms import ProcessedLineItemForm, InvoiceForm
-
+# Set the OpenAI API key
 
 logger = logging.getLogger(__name__)
 

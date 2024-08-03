@@ -2,16 +2,36 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    padding: 20px;
+    padding: 10px;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     color: #333;
+    height: 100vh; /* Full viewport height */
+    position: relative; /* Ensure the container is a positioned ancestor */
+    overflow: hidden; /* Prevents additional scrollbars on the overall page */
+
+
 }
 
-.left-column, .right-column {
-    width: 48%;
+
+.left-column {
+    
+    width: 31%;
 }
 
-h2, h3 {
+.right-column {
+    width: 66%;
+    
+    padding: 4px;
+   
+}
+.table-wrapper {
+    overflow-y: auto;
+    max-height: calc(100vh - 100px); /* Adjust height as needed */
+}
+
+
+
+h2, h3, h4 {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     color: #333;
 }
@@ -20,33 +40,50 @@ h2, h3 {
     margin-bottom: 10px;
 }
 
+/* Container for the form fields */
+.editable-fields {
+    
+    margin: 0 auto;
+    padding: 7px;
+    background-color: #f8f9fa; /* Light grey background */
+    border: 4px solid #f0f0f0; /* Light border */
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Set initial height for textareas */
+.field textarea {
+    height: 45px; /* Adjust this value as needed */
+}
+
+
+
 .field label {
     font-weight: bold;
     display: block;
-    margin-bottom: 3px;
+    margin-bottom: 5px;
     font-size: 12px;
 }
 
 .field input[type="text"], .field textarea {
-    width: 100%;
+    width: 32%;
     padding: 4px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
     font-size: 12px;
+    background-color: #fff;
+    transition: border-color 0.3s;
 }
 
-button {
-    padding: 8px 12px;
-    background-color: #007BFF;
-    border: none;
-    border-radius: 15px;
-    color: white;
-    cursor: pointer;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 12px;
-    transition: background-color 0.3s ease;
+.field input[type="text"]:focus,
+.field textarea:focus {
+    border-color: #007bff;
+    outline: none;
 }
+
+
 
 button:hover {
     background-color: #0056b3;
@@ -70,6 +107,10 @@ th {
     background-color: #f2f2f2;
     font-size: 12px;
     font-weight: normal;
+    cursor: pointer;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 tr:hover {
@@ -80,6 +121,49 @@ tr.selected {
     background-color: #d3d3d3;
     color: #333;
 }
+th.sort-asc::after {
+    content: "▲";
+}
+th.sort-desc::after {
+    content: "▼";
+}
+
+/* Add some styles for the filter options */
+.filter-options {
+    margin-bottom: 10px;
+}
+
+.filter-options label {
+    font-weight: bold;
+}
+
+.filter-options select {
+    padding: 5px;
+    margin-left: 10px;
+}
+
+/* Enhance the appearance of the table headers for sorting */
+#product-table th {
+    cursor: pointer;
+    background-color: #f1f1f1;
+}
+
+#product-table th:hover {
+    background-color: #ddd;
+}
+
+
+
+
+.enhanced-details-preview {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 200px; /* Adjust as needed */
+}
+
+
+
 
 .ai-product-section {
     margin-top: 20px;
@@ -93,4 +177,20 @@ tr.selected {
     border-radius: 4px;
     background-color: #f9f9f9;
     font-size: 12px;
+}
+
+.ai-button {
+    padding: 8px 12px;
+    font-size: 12px;
+    background-color: #f0f0f0; /* Light gray background */
+    color: #333; /* Darker text color */
+    border: 1px solid #ccc; /* Light border */
+    border-radius: 4px;
+    cursor: pointer;
+    width: 200px; /* Adjust button width */
+    text-align: left; /* Align text to the left */
+}
+
+.ai-button:hover {
+    background-color: #e0e0e0; /* Slightly darker gray on hover */
 }

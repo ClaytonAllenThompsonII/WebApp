@@ -12,7 +12,7 @@
 
                 <!-- AI Product Name & Details Section -->
         <div class="ai-product-section">
-            <h3 class="ai-section-title"><img src="{% static 'users/Cost Curve Logo.png' %}" alt="Logo" style="height: 21px;"> AI-Powered Product Generation</h3>
+            <h4 class="ai-section-title"><img src="{% static 'users/Cost Curve Logo.png' %}" alt="Logo" style="height: 21px;"> AI-Powered Product Generation</h4>
             <p> Model: OpenAI gpt-4o-mini </p>
             <!-- Generate Product Name Button and Result -->
             <button id="generate-ai-product-name" type="button" class="ai-button">🧙🏾‍♂️Generate Product Name</button>
@@ -49,40 +49,53 @@
                 </div>
                 <!-- Hidden field to store product ID -->
                 <input type="hidden" id="id_product_id" name="product_id">
+                <button type="submit">Save</button>
             </div>
-            <button type="submit">Save</button>
+            
         </form>
     </div>
 
     <div class="right-column">
-        <h3>Product List</h3>
-        <table id="product-table">
-            <thead>
-                <tr>
-                    <th>Product ID</th>
-                    <th>Product Code</th>
-                    <th>Description</th>
-                    <th>Brand</th>
-                    <th>Generated Product Name</th>
-                    <th>Enhanced Details</th>
-                    <th>Estimated Expiration</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for product in products %}
-                <tr data-product-id="{{ product.product_id }}" onclick="selectProduct(this, '{{ product.product_id }}', '{{ product.product_code }}', '{{ product.item_description }}', '{{ product.brand }}', '{{ product.generated_product_name }}', '{{ product.enhanced_details }}', '{{ product.estimated_expiration }}')">
-                    <td>{{ product.product_id }}</td>
-                    <td>{{ product.product_code }}</td>
-                    <td>{{ product.item_description }}</td>
-                    <td>{{ product.brand }}</td>
-                    <td>{{ product.generated_product_name }}</td>
-                    <td>{{ product.enhanced_details }}</td>
-                    <td>{{ product.estimated_expiration }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h3>Products</h3>
+        <!-- Filter Options -->
+        <div class="filter-options">
+            <label for="filter-select">Filter:</label>
+            <select id="filter-select">
+                <option value="all">Show All</option>
+                <option value="needs-product-name">Needs Generated Product Name</option>
+                <option value="needs-expiration">Needs Estimated Expiration</option>
+            </select>
+        </div>
+        <div class="table-wrapper">
+            <table id="product-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Product ID</th>
+                        <th onclick="sortTable(1)">Product Code</th>
+                        <th onclick="sortTable(2)">Description</th>
+                        <th onclick="sortTable(3)">Brand</th>
+                        <th onclick="sortTable(4)">Generated Product Name</th>
+                        <th onclick="sortTable(5)">Enhanced Details</th>
+                        <th onclick="sortTable(6)">Estimated Expiration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr data-product-id="{{ product.product_id }}" onclick="selectProduct(this, '{{ product.product_id }}', '{{ product.product_code }}', '{{ product.item_description }}', '{{ product.brand }}', '{{ product.generated_product_name }}', '{{ product.enhanced_details }}', '{{ product.estimated_expiration }}')">
+                        <td>{{ product.product_id }}</td>
+                        <td>{{ product.product_code }}</td>
+                        <td>{{ product.item_description }}</td>
+                        <td>{{ product.brand }}</td>
+                        <td>{{ product.generated_product_name }}</td>
+                        <td><div class="enhanced-details-preview">{{ product.enhanced_details|slice:":50" }}...</div></td>
+                        <td>{{ product.estimated_expiration }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+
 </div>
 
 <script src="{% static 'invoice/product_enhancement.js' %}"></script>

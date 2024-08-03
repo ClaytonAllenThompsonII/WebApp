@@ -1,4 +1,69 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Function to sort the table by the specified column
+    function sortTable(n) {
+        const table = document.getElementById('product-table');
+        let switching = true;
+        let dir = 'asc'; // Set the sorting direction to ascending
+        let switchcount = 0;
+
+        while (switching) {
+            switching = false;
+            const rows = table.rows;
+            let shouldSwitch = false;
+
+            for (let i = 1; i < rows.length - 1; i++) {
+                let x = rows[i].getElementsByTagName('TD')[n];
+                let y = rows[i + 1].getElementsByTagName('TD')[n];
+                let cmp = 0;
+
+                // Compare numerical values if both cells contain numbers
+                if (!isNaN(parseFloat(x.innerHTML)) && !isNaN(parseFloat(y.innerHTML))) {
+                    cmp = parseFloat(x.innerHTML) - parseFloat(y.innerHTML);
+                } else {
+                    // Compare text values
+                    cmp = x.innerHTML.toLowerCase().localeCompare(y.innerHTML.toLowerCase());
+                }
+
+                if ((dir === 'asc' && cmp > 0) || (dir === 'desc' && cmp < 0)) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                switchcount++;
+            } else {
+                if (switchcount === 0 && dir === 'asc') {
+                    dir = 'desc';
+                    switching = true;
+                }
+            }
+        }
+    }
+
+    // Function to filter the table based on selected criteria
+    function filterTable() {
+        const filter = document.getElementById('filter-select').value;
+        const rows = document.querySelectorAll('#product-table tbody tr');
+
+        rows.forEach(row => {
+            const productName = row.children[4].textContent;
+            const expiration = row.children[6].textContent;
+            row.style.display = ''; // Show all rows by default
+
+            if (filter === 'needs-product-name' && productName !== 'None') {
+                row.style.display = 'none';
+            } else if (filter === 'needs-expiration' && expiration !== 'None') {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Add event listener to the filter dropdown
+    document.getElementById('filter-select').addEventListener('change', filterTable);
+
     // Function to populate the form with selected product data
     function selectProduct(row, productId, productCode, itemDescription, brand, generatedProductName, enhancedDetails, estimatedExpiration) {
         document.getElementById('id_item_description').value = itemDescription;
@@ -110,4 +175,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return cookieValue;
     }
+
+    // Add click event listeners to headers for sorting
+    const headers = document.querySelectorAll('#product-table th');
+    headers.forEach((header, index) => {
+        header.addEventListener('click', function() {
+            console.log(`Header clicked: ${header.innerText}`);
+            sortTable(index);
+        });
+    });
 });

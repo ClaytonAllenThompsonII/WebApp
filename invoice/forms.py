@@ -7,8 +7,6 @@ uploading invoice PDF files.
 """
 from django import forms
 from .models import Invoice, ProcessedLineItem, Product
-from inventory.models import GLLevel1, GLLevel2, GLLevel3
-
 class InvoiceForm(forms.ModelForm):
     """ Form class for uploading invoice PDF files.
 

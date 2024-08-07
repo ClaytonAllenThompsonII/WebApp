@@ -12,6 +12,6 @@ CREATE TABLE out_product_enhanced (
 
 -- local testing using pg admin
 psql -h localhost -U your_username -d your_database -c 
-
+psql -h localhost -U postgres -d Demo_Test
 -- update this file and fields. 
 \copy out_product_enhanced(product_id, product_code, item_description, brand, last_updated, generated_product_name, enhanced_details, estimated_expiration) FROM '/Users/claytonthompson/Desktop/out_product_enhanced.csv' DELIMITER ',' CSV HEADER NULL AS 'NULL';

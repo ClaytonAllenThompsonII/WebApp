@@ -95,21 +95,64 @@ class Product(models.Model):
         db_table = 'out_product_enhanced'
 
 
-
-
-
-class ConsolidatedGL(models.Model):
-    gl_level_1_id = models.IntegerField()
-    gl_level_1_name = models.CharField(max_length=100)
-    gl_level_2_id = models.IntegerField()
-    gl_level_2_name = models.CharField(max_length=100)
-    gl_level_3_id = models.IntegerField()
-    gl_level_3_name = models.CharField(max_length=100)
+# Accounting
+# GLLevel1 Model
+class GLLevel1(models.Model):
+    gl1_id = models.AutoField(primary_key=True)
+    gl1_name = models.CharField(max_length=100)
+    gl1_code = models.CharField(max_length=20, unique=True, null=True, blank=True)  # Allow null temporarily
 
     class Meta:
-        db_table = 'inventory_app_consolidated_gl'  # The name of the existing table in your database
+        db_table = 'gl_level_1'
 
     def __str__(self):
-        return f'{self.gl_level_1_name} > {self.gl_level_2_name} > {self.gl_level_3_name}'
-    
+        return self.gl1_name
+
+# GLLevel2 Model
+class GLLevel2(models.Model):
+    gl2_id = models.AutoField(primary_key=True)
+    gl1 = models.ForeignKey(GLLevel1, on_delete=models.CASCADE, related_name='gl_level_2')
+    gl2_name = models.CharField(max_length=100)
+    gl2_code = models.CharField(max_length=20, unique=True, null=True, blank=True)  # Allow null temporarily
+
+    class Meta:
+        db_table = 'gl_level_2'
+        unique_together = ('gl1', 'gl2_code')
+
+    def __str__(self):
+        return self.gl2_name
+
+# GLLevel3 Model
+class GLLevel3(models.Model):
+    gl3_id = models.AutoField(primary_key=True)
+    gl2 = models.ForeignKey(GLLevel2, on_delete=models.CASCADE, related_name='gl_level_3')
+    gl3_name = models.CharField(max_length=100)
+    gl3_code = models.CharField(max_length=20, unique=True, null=True, blank=True)  # Allow null temporarily
+
+    class Meta:
+        db_table = 'gl_level_3'
+        unique_together = ('gl2', 'gl3_code')
+
+    def __str__(self):
+        return self.gl3_name
+# ConsolidatedGL Model
+# models.py
+class ConsolidatedGL(models.Model):
+    consolidated_gl_id = models.AutoField(primary_key=True)
+    gl1_id = models.IntegerField(null=True, blank=True)
+    gl1_name = models.CharField(max_length=100, null=True, blank=True)
+    gl1_code = models.CharField(max_length=20, null=True, blank=True)
+    gl2_id = models.IntegerField(null=True, blank=True)
+    gl2_name = models.CharField(max_length=100, null=True, blank=True)
+    gl2_code = models.CharField(max_length=20, null=True, blank=True)
+    gl3_id = models.IntegerField(null=True, blank=True)
+    gl3_name = models.CharField(max_length=100, null=True, blank=True)
+    gl3_code = models.CharField(max_length=20, null=True, blank=True)
+
+    class Meta:
+        db_table = 'consolidated_gl'
+        unique_together = ('gl3_id',)
+
+    def __str__(self):
+        return f"{self.gl1_name} > {self.gl2_name} > {self.gl3_name}"  
 

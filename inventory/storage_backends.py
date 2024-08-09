@@ -51,6 +51,10 @@ class AWSStorageBackend:
         # Construct the filename string
         filename = f"images/user_{user_id}_{timestamp}_{uuid.uuid4()}{file_extension}"
 
+        # Change this filename to represent the storage for the Training Data. This file name will be stored
+        # In S3 and Dynamo and will link the files for training. What is the best pattern to accomidate this
+        # Instead of saving the user_id in the path, we could add user_id and the restaurant group. 
+
         logger.debug(f"Attempting to upload file {filename} to S3")
 
         print("Attempting to upload file to S3:", filename) # Debug print

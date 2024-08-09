@@ -128,26 +128,32 @@
             </div>
 
             <!-- New fields for GL3 Name and GL3 ID -->
-            
             <div class="field">
                 <label for="id_gl3_name">GL Level 3 Name</label>
                 <input type="text" id="id_gl3_name" name="gl3_name" value="{{ form.gl3_name.value }}">
             </div>
+             <!-- Hidden fields for GL3 ID and name -->
+             <input type="hidden" id="id_gl3_id" name="gl3_id" value="{{ form.gl3_id.value }}">
+
+
             <!-- Section for selected GL3 record -->
-            <div class="selected-gl3" id="selected-gl3" style="margin: 20px 0; padding: 10px; border: 4px solid #ddd; border-radius: 8px; background-color: #f0f0f0; width: fit-content; text-align: left; display: {% if line_item.gl3_name %}block{% else %}none{% endif %};">
-                <div class="field" style="margin: 0; padding: 5px; display: block; width: 100%;">
-                    <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">Selected GL Level 3</label>
-                    <div class="value" id="selected-gl3-name" style="color: #555; background-color: #fff; padding: 10px; border-radius: 4px; text-align: left; border: 1px solid #ddd;">
+            <div class="selected-gl3" id="selected-gl3" style="display: {% if line_item.gl3_name %}block{% else %}none{% endif %};">
+                <div class="header">
+                    <i class="fas fa-check-circle"></i> Selected GL Level 3
+                </div>
+                <div class="field">
+                    <div class="value" id="selected-gl3-name">
                         {{ line_item.gl3_name }}
                     </div>
                 </div>
+                <button type="submit" class="save-button">Save</button>
             </div>
 
             <div class="filter-section">
                 <select id="gl_level_1">
                     <option value="">Select GL Level 1</option>
                     {% for gl1 in gl_level_1 %}
-                        <option value="{{ gl1.gl_level_1_id }}">{{ gl1.gl_level_1_name }}</option>
+                        <option value="{{ gl1.gl1_id }}">{{ gl1.gl1_name }}</option>
                     {% endfor %}
                 </select>
 
@@ -155,15 +161,12 @@
                     <option value="">Select GL Level 2</option>
                 </select>
 
-                <select id="gl_level_3" disabled>
-                    <option value="">Select GL Level 3</option>
-                </select>
+            
             </div>
             
 
             <div class="gl3-table">
-                <h3>L3 general ledger accounts
-                </h3>
+                <h3>GL Level 3 Records</h3>
                 <table id="gl_table">
                     <thead>
                         <tr>
@@ -174,20 +177,17 @@
                     </thead>
                     <tbody>
                         {% for gl in gl_level_3 %}
-                        <tr data-gl3-id="{{ gl.gl_level_3_id }}" onclick="selectGL3(this, '{{ gl.gl_level_3_name }}', '{{ gl.gl_level_3_id }}')">
-                            <td>{{ gl.gl_level_1_name }}</td>
-                            <td>{{ gl.gl_level_2_name }}</td>
-                            <td>{{ gl.gl_level_3_name }}</td>
+                        <tr data-gl3-id="{{ gl.gl3_id }}" onclick="selectGL3(this, '{{ gl.gl3_name }}', '{{ gl.gl3_id }}')">
+                            <td>{{ gl.gl1_name }}</td>
+                            <td>{{ gl.gl2_name }}</td>
+                            <td>{{ gl.gl3_name }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-        </div>
+            </div>
 
-             <!-- Hidden fields for GL3 ID and name -->
-            <input type="hidden" id="id_gl3_id" name="gl3_id" value="{{ form.gl3_id.value }}">
-
-            <button type="submit">Save</button>
+        
         </form>
 
         <!-- AI Product Name & Details Section -->

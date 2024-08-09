@@ -1,95 +1,135 @@
-/**
- * Script for Dynamic Dropdown Population in Inventory Management System.
- * 
- * Utilizes jQuery to implement cascading dropdown behavior in a web application form. 
- * This script dynamically populates the options of GL Level 2, GL Level 3, and Product dropdowns 
- * based on the user's selections in preceding dropdowns to ensure a coherent selection flow.
- * 
- * Features:
- * - Cascading dropdowns: GL Level 2 and GL Level 3 options are updated based on GL Level 1 selection. 
- *   Product options are updated based on GL Level 3 selection.
- * - AJAX calls: Fetches the relevant options for each dropdown from the server without reloading the page.
- * - User experience: Enhances form usability by ensuring that users can only select from relevant options at each step.
- * 
- * Dependencies: jQuery library.
- */
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded and parsed');
 
-$(document).ready(function() {
-    // Handle change in GL Level 1 dropdown to update GL Level 2 options.
-    $('#gl-level-1').change(function() {
-        var gl1_id = $(this).val();
-        // Initially reset all subsequent dropdowns to a default state.
-        $('#gl-level-2, #gl-level-3, #product').html('<option value="">-- Select an Option --</option>').prop('disabled', true);
+    const glLevel1Select = document.getElementById('gl-level-1');
+    const glLevel2Select = document.getElementById('gl-level-2');
+    const glLevel3Select = document.getElementById('gl-level-3');
+    const productSelect = document.getElementById('product');
 
-        if (gl1_id) {
-            $.ajax({
-                url: '/get_gl_level_2/',
-                data: {'gl1_id': gl1_id},
-                success: function(data) {
-                    console.log(data); // Add this line
-                    // Build options for the GL Level 2 dropdown from the AJAX response.
-                    var options = '<option value="">-- Select GL Level 2 --</option>';
-                    $.each(data, function(index, item) {
-                        options += '<option value="' + item.id + '">' + item.name + '</option>';
-                    });
-                    // Update the GL Level 2 dropdown with the new options.
-                    $('#gl-level-2').html(options).prop('disabled', false);
-                }
-            });
-        }
-    });
+    console.log('GL Level 1 Select Element:', glLevel1Select);
+    console.log('GL Level 2 Select Element:', glLevel2Select);
+    console.log('GL Level 3 Select Element:', glLevel3Select);
+    console.log('Product Select Element:', productSelect);
 
-    // Handle change in GL Level 2 dropdown to update GL Level 3 options.
-    $('#gl-level-2').change(function() {
-        var gl2_id = $(this).val();
-        // Reset GL Level 3 and Product dropdowns to ensure only relevant options are shown.
-        $('#gl-level-3, #product').html('<option value="">-- Select an Option --</option>').prop('disabled', true);
+    if (glLevel1Select) {
+        glLevel1Select.addEventListener('change', function() {
+            const gl1Id = this.value;
+            console.log('GL Level 1 changed:', gl1Id);
 
-        if (gl2_id) {
-            $.ajax({
-                url: '/get_gl_level_3/',
-                data: {'gl2_id': gl2_id},
-                success: function(data) {
-                    console.log(data); // Add this line
-                    // Build options for GL Level 3 dropdown.
-                    var options = '<option value="">-- Select GL Level 3 --</option>';
-                    $.each(data, function(index, item) {
-                        options += '<option value="' + item.id + '">' + item.name + '</option>';
-                    });
-                    // Populate GL Level 3 dropdown with relevant options.
-                    $('#gl-level-3').html(options).prop('disabled', false);
-                }
-            });
-        }
-    });
+            if (gl1Id) {
+                const fetchUrl = `/get_gl_level_2/?gl1_id=${gl1Id}`;
+                console.log('Fetch URL:', fetchUrl);
 
-    // Handle change in GL Level 3 dropdown to update Product options.
-    $('#gl-level-3').change(function() {
-        var gl3_id = $(this).val();
-        // Ensure Product dropdown is reset for a new selection.
-        $('#product').html('<option value="">-- Select a Product --</option>').prop('disabled', true);
+                fetch(fetchUrl)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('GL Level 2 data:', data);
+                        glLevel2Select.innerHTML = '<option value="">-- Select GL Level 2 --</option>';
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.id;
+                            option.textContent = item.name;
+                            glLevel2Select.appendChild(option);
+                        });
+                        glLevel2Select.disabled = false;
 
-        if (gl3_id) {
-            $.ajax({
-                url: '/get_products/',
-                data: {'gl3_id': gl3_id},
-                success: function(data) {
-                    console.log(data); // Add this line
-                    // Build options for the Product dropdown.
-                    var options = '<option value="">-- Select a Product --</option>';
-                    $.each(data, function(index, item) {
-                        options += '<option value="' + item.id + '">' + item.name + '</option>';
-                    });
-                    // Update Product dropdown with options based on GL Level 3 selection.
-                    $('#product').html(options).prop('disabled', false);
-                }
-            });
-        }
-    });
+                        // Reset GL Level 3 and product selections
+                        glLevel3Select.innerHTML = '<option value="">-- Select GL Level 3 --</option>';
+                        glLevel3Select.disabled = true;
+                        productSelect.innerHTML = '<option value="">-- Select a Product --</option>';
+                        productSelect.disabled = true;
+                    })
+                    .catch(error => console.error('Error fetching GL Level 2 data:', error));
+            } else {
+                glLevel2Select.innerHTML = '<option value="">-- Select GL Level 2 --</option>';
+                glLevel2Select.disabled = true;
+                glLevel3Select.innerHTML = '<option value="">-- Select GL Level 3 --</option>';
+                glLevel3Select.disabled = true;
+                productSelect.innerHTML = '<option value="">-- Select a Product --</option>';
+                productSelect.disabled = true;
+            }
+        });
+
+        glLevel2Select.addEventListener('change', function() {
+            const gl2Id = this.value;
+            console.log('GL Level 2 changed:', gl2Id);
+
+            if (gl2Id) {
+                const fetchUrl = `/get_gl_level_3/?gl2_id=${gl2Id}`;
+                console.log('Fetch URL:', fetchUrl);
+
+                fetch(fetchUrl)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('GL Level 3 data:', data);
+                        glLevel3Select.innerHTML = '<option value="">-- Select GL Level 3 --</option>';
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.id;
+                            option.textContent = item.name;
+                            glLevel3Select.appendChild(option);
+                        });
+                        glLevel3Select.disabled = false;
+
+                        // Reset product selection
+                        productSelect.innerHTML = '<option value="">-- Select a Product --</option>';
+                        productSelect.disabled = true;
+                    })
+                    .catch(error => console.error('Error fetching GL Level 3 data:', error));
+            } else {
+                glLevel3Select.innerHTML = '<option value="">-- Select GL Level 3 --</option>';
+                glLevel3Select.disabled = true;
+                productSelect.innerHTML = '<option value="">-- Select a Product --</option>';
+                productSelect.disabled = true;
+            }
+        });
+
+        glLevel3Select.addEventListener('change', function() {
+            const gl3Id = this.value;
+            console.log('GL Level 3 changed:', gl3Id);
+
+            if (gl3Id) {
+                const fetchUrl = `/get_products/?gl3_id=${gl3Id}`;
+                console.log('Fetch URL:', fetchUrl);
+
+                fetch(fetchUrl)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Product data:', data);
+                        productSelect.innerHTML = '<option value="">-- Select a Product --</option>';
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.id;
+                            option.textContent = item.name;
+                            productSelect.appendChild(option);
+                        });
+                        productSelect.disabled = false;
+                    })
+                    .catch(error => console.error('Error fetching product data:', error));
+            } else {
+                productSelect.innerHTML = '<option value="">-- Select a Product --</option>';
+                productSelect.disabled = true;
+            }
+        });
+    } else {
+        console.error('GL Level 1 Select Element not found');
+    }
 });
-
-
-
-
-
-

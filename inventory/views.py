@@ -143,31 +143,13 @@ def inventory_view(request):
     else:
         form = InventoryDataCollectionForm()
 
-    two_days_ago = timezone.now() - timezone.timedelta(days=2)
-    sort = request.GET.get('sort', '')  # Default to an empty string if not present
-
-    # Determine the sorting
-    if sort == 'timestamp_desc':
-        order_by = '-timestamp'
-    elif sort == 'timestamp_asc':
-        order_by = 'timestamp'
-    else:
-        order_by = '-timestamp'  # Default sorting
-
-    user_uploads = InventoryItem.objects.filter(
-        user=request.user,
-        timestamp__gte=two_days_ago,
-        filename__isnull=False  # Assuming 'filename' being non-null means successfully uploaded to S3
-        ).order_by('-timestamp')
-        
- 
-
+   
     # Query all GL Level 1 instances to pass to the template
-    gl_level1_objects = GLLevel1.objects.all()
+    gl_level1_objects = ConsolidatedGL.objects.values('gl1_id', 'gl1_name').distinct()
+
 
     # Update the context to include GL Level 1 objects along with the form
     context = {'form': form,
-               'user_uploads': user_uploads,
                 'gl_level1_objects': gl_level1_objects,
                 }
     return render(request, 'inventory/training_data.html', context)
@@ -176,51 +158,66 @@ def inventory_view(request):
 @login_required(login_url='loginPage')
 def get_gl_level_2(request):
     """
-    Responds to AJAX requests with GL Level 2 options filtered by the selected GL Level 1 ID.
-    
-    Args:
-        request: HttpRequest object containing GL Level 1 ID ('gl1_id') in GET parameters.
-    
-    Returns:
-        JsonResponse containing a list of GL Level 2 items (id and name) related to the given GL Level 1.
+    Fetch and return GL Level 2 options based on the selected GL Level 1.
+
+    This view is accessed via AJAX and returns a JSON response containing
+    the GL Level 2 categories associated with the selected GL Level 1.
     """
     gl1_id = request.GET.get('gl1_id')
-    gl2_items = GLLevel2.objects.filter(parent_id=gl1_id) # pylint: disable=no-member
-    gl2_data = [{'id': item.id, 'name': item.name} for item in gl2_items]
+    print(f"Received GL Level 1 ID: {gl1_id}")  # Debugging line
+    gl2_items = ConsolidatedGL.objects.filter(gl1_id=gl1_id).values('gl2_id', 'gl2_name').distinct()
+    print(f"GL Level 2 items: {list(gl2_items)}")  # Debugging line
+    gl2_data = [{'id': item['gl2_id'], 'name': item['gl2_name']} for item in gl2_items]
     return JsonResponse(gl2_data, safe=False)
-
 
 @login_required(login_url='loginPage')
 def get_gl_level_3(request):
     """
-    Fetches and returns GL Level 3 options via AJAX, based on a selected GL Level 2 ID.
-    
-    Args:
-        request: HttpRequest object with GL Level 2 ID ('gl2_id') provided in GET parameters.
-    
-    Returns:
-        JsonResponse with a list of GL Level 3 items (id and name) associated with the specified GL Level 2.
+    Fetch and return GL Level 3 options based on the selected GL Level 2.
+
+    This view is accessed via AJAX and returns a JSON response containing
+    the GL Level 3 categories associated with the selected GL Level 2.
     """
     gl2_id = request.GET.get('gl2_id')
-    gl3_items = GLLevel3.objects.filter(parent_id=gl2_id) # pylint: disable=no-member
-    gl3_data = [{'id': item.id, 'name': item.name} for item in gl3_items]
+    gl3_items = ConsolidatedGL.objects.filter(gl2_id=gl2_id).values('gl3_id', 'gl3_name').distinct()
+    gl3_data = [{'id': item['gl3_id'], 'name': item['gl3_name']} for item in gl3_items]
     return JsonResponse(gl3_data, safe=False)
-
 
 
 @login_required(login_url='loginPage')
 def get_products(request):
     """
-    Provides AJAX functionality to retrieve products based on the selected GL Level 3 ID.
-    
-    Args:
-        request: HttpRequest object that includes GL Level 3 ID ('gl3_id') in GET query parameters.
-    
-    Returns:
-        JsonResponse with a list of products (id and name) under the chosen GL Level 3 category.
-    """
-    gl3_id = request.GET.get('gl3_id')
-    products = Product.objects.filter(parent_id=gl3_id) # pylint: disable=no-member
-    product_data = [{'id': product.id, 'name': product.name} for product in products]
-    return JsonResponse(product_data, safe=False)
+    Fetch and return product options based on the selected GL Level 3.
 
+    This view is accessed via AJAX and returns a JSON response containing
+    the products associated with the selected GL Level 3.
+    """
+    # Get the gl3_id from the request
+    gl3_id = request.GET.get('gl3_id')
+    
+    if gl3_id:
+        # Filter ProcessedLineItem records with the given gl3_id
+        line_items = ProcessedLineItem.objects.filter(gl3_id=gl3_id)
+        
+        # Collect unique product IDs from the filtered line items
+        product_ids = line_items.values_list('product_id', flat=True).distinct()
+        
+        # Filter the Product records with the collected product IDs
+        products = Product.objects.filter(product_id__in=product_ids)
+        
+        # Construct the list of dictionaries containing product details
+        product_data = []
+        for product in products:
+            line_item = line_items.filter(product_id=product.product_id).first()
+            product_data.append({
+                'id': product.product_id,
+                'name': product.generated_product_name or product.item_description,
+                'gl3_name': line_item.gl3_name,
+                'gl3_id': line_item.gl3_id
+            })
+        
+        # Return the JSON response with the product data
+        return JsonResponse(product_data, safe=False)
+    else:
+        # Return an error message if gl3_id is not provided
+        return JsonResponse({'error': 'GL3 ID not provided'}, status=400)

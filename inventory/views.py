@@ -103,14 +103,15 @@ def inventory_view(request):
 
                 # Prepare and store metadata in DynamoDB
                 item_data = {
+                    'inventory_item_id': {'S': str(inventory_item.inventory_item_id)},  # Include inventory_item_id
                     'filename': {'S': filename},
-                    'gl_level_1_id': {'S': str(inventory_item.gl_level_1_id.gl1_id)},
+                    'gl_level_1_id': {'S': str(inventory_item.gl_level_1_id)},
                     'gl_level_1_name': {'S': inventory_item.gl_level_1_name},
-                    'gl_level_2_id': {'S': str(inventory_item.gl_level_2_id.gl2_id)},
+                    'gl_level_2_id': {'S': str(inventory_item.gl_level_2_id)},
                     'gl_level_2_name': {'S': inventory_item.gl_level_2_name},
-                    'gl_level_3_id': {'S': str(inventory_item.gl_level_3_id.gl3_id)},
+                    'gl_level_3_id': {'S': str(inventory_item.gl_level_3_id)},
                     'gl_level_3_name': {'S': inventory_item.gl_level_3_name},
-                    'product_id': {'S': str(inventory_item.product_id.product_id)},
+                    'product_id': {'S': str(inventory_item.product_id)},
                     'product_name': {'S': inventory_item.product_name},
                     'size': {'N': str(inventory_item.size) if inventory_item.size else '0'},
                     'unit': {'S': inventory_item.unit if inventory_item.unit else ''},

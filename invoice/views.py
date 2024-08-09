@@ -100,7 +100,7 @@ def upload_invoice(request):
                'invoices': invoices,
                 }    
         
-    return render(request, 'invoice/upload_invoice.html', context)
+    return render(request, 'invoice/invoice_upload.html', context)
 
 
 @login_required(login_url='loginPage')

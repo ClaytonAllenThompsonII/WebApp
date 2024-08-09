@@ -7,8 +7,7 @@
 {% endblock %}
 
 {% block content %}
-
-<div class="invoice-upload-container"> 
+<div class="upload-page-container"> 
     <!-- Upload Section -->
     <section class="upload-section">
         <div class="card shadow-lg">
@@ -29,13 +28,28 @@
                     {% csrf_token %}
                     <div class="input-group custom-upload-group">
                         <label class="custom-file-label" for="pdf_file">Select Invoice PDF</label>
-                        <input type="file" class="custom-file-input" id="pdf_file" name="pdf_file">
+                        <input type="file" class="custom-file-input" id="pdf_file" name="pdf_file"></input>
+                    </div>
+                    <div class="btn-upload-wrapper">
                         <button type="submit" class="btn btn-upload">Upload</button>
                     </div>
+
                 </form>
             </div>
         </div>
+
+        <!-- New Card for iPad PDF Scan -->
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <h5 class="card-title text-center mb-4">📱Scan Invoice with iPad</h5>
+                <button type="button" class="btn btn-scan">Scan with iPad</button>
+            </div>
+        </div>
+    
     </section>
+</div>
+
+<div class="invoice-table-container">
     <section class="invoice-table">
         {% include 'invoice/invoice_list.html' %}
     </section>
@@ -44,12 +58,12 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var fileInput = document.getElementById('pdf_file');
-        var fileLabel = document.querySelector('.custom-file-label'); // Note the change here
-                        
+        var fileLabel = document.querySelector('.custom-file-label');
+
         fileInput.addEventListener('change', function(event) {
             var fileName = event.target.files[0].name;
             fileLabel.textContent = fileName;
-            fileLabel.classList.add('file-selected'); // Add class when file is selected
+            fileLabel.classList.add('file-selected');
         });
     });
 </script>

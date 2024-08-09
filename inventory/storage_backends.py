@@ -1,4 +1,17 @@
-""" Add Module Doc String"""
+"""
+AWS Storage Backend Module
+
+This module provides a backend interface for interacting with AWS S3 and DynamoDB services.
+It facilitates the upload of files to S3 and the creation of inventory items in DynamoDB. The 
+primary use case is handling image storage and metadata management for an inventory processing system.
+
+Classes:
+    AWSStorageBackend: Handles S3 file uploads and DynamoDB item creation.
+
+Requirements:
+    - boto3: AWS SDK for Python.
+    - AWS credentials and region settings configured in Django settings or environment variables.
+"""
 from datetime import datetime
 import os
 import uuid

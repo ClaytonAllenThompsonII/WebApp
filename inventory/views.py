@@ -1,57 +1,37 @@
 """
-Django Views for Inventory Data Collection.
+Inventory Data Collection Views
 
-This module provides a suite of views to support inventory data collection within a Django web
-application. It facilitates the inventory management process from data input by users to backend
-processing and storage.
+This module provides Django views for handling inventory data collection,
+image uploads, and product classification. Key features include:
+- Rendering and processing inventory data collection forms.
+- Dynamic cascading dropdowns for GL levels and product selection.
+- Integration with AWS services for file storage and metadata management.
 
-Key Components:
-- `inventory_view`: Renders the inventory data collection form. It handles GET and POST requests,
-  processing form data for submissions and saving it to the database. User success notifications
-  are managed through this view, secured with `@login_required` to ensure only authenticated users
-  can submit data.
+Key Views:
+- `inventory_view`: Handles the display and processing of the inventory form.
+- `get_gl_level_2`, `get_gl_level_3`, `get_products`: AJAX views for dynamic dropdown population.
 
-- AJAX Views (`get_gl_level_2`, `get_gl_level_3`, `get_products`): Enhance user experience by
-  dynamically updating dropdown fields based on previous selections. They provide JSON data for
-  cascading dropdown options, facilitating a hierarchical selection process.
-
-Modules and Frameworks Utilized:
-- `django.shortcuts`: Facilitates rendering templates and redirecting URLs.
-- `django.contrib.auth.decorators`: Contains `@login_required` for access control.
-- `django.contrib.messages`: Enables queuing and displaying messages to users.
-- `forms.inventoryDataCollectionForm`: Custom form class specifying the structure and validation
-  criteria for the data collection form.
-
-Usage Guidelines:
-1. Incorporate into your project's `views.py` to use the defined views for inventory management.
-2. Map `inventory_view` to a URL pattern in `urls.py` for the form endpoint.
-3. Map AJAX views similarly and utilize with JavaScript for dynamic form field population.
-
-This module aims to streamline inventory item management, ensuring data integrity, enhancing user
-experience, and maintaining secure access to functionalities.
-
-    Decorators:
-        - @login_required(login_url='loginPage'): Ensures that only
-          authenticated users can access the view. Redirects to the
-          login page if the user is not authenticated.
- """
+Requirements:
+- Django's authentication system for user access control.
+- Dependencies on external models (GL levels, products) and storage backends (AWS S3, DynamoDB).
+"""
 import logging
 from django.db import IntegrityError, DatabaseError
 from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from botocore.exceptions import BotoCoreError, ClientError
+from django.http import JsonResponse
+
+
+from invoice.models import ConsolidatedGL, Product, ProcessedLineItem
+
 from .forms import InventoryDataCollectionForm
 from .storage_backends import AWSStorageBackend
-from botocore.exceptions import BotoCoreError, ClientError
 
-from django.http import JsonResponse
-from .models import GLLevel1
-from .models import GLLevel2
-from .models import GLLevel3
-from .models import Product
+
 from .models import InventoryItem
-
 
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -63,7 +43,13 @@ logger = logging.getLogger(__name__)
 
 @login_required(login_url='loginPage')
 def inventory_view(request):
-    """ Handles inventory data collection and submission. """
+    """ 
+    Render and process the inventory data collection form.
+
+    This view handles both GET and POST requests. On GET, it renders the form for
+    inventory data submission. On POST, it processes the form data, including image
+    uploads and classification, and saves the data to the database and AWS services.
+     """
     print("Entered inventory_view function")  # Debug print
     if request.method == 'POST':
         print("POST request received")
@@ -73,7 +59,26 @@ def inventory_view(request):
             storage_backend = AWSStorageBackend() # instantiate storage backend.
             inventory_item = form.save(commit=False) # Create model instance without saving.
             inventory_item.user = request.user # set the user here
+
+            # Set the name fields based on the selected objects
+            if inventory_item.gl_level_1_id:
+                gl1 = ConsolidatedGL.objects.get(gl1_id=inventory_item.gl_level_1_id.gl1_id)
+                inventory_item.gl_level_1_name = gl1.gl1_name
+            if inventory_item.gl_level_2_id:
+                gl2 = ConsolidatedGL.objects.get(gl2_id=inventory_item.gl_level_2_id.gl2_id)
+                inventory_item.gl_level_2_name = gl2.gl2_name
+            if inventory_item.gl_level_3_id:
+                gl3 = ConsolidatedGL.objects.get(gl3_id=inventory_item.gl_level_3_id.gl3_id)
+                inventory_item.gl_level_3_name = gl3.gl3_name
+            if inventory_item.product_id:
+                product = Product.objects.get(product_id=inventory_item.product_id.product_id)
+                inventory_item.product_name = product.name
+
             inventory_item.save()
+            print(f"Selected GL Level 1 ID: {inventory_item.gl_level_1_id}")
+            print(f"Selected GL Level 2 ID: {inventory_item.gl_level_2_id}")
+            print(f"Selected GL Level 3 ID: {inventory_item.gl_level_3_id}")
+            print(f"Selected Product ID: {inventory_item.product_id}")
 
             try:
                 # Upload image to S3 and get filename
@@ -83,14 +88,16 @@ def inventory_view(request):
                 # Prepare and store metadata in DynamoDB
                 item_data = {
                     'filename': {'S': filename},
-                    'gl_level_1_id': {'S': str(inventory_item.gl_level_1.id)},
-                    'gl_level_1_name': {'S': inventory_item.gl_level_1.name},
-                    'gl_level_2_id': {'S': str(inventory_item.gl_level_2.id)},
-                    'gl_level_2_name': {'S': inventory_item.gl_level_2.name},
-                    'gl_level_3_id': {'S': str(inventory_item.gl_level_3.id)},
-                    'gl_level_3_name': {'S': inventory_item.gl_level_3.name},
-                    'product_id': {'S': str(inventory_item.product.id)},
-                    'product_name': {'S': inventory_item.product.name},
+                    'gl_level_1_id': {'S': str(inventory_item.gl_level_1_id.gl1_id)},
+                    'gl_level_1_name': {'S': inventory_item.gl_level_1_name},
+                    'gl_level_2_id': {'S': str(inventory_item.gl_level_2_id.gl2_id)},
+                    'gl_level_2_name': {'S': inventory_item.gl_level_2_name},
+                    'gl_level_3_id': {'S': str(inventory_item.gl_level_3_id.gl3_id)},
+                    'gl_level_3_name': {'S': inventory_item.gl_level_3_name},
+                    'product_id': {'S': str(inventory_item.product_id.product_id)},
+                    'product_name': {'S': inventory_item.product_name},
+                    'size': {'N': str(inventory_item.size) if inventory_item.size else '0'},
+                    'unit': {'S': inventory_item.unit if inventory_item.unit else ''},
                     'timestamp': {'S': inventory_item.timestamp.strftime('%Y-%m-%d %H:%M:%S')},
                     'user_id': {'N': str(inventory_item.user.id)}  # Assuming user ID is a number
                 }

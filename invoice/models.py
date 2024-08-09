@@ -10,10 +10,10 @@ from django.db import models
 from django.contrib.auth import get_user_model
 # Create your models here.
 
+# Invoices
 class Invoice(models.Model):
     """ Model to store uploaded invoices.
         This model represents an invoice uploaded by a user """
-    
      # FileField to store the PDF invoice file
     pdf_file = models.FileField(upload_to='invoices/')
     # DateTimeField to store the upload timestamp
@@ -23,6 +23,9 @@ class Invoice(models.Model):
     # CharField to store the filename of the uploaded invoice
     filename = models.CharField(max_length=255) # to store the image filename in S3.
     # Add other fields as needed
+
+    class Meta: 
+        db_table = 'in_invoice_processing'
 
     def __str__(self):
         return f"Invoice {self.filename} uploaded by {self.user.username} at {self.uploaded_at}"
@@ -46,11 +49,8 @@ class ProcessedInvoice(models.Model):
     class Meta:
         db_table = 'out_invoice_processed'  # The actual table name in your PostgreSQL application db
 
-
-
-
 class ProcessedLineItem(models.Model):
-    line_item_id = models.IntegerField(null=True, blank=True)  # Add this line
+    line_item_id = models.IntegerField(primary_key=True)  # Add this line
     in_invoice_processing_id = models.IntegerField(null=True, blank=True)
     s3_object_key = models.TextField(null=True, blank=True)
     upload_date = models.DateTimeField(null=True, blank=True)
@@ -74,17 +74,16 @@ class ProcessedLineItem(models.Model):
     unit = models.TextField(null=True, blank=True)
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     expense_row = models.TextField(null=True, blank=True)
-    gl3_id = models.IntegerField(null=True, blank=True)
-    gl3_name = models.CharField(max_length=255, null=True, blank=True)
+    gl3_id = models.IntegerField(null=True, blank=True) # Mapping Field
+    gl3_name = models.CharField(max_length=255, null=True, blank=True) # Mapping Field
 
 
     class Meta:
         db_table = 'out_line_item_processed'
 
-
 class Product(models.Model):
     product_id = models.IntegerField(primary_key=True)
-    product_code = models.TextField(unique=True)
+    product_code = models.TextField()
     item_description = models.TextField()
     brand = models.TextField(null=True, blank=True)
     last_updated = models.DateTimeField(auto_now=True)

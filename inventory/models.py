@@ -28,5 +28,10 @@ class InventoryItem(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.product_name or "No Product"} ({self.timestamp})'
+    
+    
+    # Consider changing table name to better for cleaner naming. 
+    #class Meta:
+        #db_table = 'inventory_item_records'
 
 

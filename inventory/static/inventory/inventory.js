@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (glLevel1Select) {
         glLevel1Select.addEventListener('change', function() {
             const gl1Id = this.value;
+            document.getElementById('gl_level_1_id').value = gl1Id;
+            document.getElementById('gl_level_1_name').value = glLevel1Select.options[glLevel1Select.selectedIndex].text;
+
             console.log('GL Level 1 changed:', gl1Id);
 
             if (gl1Id) {
@@ -58,6 +61,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         glLevel2Select.addEventListener('change', function() {
             const gl2Id = this.value;
+            document.getElementById('gl_level_2_id').value = gl2Id;
+            document.getElementById('gl_level_2_name').value = glLevel2Select.options[glLevel2Select.selectedIndex].text;
             console.log('GL Level 2 changed:', gl2Id);
 
             if (gl2Id) {
@@ -98,6 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         glLevel3Select.addEventListener('change', function() {
             const gl3Id = this.value;
+            document.getElementById('gl_level_3_id').value = gl3Id;
+            document.getElementById('gl_level_3_name').value = glLevel3Select.options[glLevel3Select.selectedIndex].text;
             console.log('GL Level 3 changed:', gl3Id);
 
             if (gl3Id) {
@@ -128,6 +135,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 productSelect.innerHTML = '<option value="">-- Select a Product --</option>';
                 productSelect.disabled = true;
             }
+        });
+
+        productSelect.addEventListener('change', function() {
+            const productId = this.value;
+            document.getElementById('product_id').value = productId;
+            document.getElementById('product_name').value = productSelect.options[productSelect.selectedIndex].text;
         });
     } else {
         console.error('GL Level 1 Select Element not found');

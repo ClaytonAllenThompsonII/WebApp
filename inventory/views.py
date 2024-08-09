@@ -59,26 +59,42 @@ def inventory_view(request):
             storage_backend = AWSStorageBackend() # instantiate storage backend.
             inventory_item = form.save(commit=False) # Create model instance without saving.
             inventory_item.user = request.user # set the user here
-
-            # Set the name fields based on the selected objects
-            if inventory_item.gl_level_1_id:
-                gl1 = ConsolidatedGL.objects.get(gl1_id=inventory_item.gl_level_1_id.gl1_id)
-                inventory_item.gl_level_1_name = gl1.gl1_name
-            if inventory_item.gl_level_2_id:
-                gl2 = ConsolidatedGL.objects.get(gl2_id=inventory_item.gl_level_2_id.gl2_id)
-                inventory_item.gl_level_2_name = gl2.gl2_name
-            if inventory_item.gl_level_3_id:
-                gl3 = ConsolidatedGL.objects.get(gl3_id=inventory_item.gl_level_3_id.gl3_id)
-                inventory_item.gl_level_3_name = gl3.gl3_name
-            if inventory_item.product_id:
-                product = Product.objects.get(product_id=inventory_item.product_id.product_id)
-                inventory_item.product_name = product.name
-
-            inventory_item.save()
             print(f"Selected GL Level 1 ID: {inventory_item.gl_level_1_id}")
             print(f"Selected GL Level 2 ID: {inventory_item.gl_level_2_id}")
             print(f"Selected GL Level 3 ID: {inventory_item.gl_level_3_id}")
             print(f"Selected Product ID: {inventory_item.product_id}")
+
+            # Ensure size and unit fields are captured
+            inventory_item.size = form.cleaned_data.get('size')
+            inventory_item.unit = form.cleaned_data.get('unit')
+
+            # Debug prints for size and unit
+            print(f"Size received: {inventory_item.size}")
+            print(f"Unit received: {inventory_item.unit}")
+
+            # Set the name fields based on the selected objects
+            if inventory_item.gl_level_1_id:
+                gl1 = ConsolidatedGL.objects.filter(gl1_id=inventory_item.gl_level_1_id).first()
+                if gl1:
+                    inventory_item.gl_level_1_name = gl1.gl1_name
+
+            if inventory_item.gl_level_2_id:
+                gl2 = ConsolidatedGL.objects.filter(gl2_id=inventory_item.gl_level_2_id).first()
+                if gl2:
+                    inventory_item.gl_level_2_name = gl2.gl2_name
+
+            if inventory_item.gl_level_3_id:
+                gl3 = ConsolidatedGL.objects.filter(gl3_id=inventory_item.gl_level_3_id).first()
+                if gl3:
+                    inventory_item.gl_level_3_name = gl3.gl3_name
+
+            if inventory_item.product_id:
+                product = Product.objects.filter(product_id=inventory_item.product_id).first()
+                if product:
+                    inventory_item.product_name = product.generated_product_name  # Corrected line
+
+            inventory_item.save()
+            
 
             try:
                 # Upload image to S3 and get filename
@@ -87,14 +103,15 @@ def inventory_view(request):
 
                 # Prepare and store metadata in DynamoDB
                 item_data = {
+                    'inventory_item_id': {'S': str(inventory_item.inventory_item_id)},  # Include inventory_item_id
                     'filename': {'S': filename},
-                    'gl_level_1_id': {'S': str(inventory_item.gl_level_1_id.gl1_id)},
+                    'gl_level_1_id': {'S': str(inventory_item.gl_level_1_id)},
                     'gl_level_1_name': {'S': inventory_item.gl_level_1_name},
-                    'gl_level_2_id': {'S': str(inventory_item.gl_level_2_id.gl2_id)},
+                    'gl_level_2_id': {'S': str(inventory_item.gl_level_2_id)},
                     'gl_level_2_name': {'S': inventory_item.gl_level_2_name},
-                    'gl_level_3_id': {'S': str(inventory_item.gl_level_3_id.gl3_id)},
+                    'gl_level_3_id': {'S': str(inventory_item.gl_level_3_id)},
                     'gl_level_3_name': {'S': inventory_item.gl_level_3_name},
-                    'product_id': {'S': str(inventory_item.product_id.product_id)},
+                    'product_id': {'S': str(inventory_item.product_id)},
                     'product_name': {'S': inventory_item.product_name},
                     'size': {'N': str(inventory_item.size) if inventory_item.size else '0'},
                     'unit': {'S': inventory_item.unit if inventory_item.unit else ''},

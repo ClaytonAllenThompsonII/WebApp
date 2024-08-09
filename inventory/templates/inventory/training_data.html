@@ -40,6 +40,21 @@
                 <h3>⚡️ Image Upload & Classification <span class="info-icon" data-tooltip="This tool allows you to upload and classify images for inventory management.">&#9432;</span></h3>
                 <form id="image-upload-form" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+
+                     <!-- Hidden fields to store the selected IDs and names -->
+                    <input type="hidden" id="gl_level_1_id" name="gl_level_1">
+                    <input type="hidden" id="gl_level_1_name" name="gl_level_1_name">
+                    <input type="hidden" id="gl_level_2_id" name="gl_level_2">
+                    <input type="hidden" id="gl_level_2_name" name="gl_level_2_name">
+                    <input type="hidden" id="gl_level_3_id" name="gl_level_3">
+                    <input type="hidden" id="gl_level_3_name" name="gl_level_3_name">
+                    <input type="hidden" id="product_id" name="product">
+                    <input type="hidden" id="product_name" name="product_name">
+
+                    <!-- Hidden fields for size and unit -->
+                    <input type="hidden" id="hidden_size" name="size">
+                    <input type="hidden" id="hidden_unit" name="unit">
+
                     <div class="input-group">
                         <label for="product-image">Upload Product Image:</label>
                         <input type="file" id="product-image" name="image" accept="image/*">
@@ -66,6 +81,12 @@
                             </div>
                             <!-- Add more classification items here as needed -->
                         </div>
+                    </div>
+
+                    <div class="step">
+                        
+                        <button type="submit" form="image-upload-form">Upload Image+Label</button>
+                        <p>Press the upload button.</p>
                     </div>
                 
                 </form>
@@ -107,10 +128,7 @@
                             <option value="">-- Select a Product --</option>
                         </select>
                     </div>
-                    <div class="step">
-                        <p>Press the upload button.</p>
-                        <button type="submit" form="image-upload-form">Upload Label</button>
-                    </div>
+                
                 </div>
             </section>
 

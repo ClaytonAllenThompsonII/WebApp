@@ -23,7 +23,7 @@ class InventoryDataCollectionForm(forms.ModelForm):
     class Meta:
         model = InventoryItem
         fields = [
-            'user', 'image', 'filename',
+            'image',  # Removed 'user' and 'filename'
             'gl_level_1', 'gl_level_1_name',
             'gl_level_2', 'gl_level_2_name',
             'gl_level_3', 'gl_level_3_name',

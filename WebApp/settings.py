@@ -62,7 +62,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'inventory.apps.InventoryConfig',
-    'invoice.apps.InvoiceConfig',  
+    'invoice.apps.InvoiceConfig',
+    'image_classifier',  
 ]
 
 MIDDLEWARE = [

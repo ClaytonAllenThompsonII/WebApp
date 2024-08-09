@@ -4,6 +4,8 @@ import os
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -12,8 +14,7 @@ from botocore.exceptions import BotoCoreError, ClientError
 from openai import OpenAI
 from django.conf import settings
 
-
-from inventory.models import GLLevel1, GLLevel2, GLLevel3
+from inventory.models import InventoryItem
 from .s3_storage_backend import S3StorageBackend
 from .models import Invoice, ProcessedInvoice, ProcessedLineItem, ConsolidatedGL, Product
 from .forms import ProcessedLineItemForm, InvoiceForm, ProductForm
@@ -24,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Create your views here.
 
+#Invoice Views 
 @login_required(login_url='loginPage')
 def upload_invoice(request):
     """ Handles invoice file upload and submission"""
@@ -74,13 +76,31 @@ def upload_invoice(request):
     else:
         form = InvoiceForm()
 
+    two_days_ago = timezone.now() - timezone.timedelta(days=2)
+    sort = request.GET.get('sort', '')  # Default to an empty string if not present
+
+    # Determine the sorting
+    if sort == 'timestamp_desc':
+        order_by = '-timestamp'
+    elif sort == 'timestamp_asc':
+        order_by = 'timestamp'
+    else:
+        order_by = '-timestamp'  # Default sorting
+
+    user_uploads = InventoryItem.objects.filter(
+        user=request.user,
+        timestamp__gte=two_days_ago,
+        filename__isnull=False  # Assuming 'filename' being non-null means successfully uploaded to S3
+        ).order_by('-timestamp')
+
     invoices = Invoice.objects.all().order_by('-uploaded_at')  # Order by upload date (optional)
 
     context = {'form': form,
+               'user_uploads': user_uploads,
                'invoices': invoices,
                 }    
         
-    return render(request, 'invoice/upload_invoice.html', context)
+    return render(request, 'invoice/invoice_upload.html', context)
 
 
 @login_required(login_url='loginPage')
@@ -102,6 +122,7 @@ def invoice_repo(request):
     return render(request, 'invoice/invoice_repo.html', context)
 
 
+# Line Item Views
 @login_required(login_url='loginPage')
 def line_items_repo(request):
     sort_by = request.GET.get('sort_by', 'invoice_id')
@@ -115,7 +136,6 @@ def line_items_repo(request):
         'line_items': line_items,
     }
     return render(request, 'invoice/invoice_line_item_list.html', context)
-
 
 
 @login_required(login_url='loginPage')
@@ -139,9 +159,10 @@ def edit_line_item(request, line_item_id):
     s3_url = s3_backend.generate_presigned_url(line_item.s3_object_key)
 
     # Fetch GL Level 1, GL Level 2, and GL Level 3 data from ConsolidatedGL
-    gl_level_1 = ConsolidatedGL.objects.values('gl_level_1_id', 'gl_level_1_name').distinct()
-    gl_level_2 = ConsolidatedGL.objects.values('gl_level_2_id', 'gl_level_2_name').distinct()
-    gl_level_3 = ConsolidatedGL.objects.values('gl_level_3_id', 'gl_level_3_name').distinct()
+    gl_level_1 = ConsolidatedGL.objects.values('gl1_id', 'gl1_name').distinct()
+    gl_level_2 = ConsolidatedGL.objects.values('gl2_id', 'gl2_name').distinct()
+    # Fetch all GL Level 3 records with associated GL Level 1 and GL Level 2 names
+    gl_level_3 = ConsolidatedGL.objects.all().values('gl1_name', 'gl2_name', 'gl3_name', 'gl3_id')
 
     if request.method == 'POST':
         form = ProcessedLineItemForm(request.POST, instance=line_item)
@@ -165,40 +186,11 @@ def edit_line_item(request, line_item_id):
         'gl_level_3': gl_level_3,  # Pass GL Level 3 data to the template
     }
     return render(request, 'invoice/edit_line_item.html', context)
-    line_item = get_object_or_404(ProcessedLineItem, line_item_id=line_item_id)
-    
-    # Initialize the S3 storage backend
-    s3_backend = S3StorageBackend()
-    # Generate the pre-signed URL
-    s3_url = s3_backend.generate_presigned_url(line_item.s3_object_key)
-
-     # Fetch GL Level 1, GL Level 2, and GL Level 3 data from ConsolidatedGL
-    gl_level_1 = ConsolidatedGL.objects.values('gl_level_1_id', 'gl_level_1_name').distinct()
-    gl_level_2 = ConsolidatedGL.objects.values('gl_level_2_id', 'gl_level_2_name').distinct()
-    gl_level_3 = ConsolidatedGL.objects.values('gl_level_3_id', 'gl_level_3_name').distinct()
-
-     # Print the pre-signed URL for debugging
-    print("Generated S3 URL:", s3_url)
-    
-    if request.method == 'POST':
-        form = ProcessedLineItemForm(request.POST, instance=line_item)
-        if form.is_valid():
-            form.save()
-            return redirect('line_items_by_invoice', invoice_id=line_item.invoice_id)
-    else:
-        form = ProcessedLineItemForm(instance=line_item)
-    
-    context = {
-        'line_item': line_item,
-        'form': form,
-        's3_url': s3_url,
-        'gl_level_1': gl_level_1,  # Pass GL Level 1 data to the template
-        'gl_level_2': gl_level_2,  # Pass GL Level 2 data to the template
-        'gl_level_3': gl_level_3,  # Pass GL Level 3 data to the template
-    }
-    return render(request, 'invoice/edit_line_item.html', context)
 
 
+
+
+# Product Views
 @login_required(login_url='loginPage')
 def product_enhancement(request):
     products = Product.objects.all()
@@ -327,25 +319,22 @@ def enhance_product_details(request):
 
 
 
+# Add comments, Doc strings; 
 
 
-
-
-
-
-
-
-
-
+# General Ledger Accounting
 
 @login_required(login_url='loginPage')
 def general_ledger_accounts(request):
-    gl_level_1 = ConsolidatedGL.objects.values('gl_level_1_id', 'gl_level_1_name').distinct()
-    gl_level_3 = ConsolidatedGL.objects.all()
+    gl_level_1 = ConsolidatedGL.objects.values('gl1_id', 'gl1_name').distinct()
+    gl_level_2 = ConsolidatedGL.objects.values('gl2_id', 'gl2_name', 'gl1_id').distinct()
+
+    gl_level_3 = ConsolidatedGL.objects.all().values('gl1_name', 'gl2_name', 'gl3_name', 'gl3_id')
     
     context = {
         'gl_level_1': gl_level_1,
-        'gl_level_3': gl_level_3,
+        'gl_level_2': gl_level_2,
+        'gl_level_3': gl_level_3
     }
     
     return render(request, 'invoice/general_ledger_accounts.html', context)
@@ -355,15 +344,15 @@ def general_ledger_accounts(request):
 def get_gl_level_2(request):
     gl1_id = request.GET.get('gl1_id')
     if gl1_id:
-        gl2_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id).values('gl_level_2_id', 'gl_level_2_name').distinct()  # Filter based on GL Level 1 ID
+        gl2_items = ConsolidatedGL.objects.filter(gl1_id=gl1_id).values('gl2_id', 'gl2_name').distinct()
         return JsonResponse(list(gl2_items), safe=False)
     return JsonResponse({"error": "GL Level 1 ID not provided"}, status=400)
 
-@login_required(login_url='loginPage')
 def gl_level_3_by_gl1(request):
     gl1_id = request.GET.get('gl1_id')
     if gl1_id:
-        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name', 'gl_level_3_id')
+        gl3_items = ConsolidatedGL.objects.filter(gl1_id=gl1_id).values('gl1_name', 'gl2_name', 'gl3_name', 'gl3_id')
+        print(f"Data for GL1 ID {gl1_id}: {list(gl3_items)}")  # Debugging line
         return JsonResponse(list(gl3_items), safe=False)
     return JsonResponse({"error": "GL Level 1 ID not provided"}, status=400)
 
@@ -372,17 +361,8 @@ def gl_level_3_by_gl2(request):
     gl1_id = request.GET.get('gl1_id')
     gl2_id = request.GET.get('gl2_id')
     if gl1_id and gl2_id:
-        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id, gl_level_2_id=gl2_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name', 'gl_level_3_id')
+        gl3_items = ConsolidatedGL.objects.filter(gl1_id=gl1_id, gl2_id=gl2_id).values('gl1_name', 'gl2_name', 'gl3_name', 'gl3_id')
+        print(f"Data for GL1 ID {gl1_id} and GL2 ID {gl2_id}: {list(gl3_items)}")  # Debugging line
         return JsonResponse(list(gl3_items), safe=False)
     return JsonResponse({"error": "GL Level 1 ID or GL Level 2 ID not provided"}, status=400)
-
-@login_required(login_url='loginPage')
-def gl_level_3_by_gl3(request):
-    gl1_id = request.GET.get('gl1_id')
-    gl2_id = request.GET.get('gl2_id')
-    gl3_id = request.GET.get('gl3_id')
-    if gl1_id and gl2_id and gl3_id:
-        gl3_items = ConsolidatedGL.objects.filter(gl_level_1_id=gl1_id, gl_level_2_id=gl2_id, gl_level_3_id=gl3_id).values('gl_level_1_name', 'gl_level_2_name', 'gl_level_3_name', 'gl_level_3_id')
-        return JsonResponse(list(gl3_items), safe=False)
-    return JsonResponse({"error": "GL Level 1 ID, GL Level 2 ID, or GL Level 3 ID not provided"}, status=400)
 

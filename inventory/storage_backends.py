@@ -1,4 +1,17 @@
-""" Add Module Doc String"""
+"""
+AWS Storage Backend Module
+
+This module provides a backend interface for interacting with AWS S3 and DynamoDB services.
+It facilitates the upload of files to S3 and the creation of inventory items in DynamoDB. The 
+primary use case is handling image storage and metadata management for an inventory processing system.
+
+Classes:
+    AWSStorageBackend: Handles S3 file uploads and DynamoDB item creation.
+
+Requirements:
+    - boto3: AWS SDK for Python.
+    - AWS credentials and region settings configured in Django settings or environment variables.
+"""
 from datetime import datetime
 import os
 import uuid
@@ -50,6 +63,10 @@ class AWSStorageBackend:
         file_extension = os.path.splitext(file.name)[1]
         # Construct the filename string
         filename = f"images/user_{user_id}_{timestamp}_{uuid.uuid4()}{file_extension}"
+
+        # Change this filename to represent the storage for the Training Data. This file name will be stored
+        # In S3 and Dynamo and will link the files for training. What is the best pattern to accomidate this
+        # Instead of saving the user_id in the path, we could add user_id and the restaurant group. 
 
         logger.debug(f"Attempting to upload file {filename} to S3")
 

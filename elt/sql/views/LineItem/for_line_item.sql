@@ -13,6 +13,7 @@ SELECT
     product_code,
     COALESCE(INITCAP(item_brand), INITCAP(other_brand)) as brand, 
     -- Item description, removing any extraneous "ITEM#:" details
+    -- Need to clean up item to allow better control of items flowing in coalesce function in ext2_line_item
     COALESCE(INITCAP(item), regexp_replace(item_description, 'ITEM#:.*', '', 'g')) AS item_description,
     
     -- Unit price, converting to numeric and handling different formats

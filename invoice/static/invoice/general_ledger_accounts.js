@@ -12,16 +12,19 @@ document.addEventListener('DOMContentLoaded', function() {
             url = `/invoice/gl_level_3_by_gl1/?gl1_id=${gl1Id}`;
         }
 
+        console.log(`Fetching data from URL: ${url}`);
+
         fetch(url)
             .then(response => response.json())
             .then(data => {
+                console.log('Data received:', data);
                 glTableBody.innerHTML = '';
                 data.forEach(item => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${item.gl_level_1_name}</td>
-                        <td>${item.gl_level_2_name}</td>
-                        <td>${item.gl_level_3_name}</td>
+                        <td>${item.gl1_name}</td>
+                        <td>${item.gl2_name}</td>
+                        <td>${item.gl3_name}</td>
                     `;
                     glTableBody.appendChild(row);
                 });
@@ -31,16 +34,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     glLevel1Select.addEventListener('change', function() {
         const gl1Id = this.value;
+        console.log(`GL Level 1 selected: ${gl1Id}`);
         if (gl1Id) {
             // Fetch and populate GL Level 2 options based on GL Level 1 selection
             fetch(`/invoice/gl_level_2_by_gl1/?gl1_id=${gl1Id}`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log('GL Level 2 data:', data);
                     glLevel2Select.innerHTML = '<option value="">Select GL Level 2</option>';
                     data.forEach(item => {
                         const option = document.createElement('option');
-                        option.value = item.id;
-                        option.textContent = item.name;
+                        option.value = item.gl2_id;
+                        option.textContent = item.gl2_name;
                         glLevel2Select.appendChild(option);
                     });
                     glLevel2Select.disabled = false;
@@ -60,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
     glLevel2Select.addEventListener('change', function() {
         const gl1Id = glLevel1Select.value;
         const gl2Id = this.value;
+        console.log(`GL Level 2 selected: ${gl2Id}`);
         filterTable(gl1Id, gl2Id);
     });
 });

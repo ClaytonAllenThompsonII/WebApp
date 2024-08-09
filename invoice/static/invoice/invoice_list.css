@@ -1,212 +1,89 @@
-/* Invoice Table Section */
+/* Container for the invoice table section */
 .invoice-table {
-  margin-top: 10px; /* Adds some space above the table */
-  align-self: left;
+  margin-top: 20px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Invoice Table Title */
+.invoice-table h2 {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #1a1a1a; /* Space black; */
+  margin-bottom: 20px;
+  font-size: 1.5em;
+}
+
+/* Filter Section */
+.filter-section {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.filter-item-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-item label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+.filter-item input,
+.filter-item select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
 }
 
 /* Table Enhancements */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 3px; /* Adds space between the filter section and table */
-  border: 1px solid #9E9E9E; /* Smooth dark borders for contrast */
+  border: 1px solid #9E9E9E;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 th, td {
-  padding: 8px;
+  padding: 10px;
   text-align: left;
   border-bottom: 1px solid #ddd;
 }
 
 th {
   background-color: #f2f2f2;
-  font-size: 11px; /* Adjusted for consistency and readability */
+  color: #1a1a1a; /* Space black */
+  font-size: 14px;
   border-right: 1px solid #9E9E9E;
+  font-weight: bold;
 }
 
 td {
-  font-size: 14px; /* Slightly larger text for content */
+  font-size: 14px;
 }
 
-.filter-section {
-  display: flex;  /* Arranges filter items horizontally */
-  flex-wrap: wrap; /* Allow items to wrap */
-  gap: 10px;  /* Adds some space between filter items */
-  padding: 3px; /* Optional padding */
-  justify-content: flex-start; /* Align items to the start */
+.table-hover tbody tr:hover {
+  background-color: #f5f5f5;
 }
 
-.filter-section div {
-  flex-direction: column;
-}
-
-.filter-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* Aligns content to the start */
-  font-size: 12px;
-  margin-right: 0px;
-}
-
-.filter-item label {
-  display: flex;
-  width: 120px;  /* Adjust this value as needed for your labels */
-  margin-right: 1px;
-  margin-bottom: 3px;
-  text-align: center;
-  background-color: #F5F5F5; /* Matching the background for a cohesive look */
-  color: #333; /* Slightly darker text for readability */
-}
-
-.filter-item input {
-  display: flex;
-  width: 120px;  /* Adjust this value as needed for your labels */
-  margin-right: 1px;
-  text-align: center;
-  background-color: #b4dcf7e9;  /* Light blue background color */
-}
-
+/* Additional Styling */
+.filter-item input,
 .filter-item select {
-  display: flex;
-  width: 120px;  /* Adjust this value as needed for your labels */
-  margin-right: 1px;
-  text-align: center;
-  background-color: #b4dcf7e9;  /* Light blue background color */
-}
-
-.filter-item-content {
-  display: flex;
-  width: 100%; /* Adjusts width based on the content */
-  justify-content: flex-start; /* Aligns label and input/select to the start */
-  align-items: center; /* Aligns items vertically */
-  gap: 10px; /* Provides space between label and input/select */
-  background-color: #f2f2f2;
-}
-
-.filter-item label, 
-.filter-item input, 
-.filter-item select {
-  margin: 0; /* Removes margin to prevent unnecessary space */
-  width: auto; /* Adjusts width based on content */
-}
-
-.filter-item input, 
-.filter-item select {
-  /* Assuming you want to keep your input and select styles as is */
-  border: 1px solid #9E9E9E; /* Ensuring inputs are well-defined */
-  background-color: #FFF; /* Pure white for inputs for contrast and focus */
-  padding: 2px 5px; /* Padding inside inputs and selects */
-}
-
-/* PDF Viewer Section */
-.pdf-viewer {
-height: 80vh; /* Adjust based on your requirements */
-border: 1px solid #ddd;
-border-radius: 8px;
-overflow: hidden;
-margin-top: 20px; /* Adds space above the PDF viewer */
-}
-
-.pdf-viewer iframe {
-width: 100%;
-height: 100%;
-border: none;
-}
-
-/* Additional Styling for Edit Line Item Page */
-.container2 {
-display: flex;
-flex-direction: column;
-max-width: 1200px;
-margin: auto;
-padding: 20px;
-background: #f9f9f9;
-border-radius: 8px;
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-text-align: left;
-font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-color: #333;
-margin-bottom: 20px;
-}
-
-.form-section {
-margin-bottom: 20px;
-overflow-y: auto;
-max-height: 60vh; /* Adjust based on your requirements */
-}
-
-.reference-fields, .editable-fields {
-display: flex;
-flex-wrap: wrap;
-gap: 15px;
-}
-
-.reference-fields .field, .editable-fields .field {
-flex: 1 1 45%;
-}
-
-.field label {
-font-weight: bold;
-font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-color: #555;
-display: block;
-margin-bottom: 5px;
-}
-
-.field .value {
-font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-color: #333;
-background-color: #e9ecef;
-padding: 8px;
-border-radius: 4px;
-}
-
-form input, form select, form textarea {
-padding: 5px;
-font-size: 14px;
-border: 1px solid #ddd;
-border-radius: 4px;
-width: 100%;
-box-sizing: border-box;
-}
-
-form textarea {
-resize: vertical;
-min-height: 30px;
-}
-
-form button {
-padding: 10px 20px;
-font-size: 16px;
-color: white;
-background-color: #007BFF;
-border: none;
-border-radius: 4px;
-cursor: pointer;
-margin-top: 20px;
-}
-
-form button:hover {
-background-color: #0056b3;
-}
-
-/* Remove margins and paddings from container2 */
-.container2 {
-  margin: 0;
-  padding: 10px;
-}
-
-/* Adjust the form and select elements within the sorting controls */
-.sorting-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sorting-controls select, .sorting-controls button {
-  width: auto;
-  margin-right: 10px; /* Adjusts space between elements */
+  border: 1px solid #9E9E9E;
+  background-color: #fff;
+  padding: 2px 5px;
 }

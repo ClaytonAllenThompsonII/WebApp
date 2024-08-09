@@ -11,7 +11,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Upload with Inventory Product Classification</title>
     <link rel="stylesheet" href="{% static 'inventory/inventory_upload.css' %}">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+
 </head>
 
 <body>
@@ -84,7 +85,7 @@
                         <select id="gl-level-1" name="gl_level_1">
                             <option value="">-- Select GL Level 1 --</option>
                             {% for gl1 in gl_level1_objects %}
-                                <option value="{{ gl1.id }}">{{ gl1.name }}</option>
+                                <option value="{{ gl1.gl1_id }}">{{ gl1.gl1_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -108,11 +109,12 @@
                     </div>
                     <div class="step">
                         <p>Press the upload button.</p>
-                        <button type="submit" form="upload-form">Upload Label</button>
+                        <button type="submit" form="image-upload-form">Upload Label</button>
                     </div>
                 </div>
             </section>
 
+            
             <section id="inventory-size">
                 <h5>⚖️Measure Inventory Size 
                     <span class="info-icon" data-tooltip="Enter the size and select the unit of measurement. You can also get the size from the IoT Scale.">

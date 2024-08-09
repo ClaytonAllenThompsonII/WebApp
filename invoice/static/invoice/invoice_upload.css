@@ -1,0 +1,167 @@
+/* Container for the upload invoice page */
+.upload-page-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 1500px; /* Adjusted to fit the content better */
+    margin: 7px;
+    padding: 20px;
+    background: #fff; /* White background for a clean look */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Upload Section */
+.upload-section {
+    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: flex-start; /* Align the card to the left */
+    gap: 20px; /* Add space between the cards */
+}
+
+/* Adjusted Card Styling */
+.card {
+    border: none;
+    border-radius: 8px;
+    width: 30%; /* Ensure the card takes up 1/5 of the width */
+    min-width: 200px; /* Ensure the card has a minimum width */
+    margin: 0; /* Remove auto margin to align to the left */
+}
+
+.card-body {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    flex: 1 1 auto;
+    gap:5px;
+}
+
+/* Card Titles */
+h5.card-title {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.2em; /* Adjusted font size */
+}
+
+/* Upload Form Styling */
+.upload-form .input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.custom-upload-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap:10px;
+}
+
+.file-input-wrapper {
+    flex-grow: 1; /* Ensure the file input takes up the available space */
+    display: flex;
+    align-items: center;
+
+}
+
+.custom-file-label {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px; /* Adjust border-radius to match both sides */
+
+    background-color: #f8f9fa;
+    cursor: pointer;
+    text-align: left;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.custom-file-label.file-selected {
+    background-color: #e9ecef;
+    font-size: 10px;
+}
+
+.btn-upload-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Center the button */
+    margin-top: 10px; /* Add some space between the input and button */
+}
+
+.btn.btn-upload {
+    padding: 6px 12px; /* Smaller padding for a more compact button */
+    background-color: #333333; /* Space grey color */
+    border: none;
+    border-radius: 4px; /* Maintain a fully rounded button */
+    color: white;
+    cursor: pointer;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    transition: background-color 0.3s ease;
+    text-align: center;
+    white-space: nowrap; /* Ensure the button text doesn't wrap */
+    z-index: 1; /* Ensure the button is on top */
+}
+
+.btn-upload:hover {
+    background-color: #1a1a1a;
+    color:#f0f0f0
+}
+
+.btn-scan {
+    width: 100%;
+    padding: 8px 16px;
+    background-color: #7f7e84; /* Space black */
+    border: none;
+    border-radius: 4px;
+    color: #f0f0f0;
+    cursor: pointer;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+.btn-scan:hover {
+    background-color: #1a1a1a; /* Space black color on hover */
+    color: #f8f8f8; 
+}
+
+/* Messages Styling */
+.messages {
+    margin-bottom: 20px;
+}
+
+.alert {
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Form Elements */
+form input, form select, form textarea {
+    padding: 5px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+form textarea {
+    resize: vertical;
+    min-height: 30px;
+}

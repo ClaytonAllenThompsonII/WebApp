@@ -9,20 +9,21 @@
 <div class="container2">
     <h2>General Ledger Accounts</h2>
     <div class="filter-section">
-        <label for="gl_level_1">GL Level 1</label>
-        <select id="gl_level_1">
-            <option value="">Select GL Level 1</option>
-            {% for gl1 in gl_level_1 %}
-                <option value="{{ gl1.gl_level_1_id }}">{{ gl1.gl_level_1_name }}</option>
-            {% endfor %}
-        </select>
-
-        <label for="gl_level_2">GL Level 2</label>
-        <select id="gl_level_2" disabled>
-            <option value="">Select GL Level 2</option>
-        </select>
-
-        
+        <div class="field">
+            <label for="gl_level_1">GL Level 1</label>
+            <select id="gl_level_1">
+                <option value="">Select GL Level 1</option>
+                {% for gl1 in gl_level_1 %}
+                <option value="{{ gl1.gl1_id }}">{{ gl1.gl1_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field">
+            <label for="gl_level_2">GL Level 2</label>
+            <select id="gl_level_2" disabled>
+                <option value="">Select GL Level 2</option>
+            </select>
+        </div>
     </div>
 
     <div class="gl3-table">
@@ -37,9 +38,9 @@
             <tbody>
                 {% for gl in gl_level_3 %}
                 <tr>
-                    <td>{{ gl.gl_level_1_name }}</td>
-                    <td>{{ gl.gl_level_2_name }}</td>
-                    <td>{{ gl.gl_level_3_name }}</td>
+                    <td>{{ gl.gl1_name }}</td>
+                    <td>{{ gl.gl2_name }}</td>
+                    <td>{{ gl.gl3_name }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

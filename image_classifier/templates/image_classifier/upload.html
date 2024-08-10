@@ -1,0 +1,56 @@
+{% load static %}
+
+<!-- upload.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload an Image for Classification</title>
+    <link rel="stylesheet" href="{% static 'image_classifier/image_classifier.css' %}">
+    <script src="{% static 'image_classifier/image_classifier.js' %}" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload an Image for Classification</h1>
+        
+        <!-- Image upload form -->
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.image.label_tag }}
+                {{ form.image }}
+            </div>
+            <button type="submit" class="btn">Classify Image</button>
+        </form>
+
+        <!-- Image preview section -->
+        {% if image_url %}
+        <div id="image-preview" class="image-preview">
+            <h2>Uploaded Image:</h2>
+            <img id="preview-image" class="preview-image-small" src="{{ image_url }}" alt="Uploaded Image Preview">
+        </div>
+        {% endif %}
+
+        <!-- Classification results section -->
+        {% if results %}
+        <div id="classification-results" class="classification-results">
+            <h2>Classification Results:</h2>
+            <ul>
+                {% for result in results %}
+                    <li>
+                        <div class="result-item">
+                            <span class="label">{{ result.label }}</span>
+                            <div class="bar-container">
+                                <div class="confidence-bar" style="width: {{ result.score|floatformat:2 }}%;"></div>
+                            </div>
+                            <span class="score">{{ result.score|floatformat:3 }}</span>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -29,7 +29,7 @@ load_dotenv(dotenv_path=env_path)  # Load variables from .env file
 
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-
+HF_API_KEY = os.getenv('HF_API_KEY')
 
 
 # AWS Configuration 
@@ -62,7 +62,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'inventory.apps.InventoryConfig',
-    'invoice.apps.InvoiceConfig',  
+    'invoice.apps.InvoiceConfig',
+    'image_classifier',  
 ]
 
 MIDDLEWARE = [

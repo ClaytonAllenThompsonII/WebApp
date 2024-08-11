@@ -1,6 +1,4 @@
 {% load static %}
-
-<!-- upload.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,45 +10,34 @@
 </head>
 <body>
     <div class="container">
-        <h1>Upload an Image for Classification</h1>
-        
-        <!-- Image upload form -->
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                {{ form.image.label_tag }}
-                {{ form.image }}
+        <div class="classification-header">
+            <h1>Inference API <img src="{% static 'users/Cost Curve Logo.png' %}" 
+                alt="CostCurve.ai Logo" style="width: 25px; height: auto;"></h1>
+            <p>Image Classification</p>
+        </div>
+        <div class="upload-area" id="upload-area">
+            <!-- Image upload form -->
+            <form method="post" enctype="multipart/form-data" class="upload-form">
+                {% csrf_token %}
+                <input type="file" id="id_image" accept="image/*" style="display: none;"> <!-- Hidden input -->
+                <div class="form-group file-upload" id="file-upload">
+                    <span id="upload-text">Drag image file here or click to browse from your device</span>
+                </div>
+                <div id="loading-bar" class="loading-bar" style="display: none;"></div>
+            </form>
+        </div>
+        <div class="image-preview-container">
+            <!-- Image preview section -->
+            <div id="image-preview" class="image-preview" style="display: none;">
+                <img id="preview-image" class="preview-image-small" src="" alt="Uploaded Image Preview">
             </div>
-            <button type="submit" class="btn">Classify Image</button>
-        </form>
 
-        <!-- Image preview section -->
-        {% if image_url %}
-        <div id="image-preview" class="image-preview">
-            <h2>Uploaded Image:</h2>
-            <img id="preview-image" class="preview-image-small" src="{{ image_url }}" alt="Uploaded Image Preview">
+            <!-- Classification results section -->
+            <div id="classification-results" class="classification-results" style="display: none;">
+                <h2>Classification Results:</h2>
+                <ul id="results-list"></ul>
+            </div>
         </div>
-        {% endif %}
-
-        <!-- Classification results section -->
-        {% if results %}
-        <div id="classification-results" class="classification-results">
-            <h2>Classification Results:</h2>
-            <ul>
-                {% for result in results %}
-                    <li>
-                        <div class="result-item">
-                            <span class="label">{{ result.label }}</span>
-                            <div class="bar-container">
-                                <div class="confidence-bar" style="width: {{ result.score|floatformat:2 }}%;"></div>
-                            </div>
-                            <span class="score">{{ result.score|floatformat:3 }}</span>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
     </div>
 </body>
 </html>

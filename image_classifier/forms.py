@@ -1,9 +1,4 @@
-"""
-Module for defining forms related to image classification.
-
-This module contains the form used to handle image uploads in the 
-image classification application.
-"""
+# forms.py
 
 from django import forms
 
@@ -14,5 +9,4 @@ class ImageUploadForm(forms.Form):
     This form contains a single field that allows users to upload an image file 
     which will be used for classification purposes.
     """
-    
-    image = forms.ImageField()  # Field for uploading the image file
+    image = forms.ImageField(label="Upload an Image", required=True)

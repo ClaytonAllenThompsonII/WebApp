@@ -1,18 +1,16 @@
 from django.shortcuts import render
-import json
-from django.conf import settings
-import requests
-from .forms import ImageUploadForm
+from django.http import JsonResponse
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-
+import requests
+import json
+from .forms import ImageUploadForm
+from django.conf import settings
 
 API_URL = "https://api-inference.huggingface.co/models/nateraw/food"
 headers = {"Authorization": f"Bearer {settings.HF_API_KEY}"}
 
 def image_classification_view(request):
-    image_url = None  # Initialize to store the image URL
-
     if request.method == 'POST':
         form = ImageUploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -20,26 +18,16 @@ def image_classification_view(request):
 
             # Save the uploaded image temporarily to the file system
             file_name = default_storage.save(f'temp/{image_file.name}', ContentFile(image_file.read()))
-            image_url = default_storage.url(file_name)
 
             # Re-open the image file for the API request (reset file pointer)
             with default_storage.open(file_name, 'rb') as reopened_file:
                 # Process the image and get classification results
                 results = query_huggingface(reopened_file)
 
-            return render(request, 'image_classifier/upload.html', {
-                'results': results,
-                'form': form,
-                'image_url': image_url,  # Pass the image URL to the context
-            })
-    else:
-        form = ImageUploadForm()
+            return JsonResponse({'results': results})
 
-    return render(request, 'image_classifier/upload.html', {
-        'form': form,
-        'image_url': image_url,  # This will be None in GET requests
-        'results': None  # No results in GET requests
-    })
+    # If GET request, just render the upload form page
+    return render(request, 'image_classifier/upload.html', {'form': ImageUploadForm()})
 
 def query_huggingface(image_file):
     try:

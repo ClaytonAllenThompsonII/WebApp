@@ -104,6 +104,7 @@ body {
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.4s ease, transform 0.4s ease;
+    font-family: 'IBM Plex Mono', monospace;
 }
 
 .classification-results li.visible {
@@ -160,6 +161,7 @@ body {
 
     .classification-label {
         font-size: 14px;
+        font-family: 'IBM Plex Mono', monospace;
     }
 
     .score {

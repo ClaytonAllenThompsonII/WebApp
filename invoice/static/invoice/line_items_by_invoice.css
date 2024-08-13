@@ -2,7 +2,7 @@
 .line-items-invoice-container {
     display: flex;
     flex-direction: column;
-    max-width: 1200px;
+    max-width: 1700px;
     margin: 9px;
     padding: 20px;
     background: #f9f9f9;
@@ -15,7 +15,7 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-    border: 1px solid #9E9E9E; /* Smooth dark borders for contrast */
+    border: 1px solid #f2f2f2; /* Smooth dark borders for contrast */
   }
   
   th, td {
@@ -26,15 +26,41 @@
   
   th {
     background-color: #f2f2f2;
-    font-size: 11px; /* Adjusted for consistency and readability */
-    border-right: 1px solid #9E9E9E;
+    font-size: 9px; /* Adjusted for consistency and readability */
+    border-right: 1px solid #f2f2f2;
   }
   
   td {
-    font-size: 14px; /* Slightly larger text for content */
+    font-size: 11px; /* Slightly larger text for content */
   }
   
   .table-hover tbody tr:hover {
     background-color: #f5f5f5; /* Light grey background on hover */
   }
   
+  .mapped-line-item {
+    font-weight: bold;
+    color: #5cb85c; /* Bootstrap's success color for green */
+    background-color: #dff0d8; /* Light green background */
+    padding: 5px;
+    border-radius: 5px;
+    text-align: center;
+    display: block;
+    width: fit-content;
+    margin: auto;
+    font-size: 10px;
+}
+
+.map-line-item {
+    font-weight: bold;
+    color: #d9534f; /* Bootstrap's danger color for red */
+    background-color: #f9d6d5; /* Light red background */
+    padding: 5px;
+    border-radius: 5px;
+    text-align: center;
+    display: block;
+    width: fit-content;
+    margin: auto;
+    font-size: 10px;
+
+}

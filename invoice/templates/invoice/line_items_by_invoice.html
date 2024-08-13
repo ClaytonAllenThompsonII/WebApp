@@ -15,6 +15,8 @@
                 <th scope="col">Invoice Receipt ID</th>
                 <th scope="col">Product ID</th>
                 <th scope="col">Product Code</th>
+                <th scope="col">GL3 Name V2</th> <!-- New column for GL3 Name -->
+
                 <th scope="col">Brand</th>
                 <th scope="col">Description</th>
                 <th scope="col">Unit Price</th>
@@ -25,8 +27,7 @@
                 <th scope="col">Pack</th>
                 <th scope="col">Size</th>
                 <th scope="col">Unit</th>
-                <th scope="col">Weight</th>
-                <th scope="col">GL3 Name</th> <!-- New column for GL3 Name -->
+                <th scope="col">Invoice Weight</th>
             </tr>
         </thead>
         <tbody>
@@ -36,6 +37,15 @@
                 <td>{{ line_item.invoice_receipt_id }}</td>
                 <td>{{ line_item.product_id }}</td>
                 <td>{{ line_item.product_code }}</td>
+
+                <td>
+                    {% if line_item.gl3_name %}
+                        <span class="mapped-line-item">{{ line_item.gl3_name }}</span>
+                    {% else %}
+                        <span class="map-line-item"> Map Item </span>
+                    {% endif %}
+                </td>
+
                 <td>{{ line_item.brand }}</td>
                 <td>{{ line_item.item_description }}</td>
                 <td>{{ line_item.unit_price }}</td>
@@ -47,10 +57,12 @@
                 <td>{{ line_item.size }}</td>
                 <td>{{ line_item.unit }}</td>
                 <td>{{ line_item.weight }}</td>
-                <td>{{ line_item.gl3_name }}</td> <!-- New data field for GL3 Name -->
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 {% endblock %}
+
+
+<span class="info-icon" </span>

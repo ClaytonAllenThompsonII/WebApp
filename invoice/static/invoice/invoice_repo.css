@@ -59,8 +59,8 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 3px; /* Adds space between the filter section and table */
-    border: 1px solid #9E9E9E; /* Smooth dark borders for contrast */
+    margin-top: 20px; /* Adds space between the filter section and table */
+    border: 1px solid #f2f2f2; /* Smooth dark borders for contrast */
   }
   
   th, td {
@@ -72,7 +72,7 @@
   th {
     background-color: #f2f2f2;
     font-size: 11px; /* Adjusted for consistency and readability */
-    border-right: 1px solid #9E9E9E;
+    border-right: 1px solid #f2f2f2;
   }
   
   td {

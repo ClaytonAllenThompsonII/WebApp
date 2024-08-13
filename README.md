@@ -1,5 +1,5 @@
 # WebApp
-
+Django Web Application for inventory and invoice management.
 
 ## Image Classification with 🤗 Hugging Face
 
@@ -102,15 +102,7 @@ This function enhances product details by generating a more comprehensive descri
 
 
 
-
-
-
-
-
-
-
-
-
+## Amazone Web Services (AWS)
 
 ## Machine Learning API (AWS Textract)
 
@@ -133,14 +125,12 @@ The `process_invoice_pdf` Lambda function handles the processing of uploaded inv
    - **Move PDF from Folder-B to Folder-C**: Finally, the PDF is copied from Folder-B to Folder-C, and the original PDF in Folder-B is deleted.
 
 
-## Data Engineering 
-
-### ELT / Lambda / SRC 
+## Data Engineering, ELT 
 
 ## load_json_pg Lambda Function
 
 ### Overview
-The `load_json_pg` Lambda function is designed to transfer JSON files from an S3 bucket to a PostgreSQL database. This function plays a crucial role in moving processed invoice data (stored as JSON files) into a relational database for further analysis and reporting.
+The `load_json_pg` Lambda function is designed to transfer JSON files from an S3 bucket to a RDS PostgreSQL database. This function plays a crucial role in moving processed invoice data (stored as JSON files) into a relational database for further analysis and reporting.
 
 ### Functionality
 

@@ -194,3 +194,45 @@ th.sort-desc::after {
 .ai-button:hover {
     background-color: #e0e0e0; /* Slightly darker gray on hover */
 }
+
+/* product_enhancement.css */
+.map-product-item {
+    background: linear-gradient(135deg, #FF4B4B, #FF7878); /* Bold red gradient background */
+    color: white;
+    font-family: 'IBM Plex Mono', monospace; /* Consistent font choice */
+    font-weight: bold;
+    padding: 6px 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    display: inline-block;
+    letter-spacing: 0.5px;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    cursor: pointer; /* Indicate that this is actionable */
+}
+
+.map-product-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #FF7878, #FF4B4B); /* Slight reverse gradient on hover */
+}
+
+.mapped-product-name {
+    background: linear-gradient(135deg, #007BFF, #67C8FF); /* Soft gradient background */
+    color: white;
+    font-family: 'IBM Plex Mono', monospace; /* Use the sleek, modern font */
+    font-weight: bold;
+    padding: 6px 10px; /* Increase padding for better spacing */
+    border-radius: 10px; /* Rounded corners for a modern look */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    text-align: center;
+    display: inline-block;
+    letter-spacing: 0.5px; /* Slightly increased letter spacing */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.mapped-product-name:hover {
+    transform: translateY(-2px); /* Lift on hover */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Slightly more pronounced shadow on hover */
+    cursor: pointer;
+}

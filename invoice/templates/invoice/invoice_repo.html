@@ -45,7 +45,11 @@
                 {% for invoice in invoices %}
                 <tr>
                     <td>{{ invoice.vendor_name }}</td>
-                    <td><a href="{% url 'line_items_by_invoice' invoice.invoice_id %}">{{ invoice.invoice_number }}</a></td>
+                    <td><a href="{% url 'line_items_by_invoice' invoice.invoice_id %}">
+                            <span class="styled-invoice-number">{{ invoice.invoice_number }}</span>
+
+                    </a>
+                </td>
                     <td>{{ invoice.invoice_receipt_date }}</td>
                     <td>{{ invoice.total }}</td>
                     <td>{{ invoice.upload_date }}</td>

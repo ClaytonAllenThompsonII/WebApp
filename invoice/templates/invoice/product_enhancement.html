@@ -86,7 +86,17 @@
                         <td>{{ product.product_code }}</td>
                         <td>{{ product.item_description }}</td>
                         <td>{{ product.brand }}</td>
-                        <td>{{ product.generated_product_name }}</td>
+
+
+                        <!-- Add mapping feature here-->
+                        <td>
+                            {% if product.generated_product_name %}
+                                <span class="mapped-product-name">{{ product.generated_product_name }}</span>
+                            {% else %}
+                                <span class="map-product-item">Generate Product</span>
+                            {% endif %}
+                        </td>
+
                         <td><div class="enhanced-details-preview">{{ product.enhanced_details|slice:":50" }}...</div></td>
                         <td>{{ product.estimated_expiration }}</td>
                     </tr>

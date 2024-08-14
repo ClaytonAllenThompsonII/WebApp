@@ -142,9 +142,13 @@ def line_items_repo(request):
 def line_items_by_invoice(request, invoice_id):
     invoice = get_object_or_404(ProcessedInvoice, pk=invoice_id)
     line_items = ProcessedLineItem.objects.filter(invoice_id=invoice_id).order_by('expense_document_index', 'line_item_index')
+
+    # Count the number of unmapped items (where GL3 name is None)
+    unmapped_count = line_items.filter(gl3_name__isnull=True).count()
     context = {
         'invoice': invoice,
         'line_items': line_items,
+        'unmapped_count': unmapped_count,
     }
     return render(request, 'invoice/line_items_by_invoice.html', context)
 

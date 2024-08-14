@@ -39,28 +39,88 @@
   }
   
   .mapped-line-item {
+    background: linear-gradient(135deg, #5cb85c, #80d080); /* Green gradient background */
+    color: white;
+    font-family: 'IBM Plex Mono', monospace; /* Consistent font choice */
     font-weight: bold;
-    color: #5cb85c; /* Bootstrap's success color for green */
-    background-color: #dff0d8; /* Light green background */
-    padding: 5px;
-    border-radius: 5px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     text-align: center;
-    display: block;
+    display: inline-block;
+    letter-spacing: 0.5px;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    cursor: pointer;
+    text-decoration: none;
     width: fit-content;
     margin: auto;
     font-size: 10px;
 }
 
+.mapped-line-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #80d080, #5cb85c); /* Slight reverse gradient on hover */
+}
+
+.mapped-line-item:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 .map-line-item {
-    font-weight: bold;
-    color: #d9534f; /* Bootstrap's danger color for red */
-    background-color: #f9d6d5; /* Light red background */
-    padding: 5px;
-    border-radius: 5px;
-    text-align: center;
-    display: block;
-    width: fit-content;
-    margin: auto;
-    font-size: 10px;
+  background: linear-gradient(135deg, #d9534f, #ff7975); /* Red gradient background */
+  color: white;
+  font-family: 'IBM Plex Mono', monospace; /* Consistent font choice */
+  font-weight: bold;
+  padding: 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  display: inline-block;
+  letter-spacing: 0.5px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  cursor: pointer;
+  text-decoration: none;
+  width: fit-content;
+  margin: auto;
+  font-size: 10px;
+}
+
+.map-line-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #ff7975, #d9534f); /* Slight reverse gradient on hover */
+}
+
+.map-line-item:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+
+.unmapped-items-message {
+  background-color: #ffdddd;
+  color: #d9534f;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-left: 6px solid #d9534f;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: bold;
+  border-radius: 8px;
+  font-size: 11px; /* Adjusted font size */
+
+}
+
+.mapped-items-message {
+  background-color: #dff0d8;
+  color: #5cb85c;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-left: 6px solid #5cb85c;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: bold;
+  border-radius: 8px;
+  font-size: 11px; /* Adjusted font size */
 
 }

@@ -7,7 +7,18 @@
 
 {% block content %}
 <div class="line-items-invoice-container">
+    
     <h2>Line Items for Invoice 🧾 {{ invoice.invoice_number }}</h2>
+    <!-- Display a message if there are unmapped items -->
+    {% if unmapped_count > 0 %}
+        <div class="unmapped-items-message">
+            ⚠️ This invoice has {{ unmapped_count }} line item(s) that need to be mapped. The invoice is not ready for the journal entry API.
+        </div>
+    {% else %}
+        <div class="mapped-items-message">
+            ✅ All line items in this invoice are mapped. The invoice is ready for the journal entry API.
+        </div>
+    {% endif %}
     <table class="table-hover" id="lineItemsTable">
         <thead>
             <tr>

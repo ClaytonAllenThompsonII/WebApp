@@ -51,6 +51,9 @@ def lambda_handler(event, context):
         # Process and load JSON files from Folder-B into PostgreSQL in batches
         process_and_load_json_files_in_batches(conn, textract_bucket)
 
+        # Call the stored procedure to update the final tables
+        call_stored_procedure(conn)
+
     except Exception as proc_err:
         logging.error(f"An error occurred during processing: {proc_err}")
     finally:
@@ -150,4 +153,22 @@ def insert_batch_to_postgres(conn, batch):
             logging.info(f"Inserted batch of {len(batch)} JSON files into PostgreSQL.")
     except psycopg2.Error as e:
         logging.error(f"Failed to insert batch of JSON files: {e}")
+        conn.rollback()  # Rollback the transaction in case of error
+
+
+def call_stored_procedure(conn):
+    """
+    Calls the stored procedure to insert data into the final tables.
+
+    Parameters:
+    - conn: The connection to the PostgreSQL database.
+    """
+    try:
+        with conn.cursor() as cursor:
+            logging.info("Calling stored procedure: insert_vendor_invoice_product_line_item_data")
+            cursor.execute("CALL insert_vendor_invoice_product_line_item_data();")
+            conn.commit()
+            logging.info("Stored procedure executed successfully.")
+    except psycopg2.Error as e:
+        logging.error(f"Failed to execute stored procedure: {e}")
         conn.rollback()  # Rollback the transaction in case of error

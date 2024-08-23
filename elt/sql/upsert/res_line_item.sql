@@ -53,7 +53,7 @@ SELECT
     NULL, -- Initial value for gl3_id
     NULL  -- Initial value for gl3_name Make sure to check on conflict closer for these new fields. 
 FROM 
-    pro_line_item_with_product_id pli
+    pro2_line_item pli
 JOIN 
     out_invoice i
 ON 

@@ -1,3 +1,8 @@
+-- Call procedure in PG admin
+CALL insert_vendor_invoice_product_line_item_data();
+
+
+
 CREATE OR REPLACE PROCEDURE insert_vendor_invoice_product_line_item_data()
 LANGUAGE plpgsql
 AS $$
@@ -268,5 +273,34 @@ BEGIN
         product_id = EXCLUDED.product_id,
         gl3_id = EXCLUDED.gl3_id,
         gl3_name = EXCLUDED.gl3_name;
+
+
+
+        -- Add the logic for inserting into out_product_enhanced
+    INSERT INTO out_product_enhanced (
+        product_code,
+        item_description,
+        brand,
+        last_updated,
+        generated_product_name,  -- Placeholder for generated product name
+        enhanced_details,        -- Placeholder for enhanced details
+        estimated_expiration     -- Placeholder for estimated expiration
+    )
+    SELECT
+        product_code,
+        item_description,
+        brand,
+        last_updated,
+        NULL AS generated_product_name,  -- Placeholder for new fields
+        NULL AS enhanced_details,        -- Placeholder for new fields
+        NULL AS estimated_expiration     -- Placeholder for new fields
+    FROM
+        out_product
+    ON CONFLICT (product_code, item_description)
+    DO UPDATE SET
+        brand = EXCLUDED.brand,
+        last_updated = EXCLUDED.last_updated;
+
+    -- Any further logic or commits if necessary
 END;
 $$;

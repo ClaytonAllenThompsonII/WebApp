@@ -1,5 +1,3 @@
-""" Refactoring AWS Textract Call Cadence"""
-
 import os
 import json
 import time
@@ -21,17 +19,19 @@ def lambda_handler(event, context):
     Processes invoices in parallel from an S3 bucket using Textract,
     handling multiple concurrent requests and tracking results.
     """
-    # Retrieve the bucket names from environment variables
     invoice_bucket = os.environ['S3_BUCKET_NAME_INVOICE']
     textract_bucket = os.environ['S3_BUCKET_NAME_TEXTRACT_JSON_RESPONSE']
-    
-    # Maximum number of concurrent Textract calls
     max_concurrent_textract_calls = int(os.getenv('MAX_CONCURRENT_TEXTRACT_CALLS', '5'))
     
-    # Retrieve all objects (invoices) from Folder A in the invoice bucket
-    invoices = list_invoices(invoice_bucket)
+    # Retrieve all objects (invoices) from Folder A and B in the invoice bucket
+    invoices_folder_a = list_invoices(invoice_bucket, 'invoices/Folder-A/')
+    invoices_folder_b = list_invoices(invoice_bucket, 'invoices/Folder-B/')
+    
+    invoices = invoices_folder_a + invoices_folder_b
     if not invoices:
-        return {'statusCode': 200, 'body': 'No invoices found in Folder A'}
+        return {'statusCode': 200, 'body': 'No invoices found in Folder A or Folder B'}
+
+    failed_invoices = []
 
     # Process invoices in parallel
     with ThreadPoolExecutor(max_workers=max_concurrent_textract_calls) as executor:

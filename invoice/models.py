@@ -35,13 +35,13 @@ class ProcessedInvoice(models.Model):
     in_invoice_processing_id = models.IntegerField()
     s3_object_key = models.CharField(max_length=255)
     upload_date = models.DateTimeField()
-    account_number = models.CharField(max_length=255)
+    account_number = models.CharField(max_length=255, null=True, blank=True)
     vendor_name = models.CharField(max_length=255)
     due_date = models.DateField(null=True, blank=True) # allow null values for now
     delivery_date = models.DateField(null=True, blank=True) # allow NULL values if needed
     invoice_receipt_date = models.DateField()
     invoice_number = models.CharField(max_length=255, unique=True)
-    total = models.DecimalField(max_digits=10, decimal_places=2)
+    total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     vendor_id = models.IntegerField()
     inserted_at = models.DateTimeField(auto_now_add=True)
     batched_at = models.DateTimeField(null=True, blank=True)

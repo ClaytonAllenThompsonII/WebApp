@@ -144,7 +144,9 @@ def insert_batch_to_postgres(conn, batch):
             # Assume your table and columns are set up to take JSON data directly.
             # This may need adjustment based on the actual database schema.
             insert_query = """
-            INSERT INTO public.in_invoice_processing (s3_object_key, textract_json) VALUES (%s, %s::jsonb)
+            INSERT INTO public.in_invoice_processing (s3_object_key, textract_json)
+            VALUES (%s, %s::jsonb)
+            ON CONFLICT (s3_object_key) DO NOTHING
             """
             logging.info(f"Preparing to insert batch of {len(batch)} JSON files into PostgreSQL.")
 

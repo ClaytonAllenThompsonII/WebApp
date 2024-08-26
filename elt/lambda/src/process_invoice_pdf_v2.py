@@ -44,10 +44,13 @@ def lambda_handler(event, context):
                 logger.info(f"Invoice {invoice['Key']} processed successfully")
             except Exception as e:
                 logger.error(f"Invoice {invoice['Key']} failed to process: {str(e)}")
-
+                failed_invoices.append(invoice)
+    
+    if failed_invoices:
+        logger.warning(f"Failed to process {len(failed_invoices)} invoices, leaving them in Folder-B for next retry.")
     return {'statusCode': 200, 'body': 'PDF invoices processed'}
 
-def list_invoices(bucket_name, prefix='invoices/Folder-A/'):
+def list_invoices(bucket_name, prefix):
     """List invoices in the specified S3 bucket and prefix."""
     try:
         response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)

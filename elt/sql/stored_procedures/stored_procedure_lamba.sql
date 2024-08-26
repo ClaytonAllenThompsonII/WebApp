@@ -1,6 +1,7 @@
 -- Call procedure in PG admin
 CALL insert_vendor_invoice_product_line_item_data();
-
+-- For delete all domain data in tables. Truncate command is efficient for clearning all rows from the table and sesets any auto-increment counters. 
+TRUNCATE TABLE out_vendor, out_invoice, out_line_item, out_product, out_product_enhanced RESTART IDENTITY CASCADE;
 
 
 CREATE OR REPLACE PROCEDURE insert_vendor_invoice_product_line_item_data()

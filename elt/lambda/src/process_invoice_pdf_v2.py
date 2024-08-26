@@ -67,19 +67,20 @@ def process_invoice(invoice, invoice_bucket, textract_bucket):
     object_key = invoice['Key']
     filename = object_key.split('/')[-1]
     folder_path = '/'.join(object_key.split('/')[2:])
-
-    # Move the PDF file from Folder A to Folder B
-    move_s3_object(invoice_bucket, object_key, f'invoices/Folder-B/{folder_path}')
-
+    
+    if 'Folder-A/' in object_key:
+        # Move the PDF file from Folder A to Folder B
+        move_s3_object(invoice_bucket, object_key, f'invoices/Folder-B/{folder_path}')
+    
     # Start Textract analysis
     job_id = start_textract_analysis(invoice_bucket, f'invoices/Folder-B/{folder_path}', filename)
-
+    
     # Get Textract results
     textract_result = get_expense_analysis_with_retry(textract_client, job_id)
-
+    
     # Save Textract results to S3
     save_textract_results(textract_bucket, f'invoices/Folder-A/{folder_path}.json', textract_result)
-
+    
     # Move the PDF file from Folder B to Folder C
     move_s3_object(invoice_bucket, f'invoices/Folder-B/{folder_path}', f'invoices/Folder-C/{folder_path}')
 

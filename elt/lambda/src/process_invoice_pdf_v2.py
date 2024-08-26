@@ -1,5 +1,3 @@
-""" Refactoring AWS Textract Call Cadence"""
-
 import os
 import json
 import time
@@ -21,17 +19,19 @@ def lambda_handler(event, context):
     Processes invoices in parallel from an S3 bucket using Textract,
     handling multiple concurrent requests and tracking results.
     """
-    # Retrieve the bucket names from environment variables
     invoice_bucket = os.environ['S3_BUCKET_NAME_INVOICE']
     textract_bucket = os.environ['S3_BUCKET_NAME_TEXTRACT_JSON_RESPONSE']
-    
-    # Maximum number of concurrent Textract calls
     max_concurrent_textract_calls = int(os.getenv('MAX_CONCURRENT_TEXTRACT_CALLS', '5'))
     
-    # Retrieve all objects (invoices) from Folder A in the invoice bucket
-    invoices = list_invoices(invoice_bucket)
+    # Retrieve all objects (invoices) from Folder A and B in the invoice bucket
+    invoices_folder_a = list_invoices(invoice_bucket, 'invoices/Folder-A/')
+    invoices_folder_b = list_invoices(invoice_bucket, 'invoices/Folder-B/')
+    
+    invoices = invoices_folder_a + invoices_folder_b
     if not invoices:
-        return {'statusCode': 200, 'body': 'No invoices found in Folder A'}
+        return {'statusCode': 200, 'body': 'No invoices found in Folder A or Folder B'}
+
+    failed_invoices = []
 
     # Process invoices in parallel
     with ThreadPoolExecutor(max_workers=max_concurrent_textract_calls) as executor:
@@ -44,10 +44,13 @@ def lambda_handler(event, context):
                 logger.info(f"Invoice {invoice['Key']} processed successfully")
             except Exception as e:
                 logger.error(f"Invoice {invoice['Key']} failed to process: {str(e)}")
-
+                failed_invoices.append(invoice)
+    
+    if failed_invoices:
+        logger.warning(f"Failed to process {len(failed_invoices)} invoices, leaving them in Folder-B for next retry.")
     return {'statusCode': 200, 'body': 'PDF invoices processed'}
 
-def list_invoices(bucket_name, prefix='invoices/Folder-A/'):
+def list_invoices(bucket_name, prefix):
     """List invoices in the specified S3 bucket and prefix."""
     try:
         response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
@@ -64,19 +67,20 @@ def process_invoice(invoice, invoice_bucket, textract_bucket):
     object_key = invoice['Key']
     filename = object_key.split('/')[-1]
     folder_path = '/'.join(object_key.split('/')[2:])
-
-    # Move the PDF file from Folder A to Folder B
-    move_s3_object(invoice_bucket, object_key, f'invoices/Folder-B/{folder_path}')
-
+    
+    if 'Folder-A/' in object_key:
+        # Move the PDF file from Folder A to Folder B
+        move_s3_object(invoice_bucket, object_key, f'invoices/Folder-B/{folder_path}')
+    
     # Start Textract analysis
     job_id = start_textract_analysis(invoice_bucket, f'invoices/Folder-B/{folder_path}', filename)
-
+    
     # Get Textract results
     textract_result = get_expense_analysis_with_retry(textract_client, job_id)
-
+    
     # Save Textract results to S3
     save_textract_results(textract_bucket, f'invoices/Folder-A/{folder_path}.json', textract_result)
-
+    
     # Move the PDF file from Folder B to Folder C
     move_s3_object(invoice_bucket, f'invoices/Folder-B/{folder_path}', f'invoices/Folder-C/{folder_path}')
 

@@ -17,6 +17,8 @@ CREATE TABLE in_invoice_processing (
     -- Automatically captures the current timestamp at the time of insertion.
     received_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
+    -- Unique constraint to prevent duplicate entries for the same S3 object key
+    CONSTRAINT unique_s3_object_key UNIQUE (s3_object_key)
 );
 
 -- Optional: Add comments to the table and its columns for further clarification

@@ -43,8 +43,8 @@ def sync_data():
         rds_cursor = rds_conn.cursor()
         local_cursor = local_conn.cursor()
 
-       # Sync the invoice domain
-        sync_domain(rds_cursor, local_cursor, 'invoice', """
+        # Sync the invoice domain
+        sync_domain(rds_cursor, local_cursor, 'out_invoice', """
             INSERT INTO out_invoice_processed (
                 in_invoice_processing_id, s3_object_key, upload_date, account_number, 
                 vendor_name, due_date, delivery_date, invoice_receipt_date, 
@@ -55,7 +55,7 @@ def sync_data():
         """)
 
         # Sync the line item domain
-        sync_domain(rds_cursor, local_cursor, 'line_item', """
+        sync_domain(rds_cursor, local_cursor, 'out_line_item', """
             INSERT INTO out_line_item_processed (
                 line_item_id, in_invoice_processing_id, s3_object_key, upload_date, invoice_id, 
                 invoice_receipt_id, expense_document_index, line_item_index, product_id, 
@@ -68,7 +68,7 @@ def sync_data():
         """)
 
         # Sync the product domain
-        sync_domain(rds_cursor, local_cursor, 'product_enhanced', """
+        sync_domain(rds_cursor, local_cursor, 'out_product_enhanced', """
             INSERT INTO out_product_enhanced (
                 product_code, item_description, brand, last_updated, 
                 generated_product_name, enhanced_details, estimated_expiration
@@ -88,20 +88,19 @@ def sync_data():
         local_conn.close()
         print("Data transfer completed successfully!")
 
-def sync_domain(rds_cursor, local_cursor, domain, insert_query):
+def sync_domain(rds_cursor, local_cursor, olap_table, insert_query):
     """
     Sync a specific domain from the OLAP database to the local application database.
 
     Parameters:
     - rds_cursor: Cursor for the RDS connection.
     - local_cursor: Cursor for the local database connection.
-    - domain: The domain to sync (invoice, line_item, product, etc.).
+    - olap_table: The OLAP table name to sync (e.g., out_invoice, out_line_item, out_product_enhanced).
     - insert_query: The SQL query to insert records into the local database.
     """
-    table_name = f"for_{domain}"
-    
+
     # Fetch new records from the OLAP database (RDS source)
-    rds_cursor.execute(f"SELECT * FROM {table_name} WHERE batched_at IS NULL")
+    rds_cursor.execute(f"SELECT * FROM {olap_table} WHERE batched_at IS NULL")
     records = rds_cursor.fetchall()
 
     # Insert new records into the application database (local)
@@ -109,7 +108,7 @@ def sync_domain(rds_cursor, local_cursor, domain, insert_query):
         local_cursor.execute(insert_query, record)
         
         # Update the batched_at timestamp in the OLAP database
-        rds_cursor.execute(f"UPDATE {table_name} SET batched_at = %s WHERE id = %s", 
+        rds_cursor.execute(f"UPDATE {olap_table} SET batched_at = %s WHERE id = %s", 
                            (datetime.now(), record[0]))
 
 if __name__ == "__main__":

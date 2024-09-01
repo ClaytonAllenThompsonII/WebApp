@@ -16,16 +16,19 @@ Requirements:
 - Dependencies on external models (GL levels, products) and storage backends (AWS S3, DynamoDB).
 """
 import logging
+import json
+
+from django.db.models import Sum, Subquery, OuterRef, F
 from django.db import IntegrityError, DatabaseError
+from django.http import JsonResponse
 from django.utils import timezone
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from botocore.exceptions import BotoCoreError, ClientError
-from django.http import JsonResponse
 
 
-from invoice.models import ConsolidatedGL, Product, ProcessedLineItem
+from invoice.models import ConsolidatedGL, Product, ProcessedLineItem, ProcessedInvoice
 
 from .forms import InventoryDataCollectionForm
 from .storage_backends import AWSStorageBackend
@@ -238,3 +241,136 @@ def get_products(request):
     else:
         # Return an error message if gl3_id is not provided
         return JsonResponse({'error': 'GL3 ID not provided'}, status=400)
+
+
+
+
+
+
+
+@login_required(login_url='loginPage')
+def inventory_queue_view(request):
+    # Subquery to calculate the total spend for each product based on its related line items
+    total_spend_subquery = (
+        ProcessedLineItem.objects
+        .filter(product_id=OuterRef('product_id'))
+        .values('product_id')
+        .annotate(total=Sum('price'))
+        .values('total')
+    )
+
+    # Annotate each product with the total spend and order by it
+    products_with_spend = (
+        Product.objects
+        .annotate(total_spend=Subquery(total_spend_subquery))
+        .order_by('-total_spend')  # Order by total spend in descending order
+    )
+
+    # Calculate the cumulative spend to find the top 50%
+    total_spend = sum(product.total_spend or 0 for product in products_with_spend)
+    cumulative_spend = 0
+    top_50_spend_products = []
+    
+    for product in products_with_spend:
+        cumulative_spend += product.total_spend or 0
+        top_50_spend_products.append({
+            'product_name': product.generated_product_name,
+            'total_spend': product.total_spend,
+            'spend_percentage': (product.total_spend / total_spend) * 100 if total_spend else 0,
+        })
+        if cumulative_spend / total_spend >= 0.5:
+            break  # We've found the top 50%
+
+    selected_product = None
+    line_items = []
+
+    product_id = request.GET.get('product_id')
+    if product_id:
+        selected_product = get_object_or_404(Product, pk=product_id)
+        line_items = ProcessedLineItem.objects.filter(product_id=product_id)
+
+    # Get the current user's details
+    user = request.user
+    profile = user.profile if hasattr(user, 'profile') else None
+
+    context = {
+        'prioritized_products': products_with_spend,
+        'selected_product': selected_product,
+        'line_items': line_items,
+        'heat_map_data': top_50_spend_products,  # Pass the heat map data to the template
+        'user_name': user.username,  # Add username to the context
+        'user_id': user.id,  # Add user ID to the context
+        'user_group': profile.group.name if profile and profile.group else 'None',  # Add user group to the context
+    }
+    return render(request, 'inventory/inventory_queue.html', context)
+
+
+
+
+
+
+@login_required(login_url='loginPage')
+def load_line_items(request):
+    product_id = request.GET.get('product_id')
+    
+    # Fetch line items for the selected product
+    line_items = ProcessedLineItem.objects.filter(product_id=product_id)
+    
+    # Prepare the data to include invoice_receipt_date
+    line_item_data = []
+    for item in line_items:
+        # Fetch the corresponding invoice to get the receipt date
+        invoice = ProcessedInvoice.objects.filter(invoice_id=item.invoice_id).first()
+        invoice_receipt_date = invoice.invoice_receipt_date if invoice else "N/A"
+
+        line_item_data.append({
+            'line_item_id': item.line_item_id,
+            'item_description': item.item_description,
+            'quantity': item.quantity,
+            'unit': item.unit_of_measure,
+            'price': item.price,
+            'invoice_receipt_date': invoice_receipt_date,  # Add the invoice receipt date here
+        })
+
+    return JsonResponse({'line_items': line_item_data})
+    
+
+@login_required(login_url='loginPage')
+def heatmap_view(request):
+    # Start with the ProcessedLineItem to calculate total spend per product_id
+    top_30_products = (
+        ProcessedLineItem.objects
+        .values('product_id')  # Group by product_id
+        .annotate(total_spend=Sum('price'))  # Calculate the sum of prices for each product_id
+        .filter(total_spend__isnull=False)  # Ensure only products with spend are included
+        .order_by('-total_spend')[:30]  # Limit to top 30 products by spend
+    )
+
+    # Join with the Product model to get additional fields
+    products_with_details = (
+        Product.objects
+        .filter(product_id__in=[item['product_id'] for item in top_30_products])  # Filter products based on the top 30 product_ids
+        .annotate(
+            total_spend=Sum('processedlineitem__price'),
+            item_description=F('item_description'),
+            generated_product_name=F('generated_product_name'),
+            enhanced_details=F('enhanced_details'),
+            estimated_expiration=F('estimated_expiration')
+        )
+    )
+
+    # Prepare the data for the heatmap
+    heat_map_data = []
+    for product in products_with_details:
+        heat_map_data.append({
+            'product_name': product.generated_product_name or "Unnamed Product",
+            'total_spend': float(product.total_spend),  # Convert to float for JSON serialization
+            'item_description': product.item_description,
+            'enhanced_details': product.enhanced_details,
+            'estimated_expiration': product.estimated_expiration
+        })
+
+    context = {
+        'heat_map_data': heat_map_data,  # Pass the data as a Python object
+    }
+    return render(request, 'inventory/heatmap.html', context)

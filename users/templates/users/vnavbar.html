@@ -9,12 +9,13 @@
                 <ul>
                     <li><a href="{% url 'inventory_app' %}">Inventory Processing</a></li>
                     <li><a href="{% url 'inventory_app' %}">nth Product Index</a></li>
-                    <li><a href="#"> Inventory Levels 🧮</a></li>
+                    <li><a href="{% url 'inventory_queue' %}"> ❖Inventory Collection Queue</a></li>
+                    <li><a href="#"> 🧮Inventory Levels </a></li>
                 </ul>
             </li>
             <li>Invoice
                 <ul>
-                    <li><a href="{% url 'invoice_repo' %}">🧾 Invoice Repo</a></li>
+                    <li><a href="{% url 'invoice_repo' %}">🧾Invoice Repo</a></li>
                     <li><a href="{% url 'upload_invoice' %}"> Invoice Upload </a></li>
                     <li><a href="{% url 'line_items_repo' %}"> Line Item Mapping</a></li>
                     <li><a href="{% url 'product_enhancement' %}">Products</a></li>

@@ -18,6 +18,10 @@ from invoice.models import ProcessedInvoice  # Import the correct model
 def home(request):
     total_invoices = ProcessedInvoice.objects.aggregate(total_amount=Sum('total'))['total_amount'] or 0
     invoice_count = ProcessedInvoice.objects.aggregate(count=Count('invoice_id'))['count'] or 0
+    
+    # Format the total_invoices as a currency
+    total_invoices = "{:,.2f}".format(total_invoices)
+    
     context = {
         'total_invoices': total_invoices,
         'invoice_count': invoice_count,

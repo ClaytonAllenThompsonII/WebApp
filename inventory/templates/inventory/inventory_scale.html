@@ -1,0 +1,45 @@
+{% load static %}
+<section id="inventory-size">
+    <h5>⚖️ Record Item Weight 
+        <span class="info-icon" data-tooltip="Record the weight of the item using the fields below.">
+            &#9432;
+        </span>
+    </h5>
+    <div class="measure-inventory-container">
+        <div class="input-group">
+            <label for="weightInput">Enter Size 
+                <span class="info-icon" data-tooltip="Input the weight of the item in the selected unit (e.g., lbs, kg).">
+                    &#9432;
+                </span>
+            </label>
+            <input type="number" id="sizeInput" name="size" step="0.1" placeholder="Enter size...">
+            
+            <label for="unitSelect">Select Unit 
+                <span class="info-icon" data-tooltip="Choose the unit of measurement for the item’s weight.">
+                    &#9432;
+                </span>
+            </label>
+            <select id="unitSelect" name="unit">
+                <option value="lbs">lbs</option>
+                <option value="kg">kg</option>
+                <option value="units">units</option>
+                <option value="liters">liters</option>
+            </select>
+        </div>
+
+        <input type="hidden" id="hidden_size" name="hidden_size">
+        <input type="hidden" id="hidden_unit" name="hidden_unit">
+        
+        
+
+        <div class="digital-scale">
+            <span id="digital-weight-display">00.00</span> <span id="digital-unit-display">lbs</span>
+        </div>
+
+        <div class="button-container">
+            <button type="button" id="getWeightButton">
+                <i class="fa fa-scale-balanced"></i> 🌐 Get Size from IoT-Scale
+            </button>
+        </div>
+    </div>
+</section>

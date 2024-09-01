@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 50% Spend Heat Map</title>
+    <link rel="stylesheet" href="{% static 'inventory/heatmap.css' %}">
+    <!-- Chart.js and Treemap Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap"></script>
+</head>
+
+<body>
+    <div class="heat-map-container">
+        <canvas id="heat-map" data-heat-map-data="{{ heat_map_data|safe }}"></canvas>    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const heatMapData = JSON.parse(document.getElementById('heat-map').dataset.heatMapData || '[]');
+            renderTreemap(heatMapData);
+        });
+
+        function renderTreemap(heatMapData) {
+            const ctx = document.getElementById('heat-map').getContext('2d');
+            const labels = heatMapData.map(data => data.product_name);
+            const data = heatMapData.map(data => data.total_spend);
+
+            new Chart(ctx, {
+                type: 'treemap',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        tree: heatMapData.map(data => ({ 
+                            x: data.product_name, 
+                            v: data.total_spend, 
+                            w: data.total_spend, 
+                            g: data.product_name 
+                        })),
+                        key: 'w',
+                        groups: ['g'],
+                        backgroundColor: function(ctx) {
+                            const value = ctx.raw.v;
+                            const max = Math.max(...data);
+                            const colorStrength = value / max;
+                            return `rgba(75, 192, 192, ${colorStrength})`;
+                        },
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        borderWidth: 2,
+                        labels: {
+                            display: true,
+                            align: 'center',
+                            font: {
+                                size: 14
+                            },
+                            formatter: ctx => ctx.raw.g + '\n$' + ctx.raw.v.toFixed(2)
+                        }
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.raw.g;
+                                    const value = context.raw.v;
+                                    return `${label}: $${value.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

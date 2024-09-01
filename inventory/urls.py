@@ -27,4 +27,10 @@ urlpatterns = [
     path('get_gl_level_2/', views.get_gl_level_2, name='get_gl_level_2'),
     path('get_gl_level_3/', views.get_gl_level_3, name='get_gl_level_3'),
     path('get_products/', views.get_products, name='get_products'),
+    path('inventory/queue', views.inventory_queue_view, name='inventory_queue'),
+    path('inventory/queue/load_line_items/', views.load_line_items, name='load_line_items'),
+    path('heatmap/', views.heatmap_view, name='heatmap'),
+
+
+
 ]

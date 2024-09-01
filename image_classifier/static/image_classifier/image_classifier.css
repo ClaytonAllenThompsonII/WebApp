@@ -100,7 +100,7 @@ body {
 }
 
 .classification-results li {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.4s ease, transform 0.4s ease;
@@ -122,7 +122,7 @@ body {
 .label {
     font-weight: bold;
     color: #333;
-    font-size: 16px;
+    font-size: 14px;
     margin-right: 10px;
     flex: 0 1 20%; /* Adjust the label size to allow the bar to take more space */
 }
@@ -138,7 +138,7 @@ body {
 }
 
 .confidence-bar {
-    height: 20px;
+    height: 14px;
     border-radius: 4px;
     background: linear-gradient(to right, #007bff, #80bfff);
     transition: width 0.5s ease;
@@ -146,8 +146,9 @@ body {
 .score {
     color: #007bff;
     font-weight: bold;
-    flex: 0 0 60px; /* Set a fixed width for the score to align it properly */
+    flex: 0 0 80px; /* Set a fixed width for the score to align it properly */
     text-align: right;
+    font-size: 14px;
 }
 
 @media (max-width: 600px) {
@@ -181,4 +182,38 @@ body {
         background: linear-gradient(to right, #007bff, #80bfff);
         transition: width 0.5s ease;
     }
+}
+
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+.tooltip-text {
+    visibility: hidden;
+    width: 350px; /* Increase the width here */
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    border-radius: 5px;
+    padding: 10px;
+    position: absolute;
+    z-index: 9999; /* Ensure it's above other elements */
+    bottom: 150%; /* Adjust the position as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: normal; /* Allow the tooltip to wrap text */
+}
+
+.tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip-text {
+    z-index: 9999;
 }

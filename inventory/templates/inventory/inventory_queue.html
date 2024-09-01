@@ -1,0 +1,154 @@
+{% extends 'users/main.html' %}
+{% load static %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Collection Queue</title>
+    <link rel="stylesheet" href="{% static 'inventory/inventory_queue.css' %}">
+    <link rel="stylesheet" href="{% static 'inventory/inventory_scale.css' %}">
+
+    <!-- Chart.js and Treemap Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Inventory Collection Queue</h1>
+    </header>
+
+    <div class="inventory-layout">
+        <!-- Data Collection Column -->
+        <div class="data-collection-column">
+            <div class="upload-section">
+                {% include 'image_classifier/upload.html' %}
+            </div>
+
+            <section id="inventory-size">
+                <div class="measure-inventory-container">
+                    {% include 'inventory/inventory_scale.html' %}
+                </div>
+            </section>
+        </div>
+
+        <!-- Data Visuals Column -->
+        <div class="data-visuals-column">
+            <!-- Line Items Table Section -->
+            <section id="line-items-section" class="data-visual-section">
+                <h3>Line Items</h3>
+                <table id="line-items-table">
+                    <thead>
+                        <tr>
+                            <th>Line Item ID</th>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Price</th>
+                            <th>Receipt Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="line-item-table-body">
+                        <!-- Line items will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Middle Section (Placeholder) -->
+            <section id="middle-section" class="data-visual-section">
+                <h3>Middle Section</h3>
+                <!-- Content for the middle section -->
+            </section>
+
+            <!-- Bottom Section (Heatmap Integration) -->
+            <section id="bottom-section" class="data-visual-section">
+                <div class="heat-map-section">
+                    {% include 'inventory/heatmap.html' %} <!-- Include the heatmap.html here -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Collection Queue Column -->
+        <div class="collection-queue-column">
+            <!-- Unstaged Products Section -->
+            <section id="unstaged-products" class="toggle-section">
+                <h3>Unstaged Products</h3>
+                <div class="content">
+                    <table class="unstaged-products-table">
+                        <tbody>
+                            {% for product in prioritized_products %}
+                            <tr data-product-id="{{ product.product_id }}">
+                                <td class="product-cell">
+                                    <div class="product-info">
+                                        {{ product.generated_product_name }}
+                                        <button class="stage-button" onclick="moveToNextStage({{ product.product_id }}); event.stopPropagation();">Move</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- Staging Products Section -->
+            <section id="staging-products">
+                <h3>Staging Products</h3>
+                <div class="toggle-section">
+                    <table class="staging-products-table">
+                        <tbody>
+                            <!-- Staging products will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- Staged Products Section -->
+            <section id="staged-products">
+                <h3>Staged Products</h3>
+                <div class="toggle-section">
+                    <table class="staged-products-table">
+                        <tbody>
+                            <!-- Staged products will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- Commit Summary Section -->
+            <section id="commit-summary">
+                <h3>Commit Summary</h3>
+                <div class="commit-summary-details">
+                    <p><strong>Description:</strong> Inventory cycle completed for the specified products.</p>
+                    <p><strong>Date:</strong> 08/30/2024</p>
+                    <p><strong>User:</strong> {{ user_name }} (ID: {{ user_id }}) <strong>| Group:</strong> {{ user_group }}</p>
+                    <p><strong>Total Value:</strong> $500 (example) ∑ Staged Products</p>
+                </div>
+            </section>
+
+            <!-- Stage Cycle Button -->
+            <button type="button" id="stage-cycle-button">Stage Cycle</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>© Cost Curve Inventory</p>
+    </footer>
+
+    <script src="{% static 'inventory/inventory_queue.js' %}"></script>
+    <script src="{% static 'inventory/inventory_scale.js' %}"></script>
+    <script src="{% static 'image_classifier/image_classifier.js' %}" defer></script>
+</body>
+</html>
+
+{% endblock %}

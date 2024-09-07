@@ -248,7 +248,6 @@ def get_products(request):
         return JsonResponse({'error': 'GL3 ID not provided'}, status=400)
 
 
-
 @login_required(login_url='loginPage')
 def inventory_queue_view(request):
     # Subquery to calculate the total spend for each product based on its related line items
@@ -306,10 +305,6 @@ def inventory_queue_view(request):
     return render(request, 'inventory/inventory_queue.html', context)
 
 
-
-
-
-
 @login_required(login_url='loginPage')
 def load_line_items(request):
     product_id = request.GET.get('product_id')
@@ -336,42 +331,7 @@ def load_line_items(request):
     return JsonResponse({'line_items': line_item_data})
     
 
-@login_required(login_url='loginPage')
-def heatmap_view(request):
-    # Step 1: Aggregate total spend per product_id
-    top_30_products = (
-        ProcessedLineItem.objects
-        .values('product_id')  # Group by product_id
-        .annotate(total_spend=Sum('price'))  # Calculate the sum of prices for each product_id
-        .filter(total_spend__isnull=False)  # Ensure only products with spend are included
-        .order_by('-total_spend')[:30]  # Limit to top 30 products by spend
-    )
 
-    # Step 2: Fetch corresponding Product details using product_id
-    product_ids = [item['product_id'] for item in top_30_products]
-
-    # Fetch the products and annotate with the total spend
-    products_with_details = Product.objects.filter(product_id__in=product_ids)
-
-    # Create a mapping of product_id to total_spend
-    spend_mapping = {item['product_id']: item['total_spend'] for item in top_30_products}
-
-    # Step 3: Prepare the data for the heatmap
-    heat_map_data = []
-    for product in products_with_details:
-        heat_map_data.append({
-            'product_name': product.generated_product_name or product.item_description or "Unnamed Product",
-            'total_spend': float(spend_mapping.get(product.product_id, 0)),  # Convert to float for JSON serialization
-            'item_description': product.item_description,
-            'enhanced_details': product.enhanced_details,
-            'estimated_expiration': product.estimated_expiration
-        })
-
-    # Step 4: Render the template
-    context = {
-        'heat_map_data': heat_map_data,  # Pass the data as a Python object
-    }
-    return render(request, 'inventory/heatmap.html', context)
 
 
 

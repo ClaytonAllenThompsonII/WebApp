@@ -331,10 +331,6 @@ def load_line_items(request):
     return JsonResponse({'line_items': line_item_data})
     
 
-
-
-
-
 @login_required(login_url='loginPage')
 def product_impact_index(request):
     # Step 1: Aggregate total spend per product_id from ProcessedLineItem

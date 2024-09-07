@@ -15,50 +15,62 @@ document.addEventListener('DOMContentLoaded', function() {
     const stagingProductsTable = document.querySelector('.staging-products-table tbody');
     const stagedProductsTable = document.querySelector('.staged-products-table tbody');
 
+    // Move product to Staging
     function moveProductToStaging(productRow) {
         stagingProductsTable.appendChild(productRow);
     }
 
+    // Move product to Staged Products
     function moveProductToStaged(productRow) {
         stagedProductsTable.appendChild(productRow);
     }
 
+    // Function to collect data and move to staged products
+    function collectData(productRow, productId) {
+        console.log(`Collecting data for Product ID: ${productId}`);
+        // Trigger data collection process here (e.g., open modal for weight, image, etc.)
+        // Simulate data collection
+        setTimeout(() => {
+            console.log(`Data collected for Product ID: ${productId}`);
+            moveProductToStaged(productRow); // Move to staged products once data is collected
+        }, 1000);
+    }
+
+    // Add event listener for Staging Products
+    stagingProductsTable.addEventListener('click', function(event) {
+        const collectButton = event.target.closest('.collect-data-button');
+        if (collectButton) {
+            const productRow = collectButton.closest('tr');
+            const productId = productRow.dataset.productId;
+            collectData(productRow, productId); // Collect data and move to staged
+            event.stopPropagation(); // Prevents further event handling
+        }
+    });
+
+    // Add hover functionality for Unstaged Products
     unstagedProductsTable.addEventListener('click', function(event) {
         const moveButton = event.target.closest('.stage-button');
         if (moveButton) {
             const productRow = moveButton.closest('tr');
-            moveProductToStaging(productRow);
-            event.stopPropagation(); // Prevents the row click event from firing
+            moveProductToStaging(productRow); // Move to staging products
+            event.stopPropagation(); // Prevent row click event
         }
     });
 
-    stagingProductsTable.addEventListener('click', function(event) {
-        const moveButton = event.target.closest('.stage-button');
-        if (moveButton) {
-            const productRow = moveButton.closest('tr');
-            moveProductToStaged(productRow);
-            event.stopPropagation(); // Prevents the row click event from firing
-        }
-    });
+    // Event listener for row clicks (load visuals for selected product)
+    function addRowClickListener(tableBody) {
+        tableBody.addEventListener('click', function(event) {
+            const clickedRow = event.target.closest('tr');
+            if (clickedRow && !event.target.closest('.stage-button, .collect-data-button')) {
+                const productId = clickedRow.dataset.productId;
+                console.log(`Loading data visuals for product ID: ${productId}`);
+                loadLineItems(productId); // Load the line items for the selected product
+            }
+        });
+    }
 
-    // Event listener for row clicks to control data visuals
-    unstagedProductsTable.addEventListener('click', function(event) {
-        const clickedRow = event.target.closest('tr');
-        if (clickedRow && !event.target.closest('.stage-button')) {
-            const productId = clickedRow.dataset.productId;
-            console.log('Loading data visuals for product ID:', productId);
-            loadLineItems(productId); // Load the line items for the selected product
-        }
-    });
-
-    stagingProductsTable.addEventListener('click', function(event) {
-        const clickedRow = event.target.closest('tr');
-        if (clickedRow && !event.target.closest('.stage-button')) {
-            const productId = clickedRow.dataset.productId;
-            console.log('Loading data visuals for product ID:', productId);
-            loadLineItems(productId); // Load the line items for the selected product
-        }
-    });
+    addRowClickListener(unstagedProductsTable);
+    addRowClickListener(stagingProductsTable);
 
     console.log('Staging JavaScript initialized.');
 });

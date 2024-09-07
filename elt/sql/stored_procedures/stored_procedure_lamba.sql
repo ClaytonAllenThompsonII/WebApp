@@ -19,6 +19,7 @@ BEGIN
         most_recent_upload_date,
         account_number,
         vendor_name,
+        vendor_short_name,  -- New field
         vendor_phone,
         vendor_address,
         vendor_street,
@@ -41,6 +42,7 @@ BEGIN
         most_recent_upload_date,
         account_number,
         vendor_name,
+        vendor_short_name,  -- New field
         vendor_phone,
         vendor_address,
         vendor_street,
@@ -58,11 +60,12 @@ BEGIN
         NULL 
     FROM 
         pro_vendor
-    ON CONFLICT (vendor_name, account_number)
+    ON CONFLICT (vendor_short_name, account_number)
     DO UPDATE SET
         most_recent_in_invoice_processing_id = EXCLUDED.most_recent_in_invoice_processing_id,
         most_recent_s3_object_key = EXCLUDED.most_recent_s3_object_key,
         most_recent_upload_date = EXCLUDED.most_recent_upload_date,
+        vendor_name = EXCLUDED.vendor_name,  -- Update vendor_name to reflect the latest data
         vendor_address = EXCLUDED.vendor_address,
         vendor_street = EXCLUDED.vendor_street,
         vendor_city = EXCLUDED.vendor_city,
@@ -82,53 +85,55 @@ BEGIN
     PERFORM
     'SELECT 1 FROM pro_invoice LIMIT 1';
 
-    -- Step 4: Insert or update invoice data in the out_invoice table
+   -- Step 4: Insert or update invoice data in the out_invoice table
     INSERT INTO out_invoice (
-      in_invoice_processing_id,
-      s3_object_key,
-      upload_date,
-      account_number,
-      vendor_name,
-      delivery_date,
-      invoice_receipt_date,
-      due_date,
-      invoice_number,
-      total,
-      vendor_id,
-      inserted_at,
-      batched_at
+    in_invoice_processing_id,
+    s3_object_key,
+    upload_date,
+    account_number,
+    vendor_name,
+    vendor_short_name,  -- New field
+    delivery_date,
+    invoice_receipt_date,
+    due_date,
+    invoice_number,
+    total,
+    vendor_id,
+    inserted_at,
+    batched_at
     )
     SELECT 
-      pi.in_invoice_processing_id,
-      pi.s3_object_key,
-      pi.upload_date,
-      pi.account_number,
-      pi.vendor_name,
-      pi.delivery_date,
-      pi.invoice_receipt_date,
-      pi.due_date,
-      pi.invoice_number,
-      pi.total,
-      ov.vendor_id,
-      CURRENT_TIMESTAMP,
-      NULL
+    pi.in_invoice_processing_id,
+    pi.s3_object_key,
+    pi.upload_date,
+    pi.account_number,
+    pi.vendor_name,
+    pi.vendor_short_name,  -- New field to insert
+    pi.delivery_date,
+    pi.invoice_receipt_date,
+    pi.due_date,
+    pi.invoice_number,
+    pi.total,
+    ov.vendor_id,
+    CURRENT_TIMESTAMP,
+    NULL
     FROM pro_invoice pi
     LEFT JOIN out_vendor ov 
-      ON pi.account_number = ov.account_number
-      AND pi.vendor_name = ov.vendor_name
+    ON pi.vendor_short_name = ov.vendor_short_name  -- Match on vendor_short_name
     ON CONFLICT (invoice_number)
     DO UPDATE SET
-      in_invoice_processing_id = EXCLUDED.in_invoice_processing_id,
-      s3_object_key = EXCLUDED.s3_object_key,
-      upload_date = EXCLUDED.upload_date,
-      account_number = EXCLUDED.account_number,
-      vendor_name = EXCLUDED.vendor_name,
-      delivery_date = EXCLUDED.delivery_date,
-      invoice_receipt_date = EXCLUDED.invoice_receipt_date,
-      due_date = EXCLUDED.due_date,
-      total = EXCLUDED.total,
-      vendor_id = EXCLUDED.vendor_id,
-      inserted_at = EXCLUDED.inserted_at;
+    in_invoice_processing_id = EXCLUDED.in_invoice_processing_id,
+    s3_object_key = EXCLUDED.s3_object_key,
+    upload_date = EXCLUDED.upload_date,
+    account_number = EXCLUDED.account_number,
+    vendor_name = EXCLUDED.vendor_name,
+    vendor_short_name = EXCLUDED.vendor_short_name,  -- Update vendor_short_name
+    delivery_date = EXCLUDED.delivery_date,
+    invoice_receipt_date = EXCLUDED.invoice_receipt_date,
+    due_date = EXCLUDED.due_date,
+    total = EXCLUDED.total,
+    vendor_id = EXCLUDED.vendor_id,
+    inserted_at = EXCLUDED.inserted_at;
 
     -- Step 5: Refresh the pro_product view to get the latest product data
     PERFORM

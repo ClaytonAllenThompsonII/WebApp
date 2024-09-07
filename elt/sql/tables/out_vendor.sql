@@ -1,11 +1,12 @@
--- Create the vendor table
+-- Create the updated vendor table
 CREATE TABLE out_vendor (
     vendor_id SERIAL PRIMARY KEY,                            -- Auto-incrementing primary key
     most_recent_in_invoice_processing_id INT,                -- Foreign key to track the source of the most recent vendor record
     most_recent_s3_object_key VARCHAR(255),                  -- S3 key for locating the most recent invoice document
     most_recent_upload_date TIMESTAMP,                       -- Timestamp when the most recent vendor record was uploaded
     account_number VARCHAR(255),                             -- Vendor's account number
-    vendor_name VARCHAR(255),                                -- Vendor's name
+    vendor_name VARCHAR(255),                                -- Vendor's full name
+    vendor_short_name VARCHAR(255),                          -- Vendor's short name
     vendor_phone VARCHAR(15),                                -- Vendor's phone number
     vendor_address VARCHAR(255),                             -- Vendor's address
     vendor_street VARCHAR(255),                              -- Vendor's street address
@@ -21,5 +22,5 @@ CREATE TABLE out_vendor (
     remit_to_address_block TEXT,                             -- Remit-to address block
     inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,         -- Timestamp when the record is inserted into this table
     batched_at TIMESTAMP,                                    -- Timestamp when the record is batched into the application database
-    UNIQUE (vendor_name, account_number)                     -- Ensure unique vendor records based on name and account_number
+    UNIQUE (vendor_short_name, account_number)               -- Ensure unique vendor records based on short name and account number
 );

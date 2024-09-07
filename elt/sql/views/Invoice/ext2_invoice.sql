@@ -104,7 +104,8 @@ SELECT
     MAX(CASE WHEN summary_type_text = 'TAX_PAYER_ID' AND summary_label_text = 'Tax ID' THEN summary_value_text ELSE NULL END) AS taxpayer_id,
 
     -- Total information
-    MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'Total' THEN summary_value_text ELSE NULL END) AS total,
+    -- Total information
+    MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'Total' AND summary_value_text ~ '^[0-9,.]+$' THEN summary_value_text ELSE NULL END) AS total,
     MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'TOTAL' THEN summary_value_text ELSE NULL END) AS total_upper,
 
     MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'Due' THEN summary_value_text ELSE NULL END) AS total_due,
@@ -113,6 +114,7 @@ SELECT
     MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'INVOICE TOTAL' THEN summary_value_text ELSE NULL END) AS total_invoice,
     MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'OnAcct' THEN summary_value_text ELSE NULL END) AS total_on_acct,
     MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'Totals' THEN summary_value_text ELSE NULL END) AS total_totals,
+    MAX(CASE WHEN summary_type_text = 'TOTAL' AND summary_label_text = 'TOTAL GROSS AMOUNT'THEN summary_value_text ELSE NULL END) AS total_total_gross_amount,
 
     -- Discount information
     MAX(CASE WHEN summary_type_text = 'DISCOUNT' AND summary_label_text = 'TOTAL DISCOUNTS' THEN summary_value_text ELSE NULL END) AS discount_total_discounts,

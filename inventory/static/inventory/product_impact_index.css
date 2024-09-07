@@ -1,0 +1,73 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f7fa;
+}
+
+.page-header {
+    background-color: #e1e7ed;
+    color: #2c3e50;
+    padding: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: lighter;
+}
+
+.layout-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px;
+}
+
+.table-column {
+    width: 70%; /* More space for the table */
+    overflow-x: auto;
+}
+
+.heat-map-column {
+    width: 25%; /* Less space for the heat map */
+    margin-left: 20px;
+}
+
+.table-container {
+    margin: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 12px; /* Smaller font size */
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Soft shadow for modern look */
+}
+
+table th, table td {
+    padding: 8px; /* Adjust padding for a more compact table */
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-size: 12px; /* Smaller font size */
+}
+
+table th {
+    background-color: #d9e3f0; /* Light blue-grey header */
+    color: #34495e; /* Darker text color */
+    font-size: 12px; /* Smaller font size */
+    font-weight: 500;
+}
+
+table tr:hover {
+    background-color: #eef2f7; /* Subtle hover effect */
+}
+
+.footer {
+    padding: 10px;
+    text-align: center;
+    background-color: #e1e7ed;
+    color: #2c3e50;
+}

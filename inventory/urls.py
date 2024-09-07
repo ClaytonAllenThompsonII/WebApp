@@ -29,7 +29,8 @@ urlpatterns = [
     path('get_products/', views.get_products, name='get_products'),
     path('inventory/queue', views.inventory_queue_view, name='inventory_queue'),
     path('inventory/queue/load_line_items/', views.load_line_items, name='load_line_items'),
-    path('heatmap/', views.heatmap_view, name='heatmap'),
+    path('product-impact-index/', views.product_impact_index, name='product_impact_index'),
+
 
 
 

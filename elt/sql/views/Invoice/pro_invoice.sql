@@ -13,9 +13,10 @@ SELECT
     upload_date,
     account_number,
     vendor_name,
-    delivery_date_date::DATE AS delivery_date, -- Cast to DATE type
-    invoice_date_date::DATE AS invoice_receipt_date, -- Cast to DATE type
-    due_date_date::DATE AS due_date, -- Cast to DATE type
+    vendor_short_name,
+    delivery_date_date AS delivery_date, -- Cast to DATE type
+    invoice_date_date AS invoice_receipt_date, -- Cast to DATE type
+    due_date_date AS due_date, -- Cast to DATE type
     invoice_number,
     total,
     terms

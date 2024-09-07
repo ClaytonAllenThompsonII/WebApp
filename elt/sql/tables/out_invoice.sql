@@ -6,6 +6,7 @@ CREATE TABLE out_invoice (
   upload_date TIMESTAMP,                       -- Timestamp when the invoice was uploaded
   account_number VARCHAR(255),                 -- Account number for the invoice
   vendor_name VARCHAR(255),                    -- Vendor name
+  vendor_short_name VARCHAR(255),                          -- Vendor's short name
   due_date DATE,                               -- Date by which the payment for the invoice is due
   delivery_date DATE,                          -- Date on which the goods or services were delivered
   invoice_receipt_date DATE,                   -- Date when the invoice was issued/received

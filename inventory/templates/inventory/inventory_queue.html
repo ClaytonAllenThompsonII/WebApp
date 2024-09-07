@@ -66,9 +66,8 @@
 
             <!-- Bottom Section (Heatmap Integration) -->
             <section id="bottom-section" class="data-visual-section">
-                <div class="heat-map-section">
-                    {% include 'inventory/heatmap.html' %} <!-- Include the heatmap.html here -->
-                </div>
+                <h3>Bottom Section</h3>
+
             </section>
         </div>
 
@@ -98,12 +97,25 @@
             <div class="divider"></div>
 
             <!-- Staging Products Section -->
-            <section id="staging-products">
+            <section id="staging-products" class="toggle-section">
                 <h3>Staging Products</h3>
                 <div class="toggle-section">
                     <table class="staging-products-table">
                         <tbody>
                             <!-- Staging products will be dynamically inserted here -->
+                            {% for product in staged_products %}
+                            <tr data-product-id="{{ product.product_id }}">
+                                <td class="product-cell">
+                                    <div class="product-info">
+                                        {{ product.generated_product_name }}
+                                        <button class="collect-data-button hidden" 
+                                                onclick="collectData({{ product.product_id }}); event.stopPropagation();">
+                                            +Add Inventory
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -112,7 +124,7 @@
             <div class="divider"></div>
 
             <!-- Staged Products Section -->
-            <section id="staged-products">
+            <section id="staged-products" class="toggle-section">
                 <h3>Staged Products</h3>
                 <div class="toggle-section">
                     <table class="staged-products-table">
@@ -126,7 +138,7 @@
             <div class="divider"></div>
 
             <!-- Commit Summary Section -->
-            <section id="commit-summary">
+            <section id="commit-summary" class="toggle-section">
                 <h3>Commit Summary</h3>
                 <div class="commit-summary-details">
                     <p><strong>Description:</strong> Inventory cycle completed for the specified products.</p>

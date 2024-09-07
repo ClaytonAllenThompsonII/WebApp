@@ -18,7 +18,8 @@ Requirements:
 import logging
 import json
 
-from django.db.models import Sum, Subquery, OuterRef, F
+from django.db.models import Sum, Subquery, OuterRef, F, FloatField
+from django.db.models.functions import Cast
 from django.db import IntegrityError, DatabaseError
 from django.http import JsonResponse
 from django.utils import timezone
@@ -26,9 +27,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from botocore.exceptions import BotoCoreError, ClientError
+from django.utils.safestring import mark_safe
 
 
-from invoice.models import ConsolidatedGL, Product, ProcessedLineItem, ProcessedInvoice
+
+
+from invoice.models import ConsolidatedGL, Product, ProcessedLineItem, ProcessedInvoice, GLLevel1, GLLevel2, GLLevel3
+
 
 from .forms import InventoryDataCollectionForm
 from .storage_backends import AWSStorageBackend
@@ -243,11 +248,6 @@ def get_products(request):
         return JsonResponse({'error': 'GL3 ID not provided'}, status=400)
 
 
-
-
-
-
-
 @login_required(login_url='loginPage')
 def inventory_queue_view(request):
     # Subquery to calculate the total spend for each product based on its related line items
@@ -305,10 +305,6 @@ def inventory_queue_view(request):
     return render(request, 'inventory/inventory_queue.html', context)
 
 
-
-
-
-
 @login_required(login_url='loginPage')
 def load_line_items(request):
     product_id = request.GET.get('product_id')
@@ -336,41 +332,57 @@ def load_line_items(request):
     
 
 @login_required(login_url='loginPage')
-def heatmap_view(request):
-    # Start with the ProcessedLineItem to calculate total spend per product_id
-    top_30_products = (
+def product_impact_index(request):
+    # Step 1: Aggregate total spend per product_id from ProcessedLineItem
+    product_spend_subquery = (
         ProcessedLineItem.objects
-        .values('product_id')  # Group by product_id
-        .annotate(total_spend=Sum('price'))  # Calculate the sum of prices for each product_id
-        .filter(total_spend__isnull=False)  # Ensure only products with spend are included
-        .order_by('-total_spend')[:30]  # Limit to top 30 products by spend
+        .filter(product_id=OuterRef('product_id'))
+        .values('product_id')
+        .annotate(total_spend=Sum('price'))
+        .values('total_spend')
     )
 
-    # Join with the Product model to get additional fields
-    products_with_details = (
-        Product.objects
-        .filter(product_id__in=[item['product_id'] for item in top_30_products])  # Filter products based on the top 30 product_ids
-        .annotate(
-            total_spend=Sum('processedlineitem__price'),
-            item_description=F('item_description'),
-            generated_product_name=F('generated_product_name'),
-            enhanced_details=F('enhanced_details'),
-            estimated_expiration=F('estimated_expiration')
+    # Step 2: Create a base queryset for Product, joining with ConsolidatedGL
+    products = Product.objects.annotate(
+        total_spend=Subquery(product_spend_subquery),
+        gl3_id=Subquery(
+            ProcessedLineItem.objects
+            .filter(product_id=OuterRef('product_id'))
+            .values('gl3_id')[:1]  # Get the first gl3_id associated with this product
         )
+    ).filter(total_spend__isnull=False)
+
+    # Step 3: Join with ConsolidatedGL to get GL details
+    products = products.annotate(
+        gl1_name=Subquery(
+            ConsolidatedGL.objects.filter(gl3_id=OuterRef('gl3_id')).values('gl1_name')[:1]
+        ),
+        gl2_name=Subquery(
+            ConsolidatedGL.objects.filter(gl3_id=OuterRef('gl3_id')).values('gl2_name')[:1]
+        ),
+        gl3_name=Subquery(
+            ConsolidatedGL.objects.filter(gl3_id=OuterRef('gl3_id')).values('gl3_name')[:1]
+        ),
+        total_spend_float=Cast('total_spend', output_field=FloatField())  # Convert Decimal to Float
     )
 
-    # Prepare the data for the heatmap
-    heat_map_data = []
-    for product in products_with_details:
-        heat_map_data.append({
-            'product_name': product.generated_product_name or "Unnamed Product",
-            'total_spend': float(product.total_spend),  # Convert to float for JSON serialization
-            'item_description': product.item_description,
-            'enhanced_details': product.enhanced_details,
-            'estimated_expiration': product.estimated_expiration
-        })
+    # Step 4: Order by total_spend in descending order
+    products = products.order_by('-total_spend')
 
+    # Prepare data for the heatmap visualization
+    product_spend_data = products.values(
+        'product_id',
+        'generated_product_name',
+        'item_description',
+        'total_spend_float'  # Use the float version of total_spend
+    )
+
+    # Convert to JSON and mark safe
+    product_spend_data_json = mark_safe(json.dumps(list(product_spend_data)))
+
+    # Step 5: Prepare context and render the template
     context = {
-        'heat_map_data': heat_map_data,  # Pass the data as a Python object
+        'product_spend': products,
+        'product_spend_data': product_spend_data_json
     }
-    return render(request, 'inventory/heatmap.html', context)
+    return render(request, 'inventory/product_impact_index.html', context)

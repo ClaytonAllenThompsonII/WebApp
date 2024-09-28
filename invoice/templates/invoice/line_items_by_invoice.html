@@ -8,7 +8,39 @@
 {% block content %}
 <div class="line-items-invoice-container">
     
-    <h2>Line Items for Invoice 🧾 {{ invoice.invoice_number }}</h2>
+    <div class="invoice-header"></div>
+        <h2 class="invoice-title">🧾 Invoice {{ invoice.invoice_number }}</h2>
+             
+        <!-- Vendor Information -->
+        {% if invoice.vendor_short_name %}
+            <h3 class="vendor-name">Vendor: {{ invoice.vendor_short_name }}</h3>
+        {% else %}
+            <h3 class="vendor-name">Vendor: {{ invoice.vendor_name }}</h3>
+        {% endif %}
+        
+        <!-- Invoice Details Card -->
+        <div class="invoice-details-card">
+            {% if invoice.invoice_receipt_date %}
+                <div class="invoice-detail-item">
+                    <span class="detail-label">Invoice Date:</span>
+                    <span class="detail-value">{{ invoice.invoice_receipt_date|date:"F j, Y" }}</span>
+                </div>
+            {% endif %}
+            {% if invoice.due_date %}
+                <div class="invoice-detail-item">
+                    <span class="detail-label">Due Date:</span>
+                    <span class="detail-value">{{ invoice.due_date|date:"F j, Y" }}</span>
+                </div>
+            {% endif %}
+            {% if invoice.total %}
+                <div class="invoice-detail-item">
+                    <span class="detail-label">Total Amount:</span>
+                    <span class="detail-value">${{ invoice.total|floatformat:2 }}</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
     <!-- Display a message if there are unmapped items -->
     {% if unmapped_count > 0 %}
         <div class="unmapped-items-message">
@@ -75,5 +107,3 @@
 </div>
 {% endblock %}
 
-
-<span class="info-icon" </span>

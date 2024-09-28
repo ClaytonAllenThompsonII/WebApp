@@ -1,14 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: #0e0e0e; /* Dark background for contrast */
+  color: #e0e0e0;
+  margin: 0;
+  padding: 0;
+}
+
 /* New container for the line items by invoice page */
 .line-items-invoice-container {
-    display: flex;
-    flex-direction: column;
-    max-width: 1700px;
-    margin: 9px;
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+  max-width: 600px;
+  margin: 30px 7px; /* Remove auto margins to align left */
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.05); /* Slight transparency */
+  border-radius: 20px;
+  backdrop-filter: blur(10px); /* Glassmorphism effect */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+  /* Invoice Header Container */
+  .invoice-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Invoice Title */
+.invoice-title {
+  font-size: 36px;
+  font-weight: 600;
+  margin: 0;
+  color: #c0c0c0;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Vendor Name */
+.vendor-name {
+  font-size: 24px;
+  font-weight: 400;
+  margin-top: 10px;
+  color: #606060 ;
+}
+
+/* Invoice Details Card */
+.invoice-details-card {
+  margin-top: 20px; /* Remove auto margins */
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  backdrop-filter: blur(5px);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+  max-width: 400px; /* Optional: Keep the max-width if you want to limit the width */
+  width: 100%; /* Allows the card to take up the full width of its parent */
+  text-align: left;
+}
+
+.invoice-detail-item {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.detail-label {
+  font-weight: 400;
+  color: #a0a0a0;
+  margin-right: 15px;
+  width: 150px;
+}
+
+.detail-value {
+  font-weight: 300;
+  color: #606060 ;
+}
   
   /* Table Enhancements */
   table {
@@ -37,90 +103,79 @@
   .table-hover tbody tr:hover {
     background-color: #f5f5f5; /* Light grey background on hover */
   }
+
   
-  .mapped-line-item {
-    background: linear-gradient(135deg, #5cb85c, #80d080); /* Green gradient background */
-    color: white;
-    font-family: 'IBM Plex Mono', monospace; /* Consistent font choice */
-    font-weight: bold;
-    padding: 6px 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    display: inline-block;
-    letter-spacing: 0.5px;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    cursor: pointer;
+  /* Buttons */
+.mapped-line-item,
+.map-line-item {
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 25px;
     text-decoration: none;
-    width: fit-content;
-    margin: auto;
-    font-size: 10px;
+    display: inline-block;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
 }
 
-.mapped-line-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    background: linear-gradient(135deg, #80d080, #5cb85c); /* Slight reverse gradient on hover */
+.mapped-line-item::before,
+.map-line-item::before {
+    content: '';
+    position: absolute;
+    left: -50%;
+    top: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
 }
 
-.mapped-line-item:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+.mapped-line-item:hover::before,
+.map-line-item:hover::before {
+    opacity: 1;
+}
+
+.mapped-line-item {
+    background: linear-gradient(135deg, #00ffcc, #0099ff);
 }
 
 .map-line-item {
-  background: linear-gradient(135deg, #d9534f, #ff7975); /* Red gradient background */
-  color: white;
-  font-family: 'IBM Plex Mono', monospace; /* Consistent font choice */
-  font-weight: bold;
-  padding: 6px 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  display: inline-block;
-  letter-spacing: 0.5px;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  cursor: pointer;
-  text-decoration: none;
-  width: fit-content;
-  margin: auto;
-  font-size: 10px;
+    background: linear-gradient(135deg, #ff0066, #ff6600);
 }
 
+.mapped-line-item:hover,
 .map-line-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  background: linear-gradient(135deg, #ff7975, #d9534f); /* Slight reverse gradient on hover */
+    transform: translateY(-3px);
 }
 
-.map-line-item:active {
-  transform: translateY(1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+.unmapped-items-message,
+.mapped-items-message {
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 30px;
+    padding: 20px;
+    border-radius: 10px;
+    color: #fff;
+    display: flex;
+    align-items: center;
 }
-
 
 .unmapped-items-message {
-  background-color: #ffdddd;
-  color: #d9534f;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-left: 6px solid #d9534f;
-  font-family: 'IBM Plex Mono', monospace;
-  font-weight: bold;
-  border-radius: 8px;
-  font-size: 11px; /* Adjusted font size */
-
+    background: linear-gradient(135deg, #ff0066, #ff6600);
 }
 
 .mapped-items-message {
-  background-color: #dff0d8;
-  color: #5cb85c;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-left: 6px solid #5cb85c;
-  font-family: 'IBM Plex Mono', monospace;
-  font-weight: bold;
-  border-radius: 8px;
-  font-size: 11px; /* Adjusted font size */
+    background: linear-gradient(135deg, #00ffcc, #0099ff);
+}
 
+.unmapped-items-message::before,
+.mapped-items-message::before {
+    content: '⚠️';
+    margin-right: 15px;
+    font-size: 24px;
 }

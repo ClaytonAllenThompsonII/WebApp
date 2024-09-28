@@ -3,31 +3,60 @@
     display: flex;
     justify-content: space-between;
     margin: 20px;
-    gap: 20px; /* Add spacing between the columns */
+    gap: 20px; /* Keep to maintain spacing between columns */
     max-width: 1700px;
-    max-height: 1500px;
+    max-height: 1500px; /* Check if this height constraint is necessary */
+}
+/* Header Styles */
+.inventory-header {
+    background-color: #f5f5f5; /* Soft neutral background */
+    padding: 20px;
+    text-align: center; /* Aligning content to the left */
+    border-bottom: 1px solid #ddd; /* Subtle divider */
+    margin-bottom: 20px; /* Adding some space from the next content */
+}
+
+.inventory-header-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.inventory-header h1 {
+    font-family: 'Helvetica Neue', sans-serif; /* Minimalist, clean font */
+    font-size: 2rem; /* Larger size but not overwhelming */
+    font-weight: 400; /* Lighter weight for elegance */
+    color: #333; /* Soft black for readability */
+    margin: 0; /* Remove default margins */
+    letter-spacing: 0.5px; /* Slight letter spacing for clarity */
+}
+.divider {
+    width: 100%;
+    height: 1px;
+    background-color: #e0e0e0; /* Subtle divider color */
+    margin-top: 10px; /* Space between the header and the rest of the content */
 }
 
 /* Data Collection Column */
 .data-collection-column {
-    flex: 0 0 30%; /* 30% of the page */
+    flex: 0 0 30%; /* Keep, this defines the width */
     background-color: #ffffff;
     padding: 10px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow-y: auto; /* Allow scrolling within the column */
+    overflow-y: auto; /* Keep for scrolling */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
 }
 
 .data-collection-column > * {
-    margin-bottom: 2px;
+    margin-bottom: 2px; /* You can adjust the margin if necessary */
 }
 
 /* Data Visuals Column */
 .data-visuals-column {
-    flex: 0 0 45%; /* 45% of the page */
+    flex: 0 0 45%; /* Keep, defines the width of this column */
     background-color: #ffffff;
     padding: 10px;
     border-radius: 8px;
@@ -35,7 +64,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 600px; /* Adjust as needed */
+    min-height: 600px; /* Adjust if needed */
 }
 
 /* Data Visual Sections */
@@ -46,8 +75,9 @@
     background-color: #f9f9f9;
     border-radius: 4px;
     border: 1px solid #ddd;
-    overflow-y: auto;
+    overflow-y: auto; /* Keep for scrolling within visual sections */
 }
+
 /* Line Items Table Styling */
 #line-items-table {
     width: 100%;
@@ -57,15 +87,16 @@
 
 #line-items-table th,
 #line-items-table td {
-    padding: 8px;
+    padding: 2px; /* Further reduce padding */
     border: 1px solid #ddd;
     text-align: left;
-    font-size: 0.9rem;
+    font-size: 0.69rem; /* Reduce font size even more */
 }
 
 #line-items-table th {
     background-color: #f1f1f1;
     font-weight: bold;
+    font-size: 0.7rem; /* Smaller header text */
 }
 
 #line-item-table-body tr:hover {
@@ -73,41 +104,9 @@
     cursor: pointer;
 }
 
-.heat-map-section {
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    margin-top: 10px;
-    height: 500px; /* Adjust as needed */
-}
-
-#heatmapCanvas {
-    width: 100%;
-    height: 100%; /* Adjust the height to fit your layout */
-}
-
-.heat-map-container {
-    margin: 20px;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-#heat-map {
-    width: 100%;
-    height: 500px; /* Adjust height as needed */
-}
-
-
-
-
-
-
-/* Collection Queue Column */
+/* General Styling for the Collection Queue */
 .collection-queue-column {
-    flex: 0 0 25%; /* 25% of the page */
+    flex: 0 0 25%; /* Defines 25% of page width */
     background-color: #ffffff;
     padding: 10px;
     border-radius: 8px;
@@ -117,48 +116,68 @@
     flex-direction: column;
 }
 
-/* Section Styling within the Collection Queue Column */
+/* Section Styling within the Collection Queue */
 .collection-queue-column > section {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out; /* Smooth transition */
-    margin-bottom: 10px; /* Add spacing between sections */
+    overflow: hidden; /* Keep for collapsing sections */
+    transition: max-height 0.3s ease-in-out; /* Smooth transition for collapsing/expanding */
+    margin-bottom: 10px;
 }
 
+/* Headers for each section */
 .collection-queue-column h3 {
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #333;
-    cursor: pointer; /* Indicate clickable header */
-    padding: 5px;
-    background-color: #f1f1f1;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
+/* Hover effect for headers */
 .collection-queue-column h3:hover {
-    background-color: #ddd; /* Highlight on hover */
+    background-color: #ddd;
 }
 
 .collection-queue-column h3.expanded {
     background-color: #ccc;
 }
+/* Table Styling */
+.collection-queue-column table {
+    width: 100%;
+    border-collapse: collapse;
+}
 
+.collection-queue-column td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.9rem;
+    position: relative;
+}
+
+.collection-queue-column tr:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+/* Divider Styling */
+.collection-queue-column .divider {
+    height: 1px;
+    background-color: #ddd;
+    margin: 10px 0;
+}
 /* Toggle Section Content */
 .toggle-section .content {
-    max-height: 0; /* Collapse sections by default */
+    max-height: 0; /* Collapsed by default */
     overflow-y: hidden;
-    transition: max-height 0.3s ease-in-out; /* Smooth transition */
+    transition: max-height 0.3s ease-in-out;
 }
 
 .toggle-section.expanded .content {
-    max-height: 400px; /* Adjust as needed */
-    overflow-y: auto; /* Allow scrolling within the section when expanded */
+    max-height: 400px; /* Adjust this value if needed */
+    overflow-y: auto; /* Allow scrolling when expanded */
 }
 
-/* Specific Styling for Unstaged Products Section */
+/* Section Styling for Unstaged, Staging, and Staged Product Sections */
 #unstaged-products .content,
 #staging-products .content,
 #staged-products .content {
@@ -168,14 +187,10 @@
     border: 1px solid #ddd;
 }
 
-/* Specific Styling for Unstaged Products Section */
+/* Styling for Unstaged Products */
 #unstaged-products .content {
-    max-height: 270px; /* Adjust this value to show more records */
-    overflow-y: auto; /* Enable vertical scrolling if content exceeds max-height */
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-    border: 1px solid #ddd;
+    max-height: 270px;
+    overflow-y: auto;
 }
 
 /* Product Cell Styling */
@@ -191,90 +206,113 @@
     width: 100%;
 }
 
-/* Hide the Move button by default */
-.stage-button {
-    display: none;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 3px 8px; /* Smaller padding for a smaller button */
-    font-size: 0.75rem; /* Smaller font size */
-    border-radius: 3px; /* Smaller border radius */
+/* Buttons */
+button {
+    font-size: 0.75rem;
+    border-radius: 3px;
     cursor: pointer;
+    border: none;
+    padding: 3px 8px;
 }
-
-/* Show the Move button when hovering over the table row */
-.unstaged-products-table tr:hover .stage-button {
-    display: inline-block;
-    margin-left: auto; /* Align the button to the right */
-}
-
-/* Additional Styling for Move Button */
-.stage-button:hover {
-    background-color: #0056b3;
-}
-
-/* Staging Products Section */
-#staging-products .content {
-    max-height: 270px; /* Adjust to show more records */
-    overflow-y: auto; /* Enable scrolling */
+/* Section Styling for Unstaged, Staging, and Staged Product Sections */
+#unstaged-products .content,
+#staging-products .content,
+#staged-products .content {
     padding: 10px;
     background-color: #f9f9f9;
     border-radius: 4px;
     border: 1px solid #ddd;
+    max-height: 270px;
+    overflow-y: auto; /* Enables scrolling for each section */
 }
 
-/* Show the "+Add Inventory" button on hover for staging products */
-.staging-products-table tr:hover .collect-data-button {
-    display: inline-block;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 3px 8px;
+/* Product Cell Styling */
+.product-cell {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.product-info {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* Buttons */
+button {
     font-size: 0.75rem;
     border-radius: 3px;
     cursor: pointer;
+    border: none;
+    padding: 5px 10px; /* More balanced padding for better clickability */
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Smooth transition for hover effects */
 }
 
-/* Move button hover effect */
+/* Stage Product Button */
+.stage-button {
+    background-color: #007bff;
+    color: white;
+    display: none; /* Hidden by default in Unstaged Products */
+}
+
+/* Show the Stage Product button on row hover */
+.unstaged-products-table tr:hover .stage-button {
+    display: inline-block;
+    transform: scale(1.05); /* Slightly increase the button size on hover for better UX */
+}
+
+/* Additional Styling for Stage Button Hover Effect */
+.stage-button:hover {
+    background-color: #0056b3;
+    transform: scale(1.1); /* Further scale on hover */
+}
+
+/* +Add Data Button */
+.collect-data-button {
+    background-color: #28a745;
+    color: white;
+    display: inline-block; /* Always visible in Staging Products */
+}
+
+/* Hover effect for "+Add Data" button */
 .collect-data-button:hover {
-    background-color: #218838;
+    background-color: #0a3914;
+    transform: scale(1.1); /* Add a slight scaling effect */
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Commit section, Divider Styling */
-.collection-queue-column .divider {
-    height: 1px;
-    background-color: #ddd;
-    margin: 10px 0;
+/* Hidden Unstage and Stage Buttons */
+.unstage-button,
+.stage-button {
+    display: none;
 }
 
-/* Commit Summary Section */
+/* Unstage Button */
+.unstage-button {
+    background-color: #ff6666;
+    color: white;
+}
+
+/* Hover effect for Unstage Button */
+.unstage-button:hover {
+    background-color: #e60000;
+    transform: scale(1.1);
+}
+
+/* Show hidden buttons on row hover in Staging Products */
+.staging-products-table tr:hover .unstage-button,
+.staging-products-table tr:hover .stage-button {
+    display: inline-block;
+    transform: scale(1.05);
+}
+
+/* Commit Summary Section Styling */
 #commit-summary {
     padding: 10px;
     background-color: #f7f7f7;
     border-radius: 4px;
     border: 1px solid #ddd;
-    margin-top: auto; /* Pushes the section down */
+    margin-top: auto;
 }
 
 #commit-summary p {
@@ -282,50 +320,88 @@
     margin: 5px 0;
 }
 
+/* Start Inventory Cycle Button */
+#start-cycle-button {
+    margin-top: 10px;
+    padding: 6px 12px;  /* Smaller padding */
+    background-color: #f0f0f0;  /* Subtle, neutral background color */
+    color: #333;  /* Dark gray text for subtlety */
+    border: 1px solid #ccc;  /* Very light border to maintain minimalist design */
+    border-radius: 2px;  /* Minimal border radius */
+    cursor: pointer;
+    font-size: 0.85rem;  /* Smaller font size for a refined look */
+    text-align: left;  /* Align text to the left */
+    display: block;  /* Full width to align with the surrounding layout */
+    width: 100%;  /* Ensure the button takes up the full width */
+    transition: background-color 0.3s ease, color 0.3s ease;  /* Smooth transition for hover effects */
+}
+
+/* Hover effect for Start Inventory Cycle Button */
+#start-cycle-button:hover {
+    background-color: #e0e0e0;  /* Subtle darkening on hover */
+    color: #111;  /* Slightly darker text color on hover */
+}
+
+/* Align Unstage All buttons to the right of the section header */
+.unstage-all-button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #f7f7f7;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 5px 12px; /* Slightly larger padding for clickability */
+    font-size: 0.8rem;
+    border-radius: 4px;
+    display: none; /* Hidden by default */
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease; /* Faster, more subtle transitions */
+}
+
+/* Show Unstage All buttons on header hover */
+.collection-queue-column h3:hover .unstage-all-button {
+    display: inline-block;
+}
+
+/* Hover effect for Unstage All button */
+.unstage-all-button:hover {
+    background-color: #ffe6e6; /* Very light red background for subtle effect */
+    color: #cc0000; /* Slightly darker red text for contrast */
+    border-color: #cc0000; /* Match border with text color */
+}
+
+/* Divider Styling */
+.collection-queue-column .divider {
+    height: 1px;
+    background-color: #ddd;
+    margin: 10px 0;
+}
+
+
+
+
+/* Stage Cycle Button */
 #stage-cycle-button {
     margin-top: 10px;
-    padding: 10px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
+    padding: 10px 20px;
+    background-color: #e0e0e0; /* Light grey background */
+    color: #333; /* Dark grey text */
+    border: 1px solid #666; /* Dark grey border */
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
+/* Hover effect */
 #stage-cycle-button:hover {
-    background-color: #0056b3;
+    background-color: #d4d4d4; /* Slightly darker grey on hover */
+    border-color: #333; /* Even darker grey border */
 }
 
-/* Table Styling */
-.collection-queue-column table {
-    width: 100%;
-    border-collapse: collapse;
+#stage-cycle-button:active {
+    background-color: #999; /* Even darker grey for active click */
+    transform: scale(0.98); /* Slightly compress on click */
 }
 
-.collection-queue-column td {
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
-    font-size: 0.9rem;
-    position: relative; /* Ensure correct alignment of button */
-}
-
-.collection-queue-column tr:hover {
-    background-color: #f0f0f0;
-    cursor: pointer;
-}
-
-/* Initially hide the Move buttons */
-.collection-queue-column .unstaged-products-table td .stage-button {
-    display: none; /* Hide the button by default */
-}
-
-/* Show the Move button when hovering over the table row */
-.collection-queue-column .unstaged-products-table tr:hover .stage-button {
-    display: inline-block; /* Show the button when the user hovers over the row */
-    position: absolute;
-    right: 10px; /* Align to the right inside the table cell */
-    top: 50%;
-    transform: translateY(-50%); /* Center vertically */
-}

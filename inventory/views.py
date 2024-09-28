@@ -19,6 +19,9 @@ import logging
 import json
 
 from django.db.models import Sum, Subquery, OuterRef, F, FloatField
+from django.views.decorators.http import require_POST
+from django.conf import settings
+
 from django.db.models.functions import Cast
 from django.db import IntegrityError, DatabaseError
 from django.http import JsonResponse
@@ -39,7 +42,7 @@ from .forms import InventoryDataCollectionForm
 from .storage_backends import AWSStorageBackend
 
 
-from .models import InventoryItem
+from .models import InventoryQueueItem, InventoryCollectionCycle
 
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -250,7 +253,6 @@ def get_products(request):
 
 @login_required(login_url='loginPage')
 def inventory_queue_view(request):
-    # Subquery to calculate the total spend for each product based on its related line items
     total_spend_subquery = (
         ProcessedLineItem.objects
         .filter(product_id=OuterRef('product_id'))
@@ -259,31 +261,14 @@ def inventory_queue_view(request):
         .values('total')
     )
 
-    # Annotate each product with the total spend and order by it
     products_with_spend = (
         Product.objects
         .annotate(total_spend=Subquery(total_spend_subquery))
         .order_by('-total_spend')  # Order by total spend in descending order
     )
 
-    # Calculate the cumulative spend to find the top 50%
-    total_spend = sum(product.total_spend or 0 for product in products_with_spend)
-    cumulative_spend = 0
-    top_50_spend_products = []
-    
-    for product in products_with_spend:
-        cumulative_spend += product.total_spend or 0
-        top_50_spend_products.append({
-            'product_name': product.generated_product_name,
-            'total_spend': product.total_spend,
-            'spend_percentage': (product.total_spend / total_spend) * 100 if total_spend else 0,
-        })
-        if cumulative_spend / total_spend >= 0.5:
-            break  # We've found the top 50%
-
     selected_product = None
     line_items = []
-
     product_id = request.GET.get('product_id')
     if product_id:
         selected_product = get_object_or_404(Product, pk=product_id)
@@ -293,16 +278,80 @@ def inventory_queue_view(request):
     user = request.user
     profile = user.profile if hasattr(user, 'profile') else None
 
+    # Try to get the active cycle or handle the case where no cycle is active
+    try:
+        active_cycle = InventoryCollectionCycle.objects.filter(user=user).latest('created_at')
+    except InventoryCollectionCycle.DoesNotExist:
+        active_cycle = None
+
+    staged_products = InventoryQueueItem.objects.filter(inventory_cycle=active_cycle) if active_cycle else []
+
     context = {
         'prioritized_products': products_with_spend,
         'selected_product': selected_product,
         'line_items': line_items,
-        'heat_map_data': top_50_spend_products,  # Pass the heat map data to the template
-        'user_name': user.username,  # Add username to the context
-        'user_id': user.id,  # Add user ID to the context
-        'user_group': profile.group.name if profile and profile.group else 'None',  # Add user group to the context
+        'staged_products': staged_products,  # Pass staged products to the template
+        'user_name': user.username,
+        'user_id': user.id,
+        'user_group': profile.group.name if profile and profile.group else 'None',
+        'active_cycle': active_cycle,  # Pass active cycle to the context
     }
+
     return render(request, 'inventory/inventory_queue.html', context)
+
+
+
+
+@login_required(login_url='loginPage')
+@require_POST
+def save_inventory_data(request):
+    product_id = request.POST.get('product_id')
+    size = request.POST.get('size')
+    unit = request.POST.get('unit')
+    image = request.FILES.get('image')
+    user = request.user
+
+    # Retrieve the active inventory cycle
+    active_cycle = InventoryCollectionCycle.objects.filter(user=user).latest('created_at')
+
+    # Create a new InventoryQueueItem
+    inventory_item = InventoryQueueItem.objects.create(
+        user=user,
+        product_id=product_id,
+        size=size,
+        unit=unit,
+        image=image,
+        inventory_cycle=active_cycle
+    )
+
+    return JsonResponse({'message': 'Data successfully saved.'})
+
+
+
+@login_required(login_url='loginPage')
+@require_POST
+def start_inventory_cycle(request):
+    if request.method == 'POST':
+        new_cycle = InventoryCollectionCycle.objects.create(user=request.user)
+        return JsonResponse({'success': True, 'cycle_id': new_cycle.id})
+    return JsonResponse({'success': False}, status=400)
+
+
+@login_required(login_url='loginPage')
+@require_POST
+def commit_inventory_cycle(request):
+    user = request.user
+    active_cycle = InventoryCollectionCycle.objects.filter(user=user).latest('created_at')
+    
+    # Mark the cycle as committed
+    active_cycle.committed = True
+    active_cycle.save()
+
+    # Optionally, perform other actions here (e.g., generate reports, trigger notifications)
+
+    return JsonResponse({'success': True, 'message': 'Inventory cycle committed.'})
+
+
 
 
 @login_required(login_url='loginPage')
@@ -312,7 +361,7 @@ def load_line_items(request):
     # Fetch line items for the selected product
     line_items = ProcessedLineItem.objects.filter(product_id=product_id)
     
-    # Prepare the data to include invoice_receipt_date
+    # Prepare the data to include invoice_receipt_date and other fields
     line_item_data = []
     for item in line_items:
         # Fetch the corresponding invoice to get the receipt date
@@ -325,6 +374,10 @@ def load_line_items(request):
             'quantity': item.quantity,
             'unit': item.unit_of_measure,
             'price': item.price,
+            'unit_price': item.unit_price,  # Added unit price
+            'pack': item.pack,  # Added pack
+            'size': item.size,  # Added size
+            'weight': item.weight,  # Added weight
             'invoice_receipt_date': invoice_receipt_date,  # Add the invoice receipt date here
         })
 

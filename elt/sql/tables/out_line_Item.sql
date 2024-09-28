@@ -24,6 +24,8 @@ CREATE TABLE out_line_item (
     unit TEXT,
     weight NUMERIC,
     expense_row TEXT,
+    gl3_id INT,
+    gl3_name TEXT;
     CONSTRAINT fk_invoice FOREIGN KEY (invoice_id) REFERENCES out_invoice(invoice_id) ON DELETE CASCADE ON UPDATE CASCADE, -- Foreign key constraint
     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES out_product(product_id) ON DELETE CASCADE ON UPDATE CASCADE -- Foreign key constraint
 );

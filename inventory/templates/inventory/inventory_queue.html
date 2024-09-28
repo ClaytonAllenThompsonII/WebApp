@@ -14,12 +14,14 @@
 
     <!-- Chart.js and Treemap Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap"></script>
 </head>
 
 <body>
-    <header>
-        <h1>Inventory Collection Queue</h1>
+    <header class="inventory-header">
+        <div class="inventory-header-content">
+            <h1>Inventory Collection Queue</h1>
+        </div>
+        <div class="divider"></div>
     </header>
 
     <div class="inventory-layout">
@@ -29,11 +31,7 @@
                 {% include 'image_classifier/upload.html' %}
             </div>
 
-            <section id="inventory-size">
-                <div class="measure-inventory-container">
-                    {% include 'inventory/inventory_scale.html' %}
-                </div>
-            </section>
+            
         </div>
 
         <!-- Data Visuals Column -->
@@ -44,11 +42,15 @@
                 <table id="line-items-table">
                     <thead>
                         <tr>
+                            <th>Pack</th> <!-- New -->
+                            <th>Size</th> <!-- New -->
+                            <th>Weight</th> <!-- New -->
                             <th>Line Item ID</th>
                             <th>Description</th>
                             <th>Quantity</th>
                             <th>Unit</th>
                             <th>Price</th>
+                            <th>Unit Price</th> <!-- New -->
                             <th>Receipt Date</th>
                         </tr>
                     </thead>
@@ -60,19 +62,32 @@
 
             <!-- Middle Section (Placeholder) -->
             <section id="middle-section" class="data-visual-section">
-                <h3>Middle Section</h3>
+                <h3>Product Value</h3>
                 <!-- Content for the middle section -->
+                
             </section>
 
             <!-- Bottom Section (Heatmap Integration) -->
             <section id="bottom-section" class="data-visual-section">
                 <h3>Bottom Section</h3>
+                <section id="inventory-size"></section>
+                    <div class="measure-inventory-container">
+                        {% include 'inventory/inventory_scale.html' %}
+                    </div>
+                </section>
 
             </section>
         </div>
 
         <!-- Collection Queue Column -->
         <div class="collection-queue-column">
+            <!-- Start Inventory Cycle -->
+             <!-- Timer for Inventory Cycle -->
+            <div id="inventory-timer" class="inventory-timer hidden">⏱️00:00</div> <!-- Starts hidden, becomes visible on start -->
+
+            <button id="start-cycle-button">Start Inventory Cycle</button>
+            <div class="divider"></div>
+
             <!-- Unstaged Products Section -->
             <section id="unstaged-products" class="toggle-section">
                 <h3>Unstaged Products</h3>
@@ -84,7 +99,7 @@
                                 <td class="product-cell">
                                     <div class="product-info">
                                         {{ product.generated_product_name }}
-                                        <button class="stage-button" onclick="moveToNextStage({{ product.product_id }}); event.stopPropagation();">Move</button>
+                                        <button class="stage-button" onclick="moveProductToStaging(this); event.stopPropagation();">Stage Product</button>
                                     </div>
                                 </td>
                             </tr>
@@ -97,21 +112,21 @@
             <div class="divider"></div>
 
             <!-- Staging Products Section -->
+            <!-- Staging Products Section -->
             <section id="staging-products" class="toggle-section">
-                <h3>Staging Products</h3>
-                <div class="toggle-section">
+                <h3>Staging Products
+                    <button class="unstage-all-button" onclick="unstageAll('staging-products');">Unstage All</button>
+                </h3>
+                <div class="content">
                     <table class="staging-products-table">
                         <tbody>
-                            <!-- Staging products will be dynamically inserted here -->
                             {% for product in staged_products %}
                             <tr data-product-id="{{ product.product_id }}">
                                 <td class="product-cell">
                                     <div class="product-info">
                                         {{ product.generated_product_name }}
-                                        <button class="collect-data-button hidden" 
-                                                onclick="collectData({{ product.product_id }}); event.stopPropagation();">
-                                            +Add Inventory
-                                        </button>
+                                        <!-- Hidden "+Add Data" button, displayed on hover -->
+                                        <button class="collect-data-button hidden" onclick="collectData({{ product.product_id }}); event.stopPropagation();">+Add Data</button>
                                     </div>
                                 </td>
                             </tr>
@@ -125,8 +140,10 @@
 
             <!-- Staged Products Section -->
             <section id="staged-products" class="toggle-section">
-                <h3>Staged Products</h3>
-                <div class="toggle-section">
+                <h3>Staged Products
+                    <button class="unstage-all-button" onclick="unstageAll('staged-products');">Unstage All</button>
+                </h3>
+                <div class="content">
                     <table class="staged-products-table">
                         <tbody>
                             <!-- Staged products will be dynamically inserted here -->

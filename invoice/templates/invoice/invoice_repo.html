@@ -44,12 +44,16 @@
             <tbody>
                 {% for invoice in invoices %}
                 <tr>
-                    <td>{{ invoice.vendor_name }}</td>
+                    <td>
+                        {% if invoice.vendor_short_name %}
+                            {{ invoice.vendor_short_name }}
+                        {% else %}
+                            {{ invoice.vendor_name }}
+                        {% endif %}
+                    </td>
                     <td><a href="{% url 'line_items_by_invoice' invoice.invoice_id %}">
                             <span class="styled-invoice-number">{{ invoice.invoice_number }}</span>
-
-                    </a>
-                </td>
+                    </a></td>
                     <td>{{ invoice.invoice_receipt_date }}</td>
                     <td>{{ invoice.total }}</td>
                     <td>{{ invoice.upload_date }}</td>
@@ -57,6 +61,6 @@
                 {% endfor %}
             </tbody>
         </table>
-    </section>
+            </section>
 </div>
 {% endblock %}

@@ -37,6 +37,7 @@ class ProcessedInvoice(models.Model):
     upload_date = models.DateTimeField()
     account_number = models.CharField(max_length=255, null=True, blank=True)
     vendor_name = models.CharField(max_length=255)
+    vendor_short_name = models.CharField(max_length=255, null=True, blank=True)  # Vendor's short name (new field)
     due_date = models.DateField(null=True, blank=True) # allow null values for now
     delivery_date = models.DateField(null=True, blank=True) # allow NULL values if needed
     invoice_receipt_date = models.DateField()

@@ -343,7 +343,6 @@ def general_ledger_accounts(request):
     
     return render(request, 'invoice/general_ledger_accounts.html', context)
 
-
 @login_required(login_url='loginPage')
 def get_gl_level_2(request):
     gl1_id = request.GET.get('gl1_id')
@@ -352,6 +351,7 @@ def get_gl_level_2(request):
         return JsonResponse(list(gl2_items), safe=False)
     return JsonResponse({"error": "GL Level 1 ID not provided"}, status=400)
 
+@login_required(login_url='loginPage')
 def gl_level_3_by_gl1(request):
     gl1_id = request.GET.get('gl1_id')
     if gl1_id:

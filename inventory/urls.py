@@ -27,11 +27,16 @@ urlpatterns = [
     path('get_gl_level_2/', views.get_gl_level_2, name='get_gl_level_2'),
     path('get_gl_level_3/', views.get_gl_level_3, name='get_gl_level_3'),
     path('get_products/', views.get_products, name='get_products'),
+
+    # Inventory Queue
     path('inventory/queue', views.inventory_queue_view, name='inventory_queue'),
     path('inventory/queue/load_line_items/', views.load_line_items, name='load_line_items'),
+
+    # New Cycle Management URLs
+    path('inventory/queue/start_cycle/', views.start_inventory_cycle, name='start_inventory_cycle'),
+    path('inventory/queue/save_inventory_data/', views.save_inventory_data, name='save_inventory_data'),
+    path('inventory/queue/commit_cycle/', views.commit_inventory_cycle, name='commit_inventory_cycle'),
+
+    # Example for product impact index
     path('product-impact-index/', views.product_impact_index, name='product_impact_index'),
-
-
-
-
 ]

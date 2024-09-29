@@ -1,126 +1,342 @@
-/* New container for the line items by invoice page */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container */
 .line-items-invoice-container {
-    display: flex;
-    flex-direction: column;
-    max-width: 1700px;
-    margin: 9px;
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Table Enhancements */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    border: 1px solid #f2f2f2; /* Smooth dark borders for contrast */
-  }
-  
-  th, td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  th {
-    background-color: #f2f2f2;
-    font-size: 9px; /* Adjusted for consistency and readability */
-    border-right: 1px solid #f2f2f2;
-  }
-  
-  td {
-    font-size: 11px; /* Slightly larger text for content */
-  }
-  
-  .table-hover tbody tr:hover {
-    background-color: #f5f5f5; /* Light grey background on hover */
-  }
-  
-  .mapped-line-item {
-    background: linear-gradient(135deg, #5cb85c, #80d080); /* Green gradient background */
-    color: white;
-    font-family: 'IBM Plex Mono', monospace; /* Consistent font choice */
-    font-weight: bold;
-    padding: 6px 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    display: inline-block;
-    letter-spacing: 0.5px;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    cursor: pointer;
-    text-decoration: none;
-    width: fit-content;
-    margin: auto;
-    font-size: 10px;
+    max-width: 1800px;
+    margin: 40px auto;
+    padding: 0 20px;
 }
 
-.mapped-line-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    background: linear-gradient(135deg, #80d080, #5cb85c); /* Slight reverse gradient on hover */
+
+/* Navigation Pane */
+.navigation-pane {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
 }
 
-.mapped-line-item:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.map-line-item {
-  background: linear-gradient(135deg, #d9534f, #ff7975); /* Red gradient background */
-  color: white;
-  font-family: 'IBM Plex Mono', monospace; /* Consistent font choice */
-  font-weight: bold;
-  padding: 6px 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  display: inline-block;
-  letter-spacing: 0.5px;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  cursor: pointer;
+.nav-button {
+  font-size: 24px;
+  color: #333;
   text-decoration: none;
-  width: fit-content;
-  margin: auto;
-  font-size: 10px;
+  padding: 10px;
+  transition: color 0.3s;
 }
 
-.map-line-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  background: linear-gradient(135deg, #ff7975, #d9534f); /* Slight reverse gradient on hover */
+.nav-button:hover {
+  color: #1e88e5;
 }
 
-.map-line-item:active {
-  transform: translateY(1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+.close-button {
+  font-size: 30px;
+  font-weight: bold;
 }
 
+.invoice-navigation {
+  display: flex;
+  align-items: center;
+}
+
+.invoice-number {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 15px;
+}
+
+.prev-button, .next-button {
+  font-size: 24px;
+}
+
+.disabled {
+  color: #ccc;
+  pointer-events: none;
+}
+
+/* Invoice Header */
+.invoice-header {
+  margin-bottom: 30px;
+}
+
+.vendor-name {
+  font-size: 20px;
+  font-weight: 400;
+  color: #555;
+}
+
+/* Invoice Details Card */
+.invoice-details-card {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  max-width: 400px;
+}
+
+.invoice-detail-item {
+  display: flex;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #555;
+  width: 140px;
+}
+
+.detail-value {
+  font-weight: 400;
+  color: #333;
+}
+
+/* Messages */
+.unmapped-items-message, .mapped-items-message {
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+}
 
 .unmapped-items-message {
-  background-color: #ffdddd;
-  color: #d9534f;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-left: 6px solid #d9534f;
-  font-family: 'IBM Plex Mono', monospace;
-  font-weight: bold;
-  border-radius: 8px;
-  font-size: 11px; /* Adjusted font size */
-
+  background-color: #f44336; /* Red for unmapped */
 }
 
 .mapped-items-message {
-  background-color: #dff0d8;
-  color: #5cb85c;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-left: 6px solid #5cb85c;
-  font-family: 'IBM Plex Mono', monospace;
-  font-weight: bold;
-  border-radius: 8px;
-  font-size: 11px; /* Adjusted font size */
+  background-color: #4caf50; /* Green for mapped */
+}
 
+.unmapped-items-message::before, .mapped-items-message::before {
+  content: '⚠️';
+  margin-right: 10px;
+  font-size: 24px;
+}
+
+/* Table Styles */
+.line-items-table-container {
+  overflow-x: auto;
+}
+
+.line-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.line-items-table th, .line-items-table td {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.line-items-table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  font-size: 14px;
+  color: #555;
+}
+
+.line-items-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.line-items-table td {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Edit Icon */
+.edit-icon {
+  font-size: 18px;
+  color: #1e88e5;
+  text-decoration: none;
+}
+
+.edit-icon:hover {
+  color: #1565c0;
+}
+
+/* Status Buttons */
+.status-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 25px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  position: relative;
+  color: #fff;
+  text-align: center;
+  background-size: 200% 200%;
+  background-position: left center;
+}
+
+/* Mapped State Styles */
+.status-button.mapped {
+  background: linear-gradient(to right, #42a5f5, #1e88e5);
+  box-shadow: 0 4px 6px rgba(66, 165, 245, 0.3);
+}
+
+.status-button.mapped:hover {
+  background-position: right center;
+  box-shadow: 0 6px 8px rgba(30, 136, 229, 0.4);
+}
+
+/* Unmapped State Styles */
+.status-button.unmapped {
+  background: linear-gradient(to right, #9e9e9e, #616161);
+  box-shadow: 0 4px 6px rgba(158, 158, 158, 0.3);
+}
+
+.status-button.unmapped:hover {
+  background-position: right center;
+  box-shadow: 0 6px 8px rgba(97, 97, 97, 0.4);
+}
+
+/* Fun Hover Effect */
+.status-button:hover {
+  transform: translateY(-2px);
+}
+
+/* Active State */
+.status-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Focus State */
+.status-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.5);
+}
+
+
+/* Show tooltip on button hover */
+.status-button.mapped:hover + .tooltip-content {
+  display: block;
+}
+
+/* Ensure tooltip stays above other elements */
+.line-items-table {
+  position: relative;
+  z-index: 1;
+}
+
+/* Status Message Container */
+.status-message {
+  margin-bottom: 30px;
+  max-width: 850px; /* Set the desired maximum width */
+}
+
+/* Alert Styles */
+.alert {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.alert-icon {
+  font-size: 24px;
+  margin-right: 15px;
+}
+
+.alert-text {
+  flex: 1;
+}
+
+/* Unmapped Items Alert */
+.alert-warning {
+  background-color: #ffa726; /* Light orange */
+  box-shadow: 0 4px 6px rgba(255, 167, 38, 0.3);
+}
+
+.alert-warning .alert-icon {
+  color: #ef6c00; /* Darker orange */
+}
+
+/* Mapped Items Alert */
+.alert-success {
+  background-color: #66bb6a; /* Light green */
+  box-shadow: 0 4px 6px rgba(102, 187, 106, 0.3);
+}
+
+.alert-success .alert-icon {
+  color: #2e7d32; /* Darker green */
+}
+
+/* Custom Tooltip Theme: custom-light */
+.tippy-box[data-theme~='custom-light'] {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px; /* Adjust font size as needed */
+  background-color: #ffffff; /* White background */
+  color: #333333; /* Dark text color for readability */
+  border: 1px solid #e0e0e0; /* Light grey border */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  padding: 16px; /* Increase padding for a larger tooltip */
+  max-width: 950px; /* Increase width if needed */
+}
+
+.tippy-box[data-theme~='custom-light'] .tippy-arrow {
+  color: #ffffff; /* Arrow color matches tooltip background */
+}
+
+.tippy-box[data-theme~='custom-light'][data-placement^='right'] > .tippy-arrow {
+  left: 0;
+  margin-left: -7px;
+}
+
+.tippy-box[data-theme~='custom-light'][data-placement^='left'] > .tippy-arrow {
+  right: 0;
+  margin-right: -7px;
+}
+
+/* Adjust the content inside the tooltip */
+.tippy-content {
+  line-height: 1.6; /* Improve readability */
+}
+
+/* Optional: Style the tooltip headings */
+.tippy-content strong {
+  color: #1e88e5; /* Accent color for headings */
+  font-weight: 600;
+}
+
+/* Tooltip Content Styles */
+.tooltip-header {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333333;
+}
+
+.tooltip-item {
+  margin-bottom: 6px;
+}
+
+.tooltip-item:last-child {
+  margin-bottom: 0;
+}
+
+.tooltip-item strong {
+  display: inline-block;
+  width: 140px; /* Align labels */
+  color: #1e88e5;
 }

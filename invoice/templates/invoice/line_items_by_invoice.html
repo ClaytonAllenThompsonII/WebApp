@@ -3,77 +3,174 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'invoice/line_items_by_invoice.css' %}">
+<!-- Include Tippy.js CSS -->
+<link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
 {% endblock %}
 
 {% block content %}
 <div class="line-items-invoice-container">
-    
-    <h2>Line Items for Invoice 🧾 {{ invoice.invoice_number }}</h2>
-    <!-- Display a message if there are unmapped items -->
-    {% if unmapped_count > 0 %}
-        <div class="unmapped-items-message">
-            ⚠️ This invoice has {{ unmapped_count }} line item(s) that need to be mapped. The invoice is not ready for the journal entry API.
+    <!-- Navigation Pane -->
+    <div class="navigation-pane">
+        <a href="{% url 'invoice_repo' %}" class="nav-button close-button" title="Back to Invoice List">&times;</a>
+        <div class="invoice-navigation">
+            {% if previous_invoice_id %}
+                <a href="{% url 'line_items_by_invoice' previous_invoice_id %}" class="nav-button prev-button" title="Previous Invoice">&#10094;</a>
+            {% else %}
+                <span class="nav-button prev-button disabled">&#10094;</span>
+            {% endif %}
+            <span class="invoice-number">Invoice {{ invoice.invoice_number }}</span>
+            {% if next_invoice_id %}
+                <a href="{% url 'line_items_by_invoice' next_invoice_id %}" class="nav-button next-button" title="Next Invoice">&#10095;</a>
+            {% else %}
+                <span class="nav-button next-button disabled">&#10095;</span>
+            {% endif %}
         </div>
-    {% else %}
-        <div class="mapped-items-message">
-            ✅ All line items in this invoice are mapped. The invoice is ready for the journal entry API.
+    </div>
+
+    <!-- Invoice Header -->
+    <div class="invoice-header">
+        <!-- Vendor Information -->
+        {% if invoice.vendor_short_name %}
+            <h3 class="vendor-name">Vendor: {{ invoice.vendor_short_name }}</h3>
+        {% else %}
+            <h3 class="vendor-name">Vendor: {{ invoice.vendor_name }}</h3>
+        {% endif %}
+
+        <!-- Invoice Details Card -->
+        <div class="invoice-details-card">
+            {% if invoice.invoice_receipt_date %}
+                <div class="invoice-detail-item">
+                    <span class="detail-label">Invoice Date:</span>
+                    <span class="detail-value">{{ invoice.invoice_receipt_date|date:"F j, Y" }}</span>
+                </div>
+            {% endif %}
+            {% if invoice.due_date %}
+                <div class="invoice-detail-item">
+                    <span class="detail-label">Due Date:</span>
+                    <span class="detail-value">{{ invoice.due_date|date:"F j, Y" }}</span>
+                </div>
+            {% endif %}
+            {% if invoice.total %}
+                <div class="invoice-detail-item">
+                    <span class="detail-label">Total Amount:</span>
+                    <span class="detail-value">${{ invoice.total|floatformat:2 }}</span>
+                </div>
+            {% endif %}
         </div>
-    {% endif %}
-    <table class="table-hover" id="lineItemsTable">
-        <thead>
-            <tr>
-                <th scope="col">Line Item ID</th>
-                <th scope="col">Invoice Receipt ID</th>
-                <th scope="col">Product ID</th>
-                <th scope="col">Product Code</th>
-                <th scope="col">GL3 Name V2</th> <!-- New column for GL3 Name -->
+    </div>
 
-                <th scope="col">Brand</th>
-                <th scope="col">Description</th>
-                <th scope="col">Unit Price</th>
-                <th scope="col">Net Amount</th>
-                <th scope="col">Quantity</th>
-                <th scope="col">Price</th>
-                <th scope="col">Unit of Measure</th>
-                <th scope="col">Pack</th>
-                <th scope="col">Size</th>
-                <th scope="col">Unit</th>
-                <th scope="col">Invoice Weight</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for line_item in line_items %}
-            <tr>
-                <td><a href="{% url 'edit_line_item' line_item.line_item_id %}">{{ line_item.line_item_id }}</a></td>
-                <td>{{ line_item.invoice_receipt_id }}</td>
-                <td>{{ line_item.product_id }}</td>
-                <td>{{ line_item.product_code }}</td>
+    <!-- Status Message -->
+    <div class="status-message">
+        {% if unmapped_count > 0 %}
+            <div class="alert alert-warning">
+                <span class="alert-icon">⚠️</span>
+                <span class="alert-text">This invoice has {{ unmapped_count }} line item(s) that need to be mapped. The invoice is not ready for the journal entry API.</span>
+            </div>
+        {% else %}
+            <div class="alert alert-success">
+                <span class="alert-icon">✅</span>
+                <span class="alert-text">All line items in this invoice are mapped. The invoice is ready for the journal entry API.</span>
+            </div>
+        {% endif %}
+    </div>
 
-                <td>
-                    {% if line_item.gl3_name %}
-                        <span class="mapped-line-item">{{ line_item.gl3_name }}</span>
-                    {% else %}
-                        <span class="map-line-item"> Map Item </span>
-                    {% endif %}
-                </td>
+    <!-- Line Items Table -->
+    <div class="line-items-table-container">
+        <table class="line-items-table">
+            <thead>
+                <tr>
+                    <th scope="col">Edit</th>
+                    <th scope="col">UOM</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Unit Price</th>
+                    <th scope="col">Total Price</th>
+                    <th scope="col">GL3 Name</th>
+                    <th scope="col">Product Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for line_item in line_items %}
+                <tr>
+                    <!-- Edit Icon -->
+                    <td>
+                        <a href="{% url 'edit_line_item' line_item.line_item_id %}" class="edit-icon" title="Edit Line Item">
+                            🧾
+                        </a>
+                    </td>
+                    <!-- UOM -->
+                    <td>{{ line_item.unit_of_measure }}</td>
+                    <!-- Description -->
+                    <td>{{ line_item.item_description }}</td>
+                    <!-- Quantity -->
+                    <td>{{ line_item.quantity }}</td>
+                    <!-- Unit Price -->
+                    <td>${{ line_item.unit_price|floatformat:2 }}</td>
+                    <!-- Total Price -->
+                    <td>${{ line_item.price|floatformat:2 }}</td>
+                    <!-- GL3 Name -->
+                    <td>
+                        {% if line_item.gl3_name %}
+                            <!-- Mapped State -->
+                            <button class="status-button mapped gl3-button" title="GL3 Name Mapped">
+                                {{ line_item.gl3_name }}
+                            </button>
+                        {% else %}
+                            <!-- Unmapped State -->
+                            <button class="status-button unmapped gl3-button" onclick="window.location.href='{% url 'edit_line_item' line_item.line_item_id %}'" title="Map GL3 Name">
+                                Map GL3
+                            </button>
+                        {% endif %}
+                    </td>
+                    <!-- Generated Product Name -->
+                    <!-- Product Name -->
+                    <td>
+                        {% if line_item.generated_product_name %}
+                            <!-- Mapped State -->
+                            <button class="status-button mapped product-button"
+                                    data-tippy-content="
+                                        <div class='tooltip-header'>Product Details</div>
+                                        <div class='tooltip-item'><strong>Product ID:</strong> {{ line_item.product_id }}</div>
+                                        <div class='tooltip-item'><strong>Product Code:</strong> {{ line_item.product_code }}</div>
+                                        <div class='tooltip-item'><strong>Enhanced Details:</strong> {{ line_item.enhanced_details|escape }}</div>
+                                        <div class='tooltip-item'><strong>Estimated Expiration:</strong> {{ line_item.estimated_expiration }}</div>
+                                    "
+                                    onclick="window.location.href='{% url 'product_enhancement' %}'"
+                                    title="Click for details">
+                                {{ line_item.generated_product_name }}
+                            </button>
+                        {% else %}
+                            <!-- Unmapped State -->
+                            <button class="status-button unmapped product-button"
+                                    onclick="window.location.href='{% url 'edit_line_item' line_item.line_item_id %}'"
+                                    title="Map Product">
+                                Map Product
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-                <td>{{ line_item.brand }}</td>
-                <td>{{ line_item.item_description }}</td>
-                <td>{{ line_item.unit_price }}</td>
-                <td>{{ line_item.net_amount }}</td>
-                <td>{{ line_item.quantity }}</td>
-                <td>{{ line_item.price }}</td>
-                <td>{{ line_item.unit_of_measure }}</td>
-                <td>{{ line_item.pack }}</td>
-                <td>{{ line_item.size }}</td>
-                <td>{{ line_item.unit }}</td>
-                <td>{{ line_item.weight }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Include Tippy.js JS -->
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        tippy('.product-button.mapped', {
+            content(reference) {
+                return reference.getAttribute('data-tippy-content');
+            },
+            allowHTML: true,
+            interactive: true,
+            theme: 'custom-light', // Use the custom theme
+            placement: 'right',
+            animation: 'fade',
+            delay: [100, 50],
+        });
+    });
+    </script>
 </div>
 {% endblock %}
-
-
-<span class="info-icon" </span>

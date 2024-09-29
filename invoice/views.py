@@ -5,7 +5,9 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-
+from django.db.models import F
+from django.db.models import OuterRef, Subquery, TextField
+from django.db.models.functions import Coalesce
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -141,14 +143,36 @@ def line_items_repo(request):
 @login_required(login_url='loginPage')
 def line_items_by_invoice(request, invoice_id):
     invoice = get_object_or_404(ProcessedInvoice, pk=invoice_id)
+
+    # Start with the base queryset for line items
     line_items = ProcessedLineItem.objects.filter(invoice_id=invoice_id).order_by('expense_document_index', 'line_item_index')
 
-    # Count the number of unmapped items (where GL3 name is None)
+    # Annotate fields from the Product model using Subquery
+    product_subquery = Product.objects.filter(product_id=OuterRef('product_id'))
+
+    line_items = line_items.annotate(
+        generated_product_name=Subquery(product_subquery.values('generated_product_name')[:1]),
+        enhanced_details=Subquery(product_subquery.values('enhanced_details')[:1]),
+        estimated_expiration=Subquery(product_subquery.values('estimated_expiration')[:1]),
+    )
+
+    # Get all invoice IDs for navigation
+    invoices = ProcessedInvoice.objects.order_by('invoice_id')
+    invoice_ids = list(invoices.values_list('invoice_id', flat=True))
+
+    current_index = invoice_ids.index(invoice_id)
+    previous_invoice_id = invoice_ids[current_index - 1] if current_index > 0 else None
+    next_invoice_id = invoice_ids[current_index + 1] if current_index < len(invoice_ids) - 1 else None
+
+    # Count the number of unmapped items
     unmapped_count = line_items.filter(gl3_name__isnull=True).count()
+
     context = {
         'invoice': invoice,
         'line_items': line_items,
         'unmapped_count': unmapped_count,
+        'previous_invoice_id': previous_invoice_id,
+        'next_invoice_id': next_invoice_id,
     }
     return render(request, 'invoice/line_items_by_invoice.html', context)
 

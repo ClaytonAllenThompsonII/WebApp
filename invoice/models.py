@@ -96,15 +96,42 @@ class ProcessedInvoice(models.Model):
         db_table = 'out_invoice_processed'  # The actual table name in your PostgreSQL application db
 
 class ProcessedLineItem(models.Model):
-    line_item_id = models.IntegerField(primary_key=True)  # Add this line
+    line_item_id = models.IntegerField(primary_key=True)  # IDs assigned during ETL
+    # Remove gl3_id and gl3_name fields
+    # ForeignKey to GLLevel3
+    gl3 = models.ForeignKey(
+        'GLLevel3',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_index=True  # Optional: Add index to optimize lookups on gl3_id
+
+    )
+    # ForeignKey to ProcessedInvoice without db_column and to_field
+    invoice = models.ForeignKey(
+        'ProcessedInvoice',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        db_index=True  # Optional: Add index to optimize lookups on invoice_id
+
+    )
+    # ForeignKey to ProcessedProduct without db_column and to_field
+    product = models.ForeignKey(
+        'ProcessedProduct',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_index=True  # Optional: Add index to optimize lookups on product_id
+
+    )
+    # Other fields
     in_invoice_processing_id = models.IntegerField(null=True, blank=True)
     s3_object_key = models.TextField(null=True, blank=True)
     upload_date = models.DateTimeField(null=True, blank=True)
-    invoice_id = models.IntegerField(null=True, blank=True)
     invoice_receipt_id = models.TextField(null=True, blank=True)
     expense_document_index = models.IntegerField(null=True, blank=True)
     line_item_index = models.IntegerField(null=True, blank=True)
-    product_id = models.IntegerField(null=True, blank=True)
     product_code = models.TextField(null=True, blank=True)
     brand = models.TextField(null=True, blank=True)
     item_description = models.TextField(null=True, blank=True)

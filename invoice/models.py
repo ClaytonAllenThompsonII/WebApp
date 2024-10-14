@@ -147,28 +147,69 @@ class ProcessedLineItem(models.Model):
     unit = models.TextField(null=True, blank=True)
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     expense_row = models.TextField(null=True, blank=True)
-    gl3_id = models.IntegerField(null=True, blank=True) # Mapping Field
-    gl3_name = models.CharField(max_length=255, null=True, blank=True) # Mapping Field
-
-
     class Meta:
         db_table = 'out_line_item_processed'
+        indexes = [  # Optional: Additional indexes for performance
+            models.Index(fields=['invoice'], name='idx_invoice'),
+            models.Index(fields=['product'], name='idx_product'),
+            models.Index(fields=['gl3'], name='idx_gl3'),
+        ]
 
-class Product(models.Model):
+class ProcessedProduct(models.Model):
+    # Primary key assigned during ELT, not auto-incremented
     product_id = models.IntegerField(primary_key=True)
-    product_code = models.TextField()
+    product_code = models.TextField(null=True, blank=True)
     item_description = models.TextField()
     brand = models.TextField(null=True, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
-    generated_product_name = models.TextField(null=True, blank=True)  # Field for OpenAI generated name
-    enhanced_details = models.TextField(null=True, blank=True)  # Field for OpenAI enhanced details
-    estimated_expiration = models.TextField(null=True, blank=True)  # Field for estimated expiration
+    
+    # ForeignKey field to ProductClassification
+    classification = models.ForeignKey(
+        'ProductClassification',   # The related model
+        on_delete=models.SET_NULL,
+        db_column='classification_id',  # Column in this model's table storing the foreign key value
+        to_field='classification_id',   # Field in the related model that this foreign key references
+        null=True,
+        blank=True
+    )
+    class Meta:
+        db_table = 'out_product_processed'
+        unique_together = ('product_code', 'item_description')
+
+    def __str__(self):
+        return self.item_description
+
+class ProductClassification(models.Model):
+    classification_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
+    enhanced_details = models.TextField(null=True, blank=True)
+    storage_guidelines = models.TextField(null=True, blank=True)
+    handling_instructions = models.TextField(null=True, blank=True)
+    allergens = models.TextField(null=True, blank=True)
+    nutritional_info = models.TextField(null=True, blank=True)
+    regulatory_compliance = models.TextField(null=True, blank=True)
+    shelf_life = models.IntegerField(null=True, blank=True)  # In days
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        # Validation logic to ensure unique classification name (case-insensitive)
+        if ProductClassification.objects.filter(name__iexact=self.name).exclude(pk=self.pk).exists():
+            raise ValidationError({'name': 'A classification with this name already exists.'})
 
     class Meta:
-        db_table = 'out_product_enhanced'
+        db_table = 'dim_product_classification'
+        constraints = [
+            models.UniqueConstraint(
+                Lower('name'),
+                name='unique_productclassification_name_lower'
+            )
+        ]
+
+    def __str__(self):
+        return self.name
 
 
-# Accounting
+# Accounting Models ############################
 # GLLevel1 Model
 class GLLevel1(models.Model):
     gl1_id = models.AutoField(primary_key=True)
@@ -209,7 +250,6 @@ class GLLevel3(models.Model):
     def __str__(self):
         return self.gl3_name
 # ConsolidatedGL Model
-# models.py
 class ConsolidatedGL(models.Model):
     consolidated_gl_id = models.AutoField(primary_key=True)
     gl1_id = models.IntegerField(null=True, blank=True)
@@ -228,4 +268,3 @@ class ConsolidatedGL(models.Model):
 
     def __str__(self):
         return f"{self.gl1_name} > {self.gl2_name} > {self.gl3_name}"  
-

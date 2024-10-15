@@ -1,13 +1,12 @@
 """ Views for invoice app """
 import logging
-import os
 import json
+import re
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db.models import F
-from django.db.models import OuterRef, Subquery, TextField
-from django.db.models.functions import Coalesce
+from django.db.models import OuterRef, Subquery
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -21,7 +20,7 @@ from inventory.models import InventoryItem
 from .s3_storage_backend import S3StorageBackend
 from .models import Invoice, ProcessedInvoice, ProcessedLineItem, ConsolidatedGL, ProcessedProduct, ProductClassification
 from .forms import ProcessedLineItemForm, InvoiceForm, ProductForm, ProductClassificationForm
-import re
+
 
 # Set the OpenAI API key
 

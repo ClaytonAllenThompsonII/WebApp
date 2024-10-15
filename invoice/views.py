@@ -11,6 +11,7 @@ from django.db.models.functions import Coalesce
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.db import transaction  # Import for atomic transactions
 from django.contrib import messages
 from botocore.exceptions import BotoCoreError, ClientError
 from openai import OpenAI
@@ -18,8 +19,9 @@ from django.conf import settings
 
 from inventory.models import InventoryItem
 from .s3_storage_backend import S3StorageBackend
-from .models import Invoice, ProcessedInvoice, ProcessedLineItem, ConsolidatedGL, Product
-from .forms import ProcessedLineItemForm, InvoiceForm, ProductForm
+from .models import Invoice, ProcessedInvoice, ProcessedLineItem, ConsolidatedGL, ProcessedProduct, ProductClassification
+from .forms import ProcessedLineItemForm, InvoiceForm, ProductForm, ProductClassificationForm
+import re
 
 # Set the OpenAI API key
 
@@ -144,20 +146,27 @@ def line_items_repo(request):
 def line_items_by_invoice(request, invoice_id):
     invoice = get_object_or_404(ProcessedInvoice, pk=invoice_id)
 
-    # Start with the base queryset for line items
+    # Base queryset for line items
     line_items = ProcessedLineItem.objects.filter(invoice_id=invoice_id).order_by('expense_document_index', 'line_item_index')
 
-    # Annotate fields from the Product model using Subquery
-    product_subquery = Product.objects.filter(product_id=OuterRef('product_id'))
+    # Subquery to fetch related ProductClassification fields
+    classification_subquery = ProductClassification.objects.filter(classification_id=OuterRef('product__classification_id'))
 
+    # Annotate the line_items queryset with all required fields
     line_items = line_items.annotate(
-        generated_product_name=Subquery(product_subquery.values('generated_product_name')[:1]),
-        enhanced_details=Subquery(product_subquery.values('enhanced_details')[:1]),
-        estimated_expiration=Subquery(product_subquery.values('estimated_expiration')[:1]),
+        product_classification_name=Subquery(classification_subquery.values('name')[:1]),
+        classification_enhanced_details=Subquery(classification_subquery.values('enhanced_details')[:1]),
+        classification_storage_guidelines=Subquery(classification_subquery.values('storage_guidelines')[:1]),
+        classification_handling_instructions=Subquery(classification_subquery.values('handling_instructions')[:1]),
+        classification_allergens=Subquery(classification_subquery.values('allergens')[:1]),
+        classification_nutritional_info=Subquery(classification_subquery.values('nutritional_info')[:1]),
+        classification_regulatory_compliance=Subquery(classification_subquery.values('regulatory_compliance')[:1]),
+        classification_shelf_life=Subquery(classification_subquery.values('shelf_life')[:1]),
+        # You can include 'created_at' if necessary, but it's often not needed in the tooltip
     )
 
     # Get all invoice IDs for navigation
-    invoices = ProcessedInvoice.objects.order_by('invoice_id')
+    invoices = ProcessedInvoice.objects.order_by('invoice_id')  # Adjust ordering as needed
     invoice_ids = list(invoices.values_list('invoice_id', flat=True))
 
     current_index = invoice_ids.index(invoice_id)

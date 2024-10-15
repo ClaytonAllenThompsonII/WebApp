@@ -7,105 +7,235 @@
 
 {% block content %}
 <div class="container2">
-    <div class="left-column">
-        <h2>Product Enhancement</h2>
+    <!-- Left Column: Forms and AI Product Generation -->
+    <!-- Left Column: Forms and AI Product Generation -->
+<form method="post" id="product-classification-form" class="left-column">
+    {% csrf_token %}
+    <h2>Product Enhancement</h2>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
 
-                <!-- AI Product Name & Details Section -->
-        <div class="ai-product-section">
-            <h4 class="ai-section-title"><img src="{% static 'users/Cost Curve Logo.png' %}" alt="Logo" style="height: 21px;"> AI-Powered Product Generation</h4>
-            <p> Model: OpenAI gpt-4o-mini </p>
-            <!-- Generate Product Name Button and Result -->
-            <button id="generate-ai-product-name" type="button" class="ai-button">🧙🏾‍♂️Generate Product Name</button>
-            <div id="ai-product-name" class="ai-result"></div>
-            
-            <!-- Enhance Product Details Button and Result -->
-            <button id="enhance-product-details" type="button" class="ai-button">✨Enhance Product Details</button>
-            <div id="ai-enhanced-product-details" class="ai-result"></div>
+    <!-- Editable Fields -->
+    <div class="editable-fields">
+        <!-- Section: Product Details -->
+        <div class="section-title">Product Details</div>
+
+        <!-- Product Code (Display Only) -->
+        <div class="field non-editable-field">
+            <label>Product Code</label>
+            <p id="product_code_display"></p>
         </div>
 
-        <form method="post" id="product-enhancement-form">
-            {% csrf_token %}
-            <div class="editable-fields">
-                <div class="section-title">Product Details</div>
-                <div class="field">
-                    <label for="id_item_description">Item Description</label>
-                    {{ form.item_description }}
-                </div>
-                <div class="field">
-                    <label for="id_brand">Brand</label>
-                    {{ form.brand }}
-                </div>
-                <div class="field">
-                    <label for="id_generated_product_name">Generated Product Name</label>
-                    {{ form.generated_product_name }}
-                </div>
-                <div class="field">
-                    <label for="id_enhanced_details">Enhanced Details</label>
-                    {{ form.enhanced_details }}
-                </div>
-                <div class="field">
-                    <label for="id_estimated_expiration">Estimated Expiration</label>
-                    {{ form.estimated_expiration }}
-                </div>
-                <!-- Hidden field to store product ID -->
-                <input type="hidden" id="id_product_id" name="product_id">
-                <button type="submit">Save</button>
-            </div>
-            
-        </form>
-    </div>
+        <!-- Classification (Display Only) -->
+        <div class="field non-editable-field">
+            <label>Classification</label>
+            <p id="classification_display">Not Classified</p>
+        </div>
 
-    <div class="right-column">
-        <h3>Products</h3>
-        <!-- Filter Options -->
-        <div class="filter-options">
-            <label for="filter-select">Filter:</label>
-            <select id="filter-select">
-                <option value="all">Show All</option>
-                <option value="needs-product-name">Needs Generated Product Name</option>
-                <option value="needs-expiration">Needs Estimated Expiration</option>
+        <!-- Item Description -->
+        <div class="field">
+            <label for="id_item_description">Item Description</label>
+            {{ product_form.item_description.errors }}
+            {{ product_form.item_description }}
+        </div>
+
+        <!-- Brand -->
+        <div class="field">
+            <label for="id_brand">Brand</label>
+            {{ product_form.brand.errors }}
+            {{ product_form.brand }}
+        </div>
+
+        <!-- Hidden field to store product ID -->
+        <input type="hidden" id="id_product_id" name="product_id">
+
+        <!-- Divider -->
+        <hr class="section-divider">
+
+        <!-- Section: Product Classification -->
+        <div class="section-title">Product Classification</div>
+
+        <!-- Select Existing Classification -->
+        <div class="field">
+            <label for="classification-select">Select Classification</label>
+            <select id="classification-select" name="classification_id">
+                <option value="" disabled selected>Select Classification</option>
+                {% for classification in classifications %}
+                <option value="{{ classification.classification_id }}">{{ classification.name }}</option>
+                {% endfor %}
             </select>
         </div>
+
+        <!-- AI-Powered Product Name Section -->
+        <div class="section-title">Generate Product Name</div>
+        <div class="field">
+            <button id="generate-ai-product-name" type="button" class="ai-button">🧙🏾‍♂️ Generate Product Name</button>
+            <div id="ai-product-name" class="ai-result-box">Product name will be generated...</div>
+            <button id="populate-classification-name" type="button" class="ai-button-small">Use as Classification Name</button>
+        </div>
+
+        <!-- Enhanced Product Details Section -->
+        <div class="section-title">Enhance Product Details</div>
+        <div class="field">
+            <button id="enhance-product-details" type="button" class="ai-button">✨ Enhance Product Details</button>
+            <div id="ai-enhanced-product-details" class="ai-result-box">
+                Enhanced details will be generated...
+            </div>
+        </div>
+
+        <!-- Classification Fields -->
+        <div class="classification-fields">
+            <!-- Classification Name -->
+            <div class="field">
+                <label for="id_name">Classification Name</label>
+                {{ classification_form.name.errors }}
+                {{ classification_form.name }}
+            </div>
+
+            <!-- Enhanced Details -->
+            <div class="field">
+                <label for="id_enhanced_details">Enhanced Details</label>
+                {{ classification_form.enhanced_details.errors }}
+                {{ classification_form.enhanced_details }}
+            </div>
+
+            <!-- Storage and Handling Section -->
+            <div class="section-subtitle">Storage and Handling</div>
+
+            <!-- Storage Guidelines -->
+            <div class="field">
+                <label for="id_storage_guidelines">Storage Guidelines</label>
+                {{ classification_form.storage_guidelines.errors }}
+                {{ classification_form.storage_guidelines }}
+            </div>
+
+            <!-- Handling Instructions -->
+            <div class="field">
+                <label for="id_handling_instructions">Handling Instructions</label>
+                {{ classification_form.handling_instructions.errors }}
+                {{ classification_form.handling_instructions }}
+            </div>
+
+            <!-- Nutritional Information Section -->
+            <div class="section-subtitle">Nutritional Information</div>
+
+            <!-- Allergens -->
+            <div class="field">
+                <label for="id_allergens">Allergens</label>
+                {{ classification_form.allergens.errors }}
+                {{ classification_form.allergens }}
+            </div>
+
+            <!-- Nutritional Info -->
+            <div class="field">
+                <label for="id_nutritional_info">Nutritional Info</label>
+                {{ classification_form.nutritional_info.errors }}
+                {{ classification_form.nutritional_info }}
+            </div>
+
+            <!-- Regulatory Compliance -->
+            <div class="field">
+                <label for="id_regulatory_compliance">Regulatory Compliance</label>
+                {{ classification_form.regulatory_compliance.errors }}
+                {{ classification_form.regulatory_compliance }}
+            </div>
+
+            <!-- Shelf Life -->
+            <div class="field">
+                <label for="id_shelf_life">Shelf Life (days)</label>
+                {{ classification_form.shelf_life.errors }}
+                {{ classification_form.shelf_life }}
+            </div>
+        </div>
+
+        <!-- Save Button for Both Forms -->
+        <button type="submit" class="save-button">Save Product and Classification</button>
+    </div>
+</form>
+
+    <!-- Right Column: Products Table -->
+    <div class="right-column">
+        <h3>Products</h3>
+        <!-- Vendor Filter Section -->
+        <div class="filter-section">
+            <label for="vendor-filter">Filter by Vendor:</label>
+            <select id="vendor-filter">
+                <option value="">All Vendors</option>
+                {% for vendor_name in vendor_short_names %}
+                    <option value="{{ vendor_name|escape }}">{{ vendor_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
         <div class="table-wrapper">
             <table id="product-table">
                 <thead>
                     <tr>
-                        <th onclick="sortTable(0)">Product ID</th>
-                        <th onclick="sortTable(1)">Product Code</th>
-                        <th onclick="sortTable(2)">Description</th>
-                        <th onclick="sortTable(3)">Brand</th>
-                        <th onclick="sortTable(4)">Generated Product Name</th>
-                        <th onclick="sortTable(5)">Enhanced Details</th>
-                        <th onclick="sortTable(6)">Estimated Expiration</th>
+                        <th>Product ID</th>
+                        <th>Product Code</th>
+                        <th>Description</th>
+                        <th>Brand</th>
+                        <th>Classification Name</th>
+                        <th>Vendor Short Name</th>
+                        <th>Shelf Life</th>
+                        <th>GL Level 3 Name</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for product in products %}
-                    <tr data-product-id="{{ product.product_id }}" onclick="selectProduct(this, '{{ product.product_id }}', '{{ product.product_code }}', '{{ product.item_description }}', '{{ product.brand }}', '{{ product.generated_product_name }}', '{{ product.enhanced_details }}', '{{ product.estimated_expiration }}')">
+                    <tr data-product-id="{{ product.product_id }}"
+                        data-product-code="{{ product.product_code|default:''|escape }}"
+                        data-item-description="{{ product.item_description|default:''|escape }}"
+                        data-brand="{{ product.brand|default:''|escape }}"
+                        data-classification-id="{% if product.classification %}{{ product.classification.classification_id }}{% else %}null{% endif %}"
+                        data-classification-name="{% if product.classification %}{{ product.classification.name|default:'Not Classified'|escape }}{% else %}Not Classified{% endif %}"
+                        data-vendor-short-name="{{ product.vendor_short_name|default:'None'|escape }}"
+                        data-shelf-life="{% if product.classification and product.classification.shelf_life %}{{ product.classification.shelf_life }}{% else %}0{% endif %}">
+                        <!-- Table cells -->
                         <td>{{ product.product_id }}</td>
                         <td>{{ product.product_code }}</td>
                         <td>{{ product.item_description }}</td>
                         <td>{{ product.brand }}</td>
-
-
-                        <!-- Add mapping feature here-->
                         <td>
-                            {% if product.generated_product_name %}
-                                <span class="mapped-product-name">{{ product.generated_product_name }}</span>
+                            {% if product.classification %}
+                                <button class="minimal-btn classification-label">
+                                    {{ product.classification.name }}
+                                    <span class="icon-edit">✎</span>
+                                </button>
                             {% else %}
-                                <span class="map-product-item">Generate Product</span>
+                                <button class="minimal-btn">+ Add Product</button>
                             {% endif %}
                         </td>
-
-                        <td><div class="enhanced-details-preview">{{ product.enhanced_details|slice:":50" }}...</div></td>
-                        <td>{{ product.estimated_expiration }}</td>
+                        <td>
+                            {% if product.vendor_short_name %}
+                                {{ product.vendor_short_name }}
+                            {% else %}
+                                None
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if product.classification and product.classification.shelf_life %}
+                                {{ product.classification.shelf_life }} days
+                            {% else %}
+                                None
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if product.gl3_names %}
+                                {{ product.gl3_names|join:", " }}
+                            {% else %}
+                                Not Mapped
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-
 </div>
 
 <script src="{% static 'invoice/product_enhancement.js' %}"></script>

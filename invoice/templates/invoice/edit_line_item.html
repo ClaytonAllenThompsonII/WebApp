@@ -7,39 +7,42 @@
 {% endblock %}
 
 {% block content %}
+<!-- Navigation Pane -->
+<div class="navigation-pane">
+    <a href="{% url 'line_items_by_invoice' line_item.invoice_id %}" class="nav-button close-button" title="Back to Line Items">&times;</a>
+    <div class="line-item-navigation">
+        {% if previous_line_item_id %}
+            <a href="{% url 'edit_line_item' previous_line_item_id %}" class="nav-button prev-button" title="Previous Line Item">&#10094;</a>
+        {% else %}
+            <span class="nav-button prev-button disabled">&#10094;</span>
+        {% endif %}
+        <span class="line-item-number">Line Item {{ line_item.line_item_index }}</span>
+        {% if next_line_item_id %}
+            <a href="{% url 'edit_line_item' next_line_item_id %}" class="nav-button next-button" title="Next Line Item">&#10095;</a>
+        {% else %}
+            <span class="nav-button next-button disabled">&#10095;</span>
+        {% endif %}
+    </div>
+</div>
+
+ <!-- Messages Block: Added Here -->
+ {% if messages %}
+ <ul class="messages">
+     {% for message in messages %}
+         <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+     {% endfor %}
+ </ul>
+{% endif %}
+<!-- End of Messages Block -->
+
 <div class="container2">
+    
     <div class="left-column">
+        
         <div class="static-section">
             <h2>Line Item Details</h2>
+        
             <div class="reference-fields">
-                <div class="field">
-                    <label>Line Item ID</label>
-                    <div class="value">{{ line_item.line_item_id }}</div>
-                </div>
-                <div class="field">
-                    <label>Invoice Processing ID</label>
-                    <div class="value">{{ line_item.in_invoice_processing_id }}</div>
-                </div>
-                <div class="field">
-                    <label>Upload Date</label>
-                    <div class="value">{{ line_item.upload_date }}</div>
-                </div>
-                <div class="field">
-                    <label>Invoice ID</label>
-                    <div class="value">{{ line_item.invoice_id }}</div>
-                </div>
-                <div class="field">
-                    <label>Invoice Receipt ID</label>
-                    <div class="value">{{ line_item.invoice_receipt_id }}</div>
-                </div>
-                <div class="field">
-                    <label>Expense Document Index</label>
-                    <div class="value">{{ line_item.expense_document_index }}</div>
-                </div>
-                <div class="field">
-                    <label>Line Item Index</label>
-                    <div class="value">{{ line_item.line_item_index }}</div>
-                </div>
                 <div class="field">
                     <label>Product ID</label>
                     <div class="value">{{ line_item.product_id }}</div>
@@ -48,6 +51,53 @@
                     <label>Product Code</label>
                     <div class="value">{{ line_item.product_code }}</div>
                 </div>
+                <div class="field">
+                    <label>Item Description</label>
+                    <div class="value">{{ line_item.item_description }}</div>
+                </div>
+                
+                <!-- Quantity -->
+            <div class="field">
+                <label>Quantity</label>
+                <div class="value">{{ line_item.quantity }}</div>
+            </div>
+
+            <!-- Unit Price -->
+            <div class="field">
+                <label>Unit Price</label>
+                <div class="value">${{ line_item.unit_price|floatformat:2 }}</div>
+            </div>
+
+            <!-- Total Price -->
+            <div class="field">
+                <label>Total Price</label>
+                <div class="value">${{ line_item.price|floatformat:2 }}</div>
+            </div>
+            
+            <div class="field">
+                <label>Brand</label>
+                <div class="value">{{ line_item.brand }}</div>
+            </div>
+
+            <!-- Generated Product Name -->
+            <div class="field">
+                <label>Product Name</label>
+                {% if product and product.generated_product_name %}
+                    <div class="value">{{ product.generated_product_name }}</div>
+                {% else %}
+                    <div class="value">Not Mapped</div>
+                {% endif %}
+            </div>
+
+            <!-- GL Level 3 Name -->
+            <div class="field">
+                <label>GL Level 3</label>
+                {% if line_item.gl3 %}
+                    <div class="value">{{ line_item.gl3.gl3_name }}</div>
+                {% else %}
+                    <div class="value">Not Mapped</div>
+                {% endif %}
+            </div>
             </div>
         </div>
         <div class="pdf-viewer">
@@ -127,23 +177,19 @@
                 </span>
             </div>
 
-            <!-- New fields for GL3 Name and GL3 ID -->
-            <div class="field">
-                <label for="id_gl3_name">GL Level 3 Name</label>
-                <input type="text" id="id_gl3_name" name="gl3_name" value="{{ form.gl3_name.value }}">
-            </div>
-             <!-- Hidden fields for GL3 ID and name -->
+     
+             <!-- Hidden field for gl3_id -->
              <input type="hidden" id="id_gl3_id" name="gl3_id" value="{{ form.gl3_id.value }}">
 
 
             <!-- Section for selected GL3 record -->
-            <div class="selected-gl3" id="selected-gl3" style="display: {% if line_item.gl3_name %}block{% else %}none{% endif %};">
+            <div class="selected-gl3" id="selected-gl3" style="display: {% if line_item.gl3 %}block{% else %}none{% endif %};">
                 <div class="header">
                     <i class="fas fa-check-circle"></i> Selected GL Level 3
                 </div>
                 <div class="field">
                     <div class="value" id="selected-gl3-name">
-                        {{ line_item.gl3_name }}
+                        {{ line_item.gl3.gl3_name }}
                     </div>
                 </div>
                 <button type="submit" class="save-button">Save</button>
@@ -205,95 +251,6 @@
 
 <!-- Include the new JavaScript file -->
 <script src="{% static 'invoice/edit_line_item.js' %}"></script>
-<script>
-    function selectGL3(row, gl3Name, gl3Id) {
-    document.getElementById('selected-gl3-name').textContent = gl3Name;
-    document.getElementById('selected-gl3').style.display = 'block';
-    document.getElementById('id_gl3_id').value = parseInt(gl3Id); // Ensure the value is an integer
-    document.getElementById('id_gl3_name').value = gl3Name; // Set the hidden field value
-
-    // Remove the 'selected' class from all rows
-    const rows = document.querySelectorAll('#gl_table tbody tr');
-    rows.forEach(r => r.classList.remove('selected'));
-
-    // Add the 'selected' class to the clicked row
-    row.classList.add('selected');
-}
-
-function attachRowClickHandlers() {
-    const rows = document.querySelectorAll('#gl_table tbody tr');
-    rows.forEach(row => {
-        row.addEventListener('click', function() {
-            const gl3Name = this.querySelector('td:last-child').textContent;
-            const gl3Id = this.dataset.gl3Id; // Retrieve the GL3 ID from the data attribute
-            selectGL3(this, gl3Name, gl3Id);
-        });
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    attachRowClickHandlers();
-
-    // Attach the click handlers again if the table is updated
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                attachRowClickHandlers();
-            }
-        });
-    });
-
-    observer.observe(document.getElementById('gl_table').getElementsByTagName('tbody')[0], {
-        childList: true,
-        subtree: true
-    });
-});
-</script>
-
- 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Your existing code here
-
-        function typeEffect(element, text, callback) {
-            element.innerHTML = '';
-            let i = 0;
-            let timer = setInterval(function() {
-                if (i < text.length) {
-                    element.innerHTML += text.charAt(i);
-                    i++;
-                } else {
-                    clearInterval(timer);
-                    if (callback) callback();
-                }
-            }, 50);
-        }
-
-        function showGenerating(element) {
-            element.innerHTML = '<div class="generating-container">Generating...</div>';
-        }
-
-        document.getElementById('generate-ai-product-name').addEventListener('click', function() {
-            const resultElement = document.getElementById('ai-product-name');
-            showGenerating(resultElement);
-            // Simulate fetching AI result
-            setTimeout(() => {
-                const aiProductName = 'Beef Strip-loin';
-                typeEffect(resultElement, aiProductName);
-            }, 1000);
-        });
-
-        document.getElementById('generate-ai-product-details').addEventListener('click', function() {
-            const resultElement = document.getElementById('ai-product-details');
-            showGenerating(resultElement);
-            // Simulate fetching AI result
-            setTimeout(() => {
-                const aiProductDetails = 'Beef Strip-loin, 13# Average, Premium Quality';
-                typeEffect(resultElement, aiProductDetails);
-            }, 1000);
-        });
-    });
-</script>
 
  
 {% endblock %}

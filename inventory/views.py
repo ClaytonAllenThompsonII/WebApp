@@ -35,7 +35,7 @@ from django.utils.safestring import mark_safe
 
 
 
-from invoice.models import ConsolidatedGL, Product, ProcessedLineItem, ProcessedInvoice, GLLevel1, GLLevel2, GLLevel3
+from invoice.models import ConsolidatedGL, ProcessedProduct, ProcessedLineItem, ProcessedInvoice, GLLevel1, GLLevel2, GLLevel3
 
 
 from .forms import InventoryDataCollectionForm
@@ -231,7 +231,7 @@ def get_products(request):
         product_ids = line_items.values_list('product_id', flat=True).distinct()
         
         # Filter the Product records with the collected product IDs
-        products = Product.objects.filter(product_id__in=product_ids)
+        products = ProcessedProduct.objects.filter(product_id__in=product_ids)
         
         # Construct the list of dictionaries containing product details
         product_data = []
@@ -262,7 +262,7 @@ def inventory_queue_view(request):
     )
 
     products_with_spend = (
-        Product.objects
+        ProcessedProduct.objects
         .annotate(total_spend=Subquery(total_spend_subquery))
         .order_by('-total_spend')  # Order by total spend in descending order
     )
@@ -396,7 +396,7 @@ def product_impact_index(request):
     )
 
     # Step 2: Create a base queryset for Product, joining with ConsolidatedGL
-    products = Product.objects.annotate(
+    products = ProcessedProduct.objects.annotate(
         total_spend=Subquery(product_spend_subquery),
         gl3_id=Subquery(
             ProcessedLineItem.objects

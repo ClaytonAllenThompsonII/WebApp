@@ -291,7 +291,8 @@ body {
   border-radius: 8px; /* Rounded corners */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
   padding: 16px; /* Increase padding for a larger tooltip */
-  max-width: 950px; /* Increase width if needed */
+  width: 600px; /* Set a specific width to make the box longer */
+  max-width: none; /* Remove the max-width restriction */
 }
 
 .tippy-box[data-theme~='custom-light'] .tippy-arrow {
@@ -311,6 +312,8 @@ body {
 /* Adjust the content inside the tooltip */
 .tippy-content {
   line-height: 1.6; /* Improve readability */
+  max-height: 600px; /* Set a maximum height if needed */
+  overflow-y: auto;  /* Add vertical scroll if content exceeds max-height */
 }
 
 /* Optional: Style the tooltip headings */
@@ -321,14 +324,15 @@ body {
 
 /* Tooltip Content Styles */
 .tooltip-header {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   color: #333333;
+  text-align: center;
 }
 
 .tooltip-item {
-  margin-bottom: 6px;
+  margin-bottom: 16px;
 }
 
 .tooltip-item:last-child {
@@ -336,7 +340,15 @@ body {
 }
 
 .tooltip-item strong {
-  display: inline-block;
-  width: 140px; /* Align labels */
+  display: block; /* Display label as a block to place data underneath */
+  font-size: 14px;
   color: #1e88e5;
+  margin-bottom: 4px;
+}
+
+.tooltip-data {
+  font-size: 14px;
+  color: #333333;
+  line-height: 1.4;
+  white-space: pre-wrap; /* Preserve line breaks and whitespace */
 }

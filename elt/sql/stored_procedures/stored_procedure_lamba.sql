@@ -1,7 +1,7 @@
 -- Call procedure in PG admin
 CALL insert_vendor_invoice_product_line_item_data();
 -- For delete all domain data in tables. Truncate command is efficient for clearning all rows from the table and sesets any auto-increment counters. 
-TRUNCATE TABLE out_vendor, out_invoice, out_line_item, out_product, out_product_enhanced RESTART IDENTITY CASCADE;
+TRUNCATE TABLE out_vendor, out_invoice, out_line_item, out_product RESTART IDENTITY CASCADE;
 
 
 CREATE OR REPLACE PROCEDURE insert_vendor_invoice_product_line_item_data()
@@ -141,53 +141,21 @@ BEGIN
 
     -- Step 6: Insert or update product data in the out_product table
     INSERT INTO out_product (
-        product_code,
-        item_description,
-        brand,
-        unit_of_measure,
-        most_recent_unit_price,
-        most_recent_net_amount,
-        most_recent_taxes,
-        most_recent_discount,
-        most_recent_quantity,
-        most_recent_price,
-        most_recent_pack,
-        most_recent_size,
-        most_recent_unit,
-        most_recent_weight,
-        last_updated
+    product_code,
+    item_description,
+    brand,
+    classification_id,  -- Set this to NULL in the ELT process
+    last_updated
     )
     SELECT
         product_code,
         item_description,
         brand,
-        unit_of_measure,
-        most_recent_unit_price,
-        most_recent_net_amount,
-        most_recent_taxes,
-        most_recent_discount,
-        most_recent_quantity,
-        most_recent_price,
-        most_recent_pack,
-        most_recent_size,
-        most_recent_unit,
-        most_recent_weight,
-        last_updated
+        NULL AS classification_id,  -- Set classification to NULL initially
+        NOW() AS last_updated
     FROM 
         pro_product
-    ON CONFLICT (product_code, item_description) DO UPDATE SET
-        brand = EXCLUDED.brand,
-        unit_of_measure = EXCLUDED.unit_of_measure,
-        most_recent_unit_price = EXCLUDED.most_recent_unit_price,
-        most_recent_net_amount = EXCLUDED.most_recent_net_amount,
-        most_recent_taxes = EXCLUDED.most_recent_taxes,
-        most_recent_discount = EXCLUDED.most_recent_discount,
-        most_recent_quantity = EXCLUDED.most_recent_quantity,
-        most_recent_price = EXCLUDED.most_recent_price,
-        most_recent_pack = EXCLUDED.most_recent_pack,
-        most_recent_size = EXCLUDED.most_recent_size,
-        most_recent_unit = EXCLUDED.most_recent_unit,
-        most_recent_weight = EXCLUDED.most_recent_weight,
+    ON CONFLICT (product_code, item_description, brand) DO UPDATE SET
         last_updated = EXCLUDED.last_updated;
 
     -- Step 7: Refresh the pro2_line_item view to get the latest line item data
@@ -219,8 +187,8 @@ BEGIN
         unit,
         weight,
         expense_row,
-        gl3_id, -- New field
-        gl3_name -- New field
+        gl3_id -- New field
+        
     )
     SELECT
         pli.in_invoice_processing_id,
@@ -246,8 +214,8 @@ BEGIN
         pli.unit,
         pli.weight,
         pli.expense_row,
-        NULL, -- Initial value for gl3_id
-        NULL  -- Initial value for gl3_name
+        NULL -- Initial value for gl3_id
+       
     FROM 
         pro2_line_item pli
     JOIN 
@@ -277,35 +245,7 @@ BEGIN
         weight = EXCLUDED.weight,
         expense_row = EXCLUDED.expense_row,
         product_id = EXCLUDED.product_id,
-        gl3_id = EXCLUDED.gl3_id,
-        gl3_name = EXCLUDED.gl3_name;
-
-
-
-        -- Add the logic for inserting into out_product_enhanced
-    INSERT INTO out_product_enhanced (
-        product_code,
-        item_description,
-        brand,
-        last_updated,
-        generated_product_name,  -- Placeholder for generated product name
-        enhanced_details,        -- Placeholder for enhanced details
-        estimated_expiration     -- Placeholder for estimated expiration
-    )
-    SELECT
-        product_code,
-        item_description,
-        brand,
-        last_updated,
-        NULL AS generated_product_name,  -- Placeholder for new fields
-        NULL AS enhanced_details,        -- Placeholder for new fields
-        NULL AS estimated_expiration     -- Placeholder for new fields
-    FROM
-        out_product
-    ON CONFLICT (product_code, item_description)
-    DO UPDATE SET
-        brand = EXCLUDED.brand,
-        last_updated = EXCLUDED.last_updated;
+        gl3_id = EXCLUDED.gl3_id;
 
     -- Any further logic or commits if necessary
 END;

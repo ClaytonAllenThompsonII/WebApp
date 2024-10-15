@@ -3,6 +3,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const glLevel2Select = document.getElementById('gl_level_2');
     const glTableBody = document.querySelector('#gl_table tbody');
 
+    // Function to handle GL3 selection
+    function selectGL3(row, gl3Name, gl3Id) {
+        document.getElementById('selected-gl3-name').textContent = gl3Name;
+        document.getElementById('selected-gl3').style.display = 'block';
+        document.getElementById('id_gl3_id').value = parseInt(gl3Id); // Ensure the value is an integer
+
+        // Remove the 'selected' class from all rows
+        const rows = document.querySelectorAll('#gl_table tbody tr');
+        rows.forEach(r => r.classList.remove('selected'));
+
+        // Add the 'selected' class to the clicked row
+        row.classList.add('selected');
+    }
+
+    // Attach row click handlers to existing rows (if any)
+    function attachRowClickHandlers() {
+        const rows = document.querySelectorAll('#gl_table tbody tr');
+        rows.forEach(row => {
+            row.addEventListener('click', function() {
+                const gl3Name = this.querySelector('td:last-child').textContent;
+                const gl3Id = this.dataset.gl3Id; // Retrieve the GL3 ID from the data attribute
+                selectGL3(this, gl3Name, gl3Id);
+            });
+        });
+    }
+
     function filterTable(gl1Id, gl2Id) {
         let url = '/invoice/gl_level_3_by_gl1/';
         if (gl1Id && gl2Id) {
@@ -10,12 +36,27 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (gl1Id) {
             url = `/invoice/gl_level_3_by_gl1/?gl1_id=${gl1Id}`;
         }
-
+        // If neither gl1Id nor gl2Id is provided, url remains '/invoice/gl_level_3_by_gl1/'
+    
         console.log('Fetching URL:', url); // Debugging line
         fetch(url)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    // If response is not OK, throw an error
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Unknown error');
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('Data received:', data); // Debugging line
+    
+                // Ensure data is an array
+                if (!Array.isArray(data)) {
+                    throw new Error('Invalid data format received from server.');
+                }
+    
                 glTableBody.innerHTML = '';
                 data.sort((a, b) => a.gl3_name.localeCompare(b.gl3_name)); // Sort by GL Level 3 name A-Z
                 data.forEach(item => {
@@ -26,12 +67,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>${item.gl2_name ? item.gl2_name : 'N/A'}</td>
                         <td>${item.gl3_name ? item.gl3_name : 'N/A'}</td>
                     `;
+                    // Attach click handler to the row
                     row.addEventListener('click', function() {
                         selectGL3(this, item.gl3_name, item.gl3_id);
                     });
                     glTableBody.appendChild(row);
                 });
-                attachRowClickHandlers(); // Re-attach row click handlers after updating table
             })
             .catch(error => console.error('Error fetching GL Level 3 data:', error));
     }
@@ -77,39 +118,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Function to handle GL3 selection
-    function selectGL3(row, gl3Name, gl3Id) {
-        document.getElementById('selected-gl3-name').textContent = gl3Name;
-        document.getElementById('selected-gl3').style.display = 'block';
-        document.getElementById('id_gl3_id').value = parseInt(gl3Id); // Ensure the value is an integer
-        document.getElementById('id_gl3_name').value = gl3Name; // Set the hidden field value
-
-        // Remove the 'selected' class from all rows
-        const rows = document.querySelectorAll('#gl_table tbody tr');
-        rows.forEach(r => r.classList.remove('selected'));
-
-        // Add the 'selected' class to the clicked row
-        row.classList.add('selected');
-    }
-
-    // Attach row click handlers
-    function attachRowClickHandlers() {
-        const rows = document.querySelectorAll('#gl_table tbody tr');
-        rows.forEach(row => {
-            row.addEventListener('click', function() {
-                const gl3Name = this.querySelector('td:last-child').textContent;
-                const gl3Id = this.dataset.gl3Id; // Retrieve the GL3 ID from the data attribute
-                selectGL3(this, gl3Name, gl3Id);
-            });
-        });
-    }
-
     // Initial fetch to populate table sorted by GL Level 3 name
     filterTable('', '');
 
+    // Attach click handlers to existing rows on page load
     attachRowClickHandlers();
 
-    // Attach the click handlers again if the table is updated
+    // Attach the click handlers again if the table is updated dynamically
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
@@ -118,8 +133,49 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    observer.observe(document.getElementById('gl_table').getElementsByTagName('tbody')[0], {
+    observer.observe(glTableBody, {
         childList: true,
         subtree: true
     });
+
+    // AI-related code (commented out)
+    /*
+    function typeEffect(element, text, callback) {
+        element.innerHTML = '';
+        let i = 0;
+        let timer = setInterval(function() {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+            } else {
+                clearInterval(timer);
+                if (callback) callback();
+            }
+        }, 50);
+    }
+
+    function showGenerating(element) {
+        element.innerHTML = '<div class="generating-container">Generating...</div>';
+    }
+
+    document.getElementById('generate-ai-product-name').addEventListener('click', function() {
+        const resultElement = document.getElementById('ai-product-name');
+        showGenerating(resultElement);
+        // Simulate fetching AI result
+        setTimeout(() => {
+            const aiProductName = 'Beef Strip-loin';
+            typeEffect(resultElement, aiProductName);
+        }, 1000);
+    });
+
+    document.getElementById('generate-ai-product-details').addEventListener('click', function() {
+        const resultElement = document.getElementById('ai-product-details');
+        showGenerating(resultElement);
+        // Simulate fetching AI result
+        setTimeout(() => {
+            const aiProductDetails = 'Beef Strip-loin, 13# Average, Premium Quality';
+            typeEffect(resultElement, aiProductDetails);
+        }, 1000);
+    });
+    */
 });

@@ -1,105 +1,82 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Function to sort the table by the specified column
-    function sortTable(n) {
-        const table = document.getElementById('product-table');
-        let switching = true;
-        let dir = 'asc'; // Set the sorting direction to ascending
-        let switchcount = 0;
+document.addEventListener('DOMContentLoaded', function () {
+    // Function to populate the form with selected product data
+    function selectProduct(productId, productCode, itemDescription, brand, classificationId) {
+        // Display the product code in the relevant field
+        document.getElementById('id_product_id').value = productId;
+        document.getElementById('product_code_display').textContent = productCode || 'N/A';
+        // Set the form fields for item description and brand
+        document.getElementById('id_item_description').value = itemDescription || '';
+        document.getElementById('id_brand').value = brand || '';
+        
+        // Display Classification ID or message
+        const classificationDisplay = document.getElementById('classification_display');
+        if (classificationId && classificationId !== 'null') {
+            // If a classification exists, show the classification ID (or name)
+            classificationDisplay.textContent = `Classification ID: ${classificationId}`;
+        } else {
+            // If no classification is present, show a message
+            classificationDisplay.textContent = 'Not Classified';
+        }
 
-        while (switching) {
-            switching = false;
-            const rows = table.rows;
-            let shouldSwitch = false;
-
-            for (let i = 1; i < rows.length - 1; i++) {
-                let x = rows[i].getElementsByTagName('TD')[n];
-                let y = rows[i + 1].getElementsByTagName('TD')[n];
-                let cmp = 0;
-
-                // Compare numerical values if both cells contain numbers
-                if (!isNaN(parseFloat(x.innerHTML)) && !isNaN(parseFloat(y.innerHTML))) {
-                    cmp = parseFloat(x.innerHTML) - parseFloat(y.innerHTML);
-                } else {
-                    // Compare text values
-                    cmp = x.innerHTML.toLowerCase().localeCompare(y.innerHTML.toLowerCase());
-                }
-
-                if ((dir === 'asc' && cmp > 0) || (dir === 'desc' && cmp < 0)) {
-                    shouldSwitch = true;
-                    break;
-                }
-            }
-
-            if (shouldSwitch) {
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                switchcount++;
-            } else {
-                if (switchcount === 0 && dir === 'asc') {
-                    dir = 'desc';
-                    switching = true;
-                }
-            }
+        clearClassificationForm(); // Clear classification form fields
+    
+        // Fetch and display existing classification details if available
+        if (classificationId && classificationId !== 'null') {
+            fetch(`/get_classification_details/${classificationId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('ai-product-name').textContent = data.name;
+                    document.getElementById('ai-enhanced-product-details').textContent = data.enhanced_details;
+                    // Populate form with fetched classification details
+                    document.getElementById('classification-select').value = classificationId;
+                })
+                .catch(error => console.error('Error fetching classification details:', error));
         }
     }
 
-    // Function to filter the table based on selected criteria
-    function filterTable() {
-        const filter = document.getElementById('filter-select').value;
-        const rows = document.querySelectorAll('#product-table tbody tr');
+    // Use AI generated product name for classification name
+    document.getElementById('populate-classification-name').addEventListener('click', function () {
+        const aiProductName = document.getElementById('ai-product-name').textContent;
+        const nameField = document.querySelector('input[name="name"]');
+        nameField.value = aiProductName;  // Populate classification name field
+    
+        // Add a log to confirm the value is being set
+        console.log(`AI Product Name set to: ${nameField.value}`);
+    });
 
-        rows.forEach(row => {
-            const productName = row.children[4].textContent;
-            const expiration = row.children[6].textContent;
-            row.style.display = ''; // Show all rows by default
-
-            if (filter === 'needs-product-name' && productName !== 'None') {
-                row.style.display = 'none';
-            } else if (filter === 'needs-expiration' && expiration !== 'None') {
-                row.style.display = 'none';
-            }
-        });
+    // Clear classification form fields
+    function clearClassificationForm() {
+        document.getElementById('ai-product-name').textContent = 'Product name will be generated...';
+        document.getElementById('ai-enhanced-product-details').textContent = 'Enhanced details will be generated...';
+        document.getElementById('id_storage_guidelines').value = '';
+        document.getElementById('id_handling_instructions').value = '';
+        document.getElementById('id_allergens').value = '';
+        document.getElementById('id_nutritional_info').value = '';
+        document.getElementById('id_regulatory_compliance').value = '';
+        document.getElementById('id_shelf_life').value = '';
     }
 
-    // Add event listener to the filter dropdown
-    document.getElementById('filter-select').addEventListener('change', filterTable);
-
-    // Function to populate the form with selected product data
-    function selectProduct(row, productId, productCode, itemDescription, brand, generatedProductName, enhancedDetails, estimatedExpiration) {
-        document.getElementById('id_item_description').value = itemDescription;
-        document.getElementById('id_brand').value = brand;
-        document.getElementById('id_generated_product_name').value = generatedProductName;
-        document.getElementById('id_enhanced_details').value = enhancedDetails;
-        document.getElementById('id_estimated_expiration').value = estimatedExpiration;
-        document.getElementById('id_product_id').value = productId; // Set the hidden field value
-
-        // Highlight the selected row
-        const rows = document.querySelectorAll('#product-table tbody tr');
-        rows.forEach(r => r.classList.remove('selected'));
-        row.classList.add('selected');
-    }
-
-    // Attach click handlers to table rows
+    // Attach click event to table rows
     const rows = document.querySelectorAll('#product-table tbody tr');
+    // For each row in the table, add a click event listener
     rows.forEach(row => {
-        row.addEventListener('click', function() {
-            const productId = this.getAttribute('data-product-id');
-            const productCode = this.children[1].textContent;
-            const itemDescription = this.children[2].textContent;
-            const brand = this.children[3].textContent;
-            const generatedProductName = this.children[4].textContent;
-            const enhancedDetails = this.children[5].textContent;
-            const estimatedExpiration = this.children[6].textContent;
-
-            selectProduct(this, productId, productCode, itemDescription, brand, generatedProductName, enhancedDetails, estimatedExpiration);
+        row.addEventListener('click', function () {
+            // Extract values from data attributes on the row
+            const productId = row.dataset.productId;
+            const productCode = row.dataset.productCode;
+            const itemDescription = row.dataset.itemDescription;
+            const brand = row.dataset.brand;
+            const classificationId = row.dataset.classificationId || null;
+            // Call the `selectProduct` function and pass these values as arguments
+            selectProduct(productId, productCode, itemDescription, brand, classificationId);
         });
     });
 
-    // AI Integration
+    // Typing effect for AI-generated text
     function typeEffect(element, text, callback) {
         element.innerHTML = '';
         let i = 0;
-        let timer = setInterval(function() {
+        let timer = setInterval(function () {
             if (i < text.length) {
                 element.innerHTML += text.charAt(i);
                 i++;
@@ -110,15 +87,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 50);
     }
 
+    // Show "Generating..." message during AI request
     function showGenerating(element) {
         element.innerHTML = '<div class="generating-container">Generating...</div>';
     }
 
-    document.getElementById('generate-ai-product-name').addEventListener('click', function() {
+    // Generate product name with AI
+    document.getElementById('generate-ai-product-name').addEventListener('click', function () {
         const productId = document.getElementById('id_product_id').value;
         const resultElement = document.getElementById('ai-product-name');
         showGenerating(resultElement);
-        
+
+        if (!productId) {
+            resultElement.innerHTML = 'Product ID not set.';
+            return;
+        }
+
         fetch('/invoice/generate-product-name/', {
             method: 'POST',
             headers: {
@@ -134,14 +118,23 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 resultElement.innerHTML = 'Error generating product name';
             }
+        })
+        .catch(() => {
+            resultElement.innerHTML = 'Error generating product name';
         });
     });
 
-    document.getElementById('enhance-product-details').addEventListener('click', function() {
+    // Enhance product details with AI
+    document.getElementById('enhance-product-details').addEventListener('click', function () {
         const productId = document.getElementById('id_product_id').value;
         const resultElement = document.getElementById('ai-enhanced-product-details');
         showGenerating(resultElement);
-        
+
+        if (!productId) {
+            resultElement.innerHTML = 'Product ID not set.';
+            return;
+        }
+
         fetch('/invoice/enhance-product-details/', {
             method: 'POST',
             headers: {
@@ -152,15 +145,43 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.enhanced_product_details) {
-                typeEffect(resultElement, data.enhanced_product_details);
-            } else {
-                resultElement.innerHTML = 'Error enhancing product details';
+            if (data.error) {
+                resultElement.innerHTML = data.error;
+                return;
             }
+
+            // List of classification fields to populate
+            const fields = [
+                'enhanced_details',
+                'storage_guidelines',
+                'handling_instructions',
+                'allergens',
+                'nutritional_info',
+                'regulatory_compliance',
+                'shelf_life'
+            ];
+
+            // Populate each field with the generated data
+            fields.forEach(field => {
+                const input = document.getElementById(`id_${field}`);
+                if (input && data[field]) {
+                    input.value = data[field];
+                }
+            });
+
+            // Display the enhanced details in the AI result box
+            if (data.enhanced_details) {
+                typeEffect(resultElement, data.enhanced_details);
+            } else {
+                resultElement.innerHTML = 'Enhanced details not provided.';
+            }
+        })
+        .catch(() => {
+            resultElement.innerHTML = 'Error enhancing product details';
         });
     });
 
-    // Function to get CSRF token
+    // Get CSRF token for POST requests
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -176,12 +197,29 @@ document.addEventListener('DOMContentLoaded', function() {
         return cookieValue;
     }
 
-    // Add click event listeners to headers for sorting
-    const headers = document.querySelectorAll('#product-table th');
-    headers.forEach((header, index) => {
-        header.addEventListener('click', function() {
-            console.log(`Header clicked: ${header.innerText}`);
-            sortTable(index);
-        });
+    // Vendor Filter Functionality
+    const vendorFilter = document.getElementById('vendor-filter');
+
+    vendorFilter.addEventListener('change', function () {
+        filterTableByVendor();
     });
+
+    function filterTableByVendor() {
+        const selectedVendor = vendorFilter.value.trim();
+        const table = document.getElementById('product-table');
+        const rows = table.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const vendorShortName = row.dataset.vendorShortName ? row.dataset.vendorShortName.trim() : '';
+
+            if (!selectedVendor || vendorShortName === selectedVendor) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Call filterTableByVendor on page load
+    filterTableByVendor();
 });

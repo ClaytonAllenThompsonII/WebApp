@@ -86,7 +86,7 @@
                     <th scope="col">Unit Price</th>
                     <th scope="col">Total Price</th>
                     <th scope="col">GL3 Name</th>
-                    <th scope="col">Product Name</th>
+                    <th scope="col">Product Classification</th>
                 </tr>
             </thead>
             <tbody>
@@ -110,34 +110,42 @@
                     <td>${{ line_item.price|floatformat:2 }}</td>
                     <!-- GL3 Name -->
                     <td>
-                        {% if line_item.gl3_name %}
+                        {% if line_item.gl3 %}
                             <!-- Mapped State -->
-                            <button class="status-button mapped gl3-button" title="GL3 Name Mapped">
-                                {{ line_item.gl3_name }}
+                            <button class="status-button mapped gl3-button" title="GL3 Mapped">
+                                {{ line_item.gl3.gl3_name }}
                             </button>
                         {% else %}
                             <!-- Unmapped State -->
-                            <button class="status-button unmapped gl3-button" onclick="window.location.href='{% url 'edit_line_item' line_item.line_item_id %}'" title="Map GL3 Name">
+                            <button class="status-button unmapped gl3-button" onclick="window.location.href='{% url 'edit_line_item' line_item.line_item_id %}'" title="Map GL3">
                                 Map GL3
                             </button>
                         {% endif %}
                     </td>
-                    <!-- Generated Product Name -->
-                    <!-- Product Name -->
+                    <!-- Product Classification Name -->
                     <td>
-                        {% if line_item.generated_product_name %}
-                            <!-- Mapped State -->
+                        {% if line_item.product_classification_name %}
+                            <!-- Hidden Tooltip Content -->
+                            <div id="tooltip-content-{{ line_item.line_item_id }}" style="display: none;">
+                                <div class="tooltip-header">Product Classification Details</div>
+                                <div class="tooltip-item"><strong>Product ID:</strong> {{ line_item.product_id|default:'N/A' }}</div>
+                                <div class="tooltip-item"><strong>Product Code:</strong> {{ line_item.product_code|default:'N/A' }}</div>
+                                <div class="tooltip-item"><strong>Name:</strong> {{ line_item.product_classification_name|default:'N/A' }}</div>
+                                <div class="tooltip-item"><strong>Enhanced Details:</strong> {{ line_item.classification_enhanced_details|default:'N/A' }}</div>
+                                <div class="tooltip-item"><strong>Storage Guidelines:</strong> {{ line_item.classification_storage_guidelines|default:'N/A' }}</div>
+                                <div class="tooltip-item"><strong>Handling Instructions:</strong> {{ line_item.classification_handling_instructions|default:'N/A' }}</div>
+                                <div class="tooltip-item"><strong>Allergens:</strong> {{ line_item.classification_allergens|default:'N/A' }}</div>
+                                <div class="tooltip-item"><strong>Nutritional Info:</strong> {{ line_item.classification_nutritional_info|default:'N/A' }}</div>
+                                <div class="tooltip-item"><strong>Regulatory Compliance:</strong> {{ line_item.classification_regulatory_compliance|default:'N/A' }}</div>
+                                <div class="tooltip-item"><strong>Shelf Life (days):</strong> {{ line_item.classification_shelf_life|default:'N/A' }}</div>
+                            </div>
+                
+                            <!-- Mapped State Button -->
                             <button class="status-button mapped product-button"
-                                    data-tippy-content="
-                                        <div class='tooltip-header'>Product Details</div>
-                                        <div class='tooltip-item'><strong>Product ID:</strong> {{ line_item.product_id }}</div>
-                                        <div class='tooltip-item'><strong>Product Code:</strong> {{ line_item.product_code }}</div>
-                                        <div class='tooltip-item'><strong>Enhanced Details:</strong> {{ line_item.enhanced_details|escape }}</div>
-                                        <div class='tooltip-item'><strong>Estimated Expiration:</strong> {{ line_item.estimated_expiration }}</div>
-                                    "
+                                    data-tooltip-content="#tooltip-content-{{ line_item.line_item_id }}"
                                     onclick="window.location.href='{% url 'product_enhancement' %}'"
                                     title="Click for details">
-                                {{ line_item.generated_product_name }}
+                                {{ line_item.product_classification_name }}
                             </button>
                         {% else %}
                             <!-- Unmapped State -->
@@ -159,18 +167,20 @@
 <script src="https://unpkg.com/tippy.js@6"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        tippy('.product-button.mapped', {
-            content(reference) {
-                return reference.getAttribute('data-tippy-content');
-            },
-            allowHTML: true,
-            interactive: true,
-            theme: 'custom-light', // Use the custom theme
-            placement: 'right',
-            animation: 'fade',
-            delay: [100, 50],
-        });
+    tippy('.product-button.mapped', {
+        content(reference) {
+            const selector = reference.getAttribute('data-tooltip-content');
+            const template = document.querySelector(selector);
+            return template.innerHTML;
+        },
+        allowHTML: true,
+        interactive: true,
+        theme: 'custom-light',
+        placement: 'right',
+        animation: 'fade',
+        delay: [100, 50],
     });
-    </script>
+});
+</script>
 </div>
 {% endblock %}

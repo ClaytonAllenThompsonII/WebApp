@@ -11,4 +11,5 @@ ON
 AND 
     pli.item_description = p.item_description
 
+
 ORDER BY product_code, product_id;

@@ -174,7 +174,7 @@ def line_items_by_invoice(request, invoice_id):
     next_invoice_id = invoice_ids[current_index + 1] if current_index < len(invoice_ids) - 1 else None
 
     # Count the number of unmapped items
-    unmapped_count = line_items.filter(gl3_name__isnull=True).count()
+    unmapped_count = line_items.filter(gl3__isnull=True).count()
 
     context = {
         'invoice': invoice,
@@ -185,69 +185,222 @@ def line_items_by_invoice(request, invoice_id):
     }
     return render(request, 'invoice/line_items_by_invoice.html', context)
 
-
 @login_required(login_url='loginPage')
 def edit_line_item(request, line_item_id):
+    # Retrieve the specific line item or return a 404 error if not found
     line_item = get_object_or_404(ProcessedLineItem, line_item_id=line_item_id)
-    
-    # Initialize the S3 storage backend
+
+    # Initialize the S3 storage backend and generate a pre-signed URL for the PDF
     s3_backend = S3StorageBackend()
-    # Generate the pre-signed URL
     s3_url = s3_backend.generate_presigned_url(line_item.s3_object_key)
 
-    # Fetch GL Level 1, GL Level 2, and GL Level 3 data from ConsolidatedGL
+    # Fetch consolidated GL data for dropdowns or selections in the form
     gl_level_1 = ConsolidatedGL.objects.values('gl1_id', 'gl1_name').distinct()
     gl_level_2 = ConsolidatedGL.objects.values('gl2_id', 'gl2_name').distinct()
-    # Fetch all GL Level 3 records with associated GL Level 1 and GL Level 2 names
     gl_level_3 = ConsolidatedGL.objects.all().values('gl1_name', 'gl2_name', 'gl3_name', 'gl3_id')
 
+    # Attempt to fetch the associated Product; set to None if it doesn't exist
+    try:
+        product = ProcessedProduct.objects.get(product_id=line_item.product_id)
+    except (ProcessedProduct.DoesNotExist, TypeError, ValueError):
+        product = None
+
     if request.method == 'POST':
+        # Bind the form with POST data and associate it with the existing line item instance
         form = ProcessedLineItemForm(request.POST, instance=line_item)
+        
         if form.is_valid():
-            print("Form is valid. Data:", form.cleaned_data)  # Debugging line
-            print(f"Received gl3_id: {request.POST.get('gl3_id')}")
-            print(f"Received gl3_name: {request.POST.get('gl3_name')}")
-            form.save()
+            with transaction.atomic():  # Start an atomic transaction to ensure all-or-nothing updates
+                # Save the updated line item
+                updated_line_item = form.save()
+                updated_gl3 = updated_line_item.gl3  # Get the related GLLevel3 instance
+
+                if updated_gl3:
+                    updated_gl3_id = updated_gl3.gl3_id
+                    updated_gl3_name = updated_gl3.gl3_name
+                else:
+                    updated_gl3_id = None
+                    updated_gl3_name = None
+
+                # Bulk update all other line items with the same Product_ID to have the same GL3 mapping
+                ProcessedLineItem.objects.filter(
+                    product_id=updated_line_item.product_id
+                ).exclude(line_item_id=updated_line_item.line_item_id).update(
+                    gl3=updated_gl3
+                )
+
+                # Optional: Log the update for auditing purposes
+                # logger.info(f"GL3 mapping updated for Product ID {updated_line_item.product_id} by User {request.user.username}")
+
+            # Provide success feedback to the user
+            messages.success(request, "Line item and all associated products have been updated successfully.")
             return redirect('line_items_by_invoice', invoice_id=line_item.invoice_id)
         else:
-            print("Form is invalid. Errors:", form.errors)  # Debugging line
+            # Provide error feedback if the form is invalid
+            messages.error(request, "Please correct the errors below.")
     else:
+        # Initialize an unbound form with the existing line item instance for GET requests
         form = ProcessedLineItemForm(instance=line_item)
+
+    # Fetch all line items for the current invoice, ordered by their index
+    line_items = ProcessedLineItem.objects.filter(invoice_id=line_item.invoice_id).order_by('line_item_index')
+    line_item_ids = list(line_items.values_list('line_item_id', flat=True))
     
+    # Determine the current index of the line item to identify previous and next items
+    try:
+        current_index = line_item_ids.index(line_item.line_item_id)
+    except ValueError:
+        current_index = -1  # Handle cases where the line_item_id is not found
+
+    # Identify the previous line item ID if it exists
+    previous_line_item_id = line_item_ids[current_index - 1] if current_index > 0 else None
+    # Identify the next line item ID if it exists
+    next_line_item_id = line_item_ids[current_index + 1] if current_index < len(line_item_ids) - 1 else None
+
     context = {
         'line_item': line_item,
-        'form': form,
-        's3_url': s3_url,
-        'gl_level_1': gl_level_1,  # Pass GL Level 1 data to the template
-        'gl_level_2': gl_level_2,  # Pass GL Level 2 data to the template
-        'gl_level_3': gl_level_3,  # Pass GL Level 3 data to the template
+        'product': product,  # Pass the associated product to the template
+        'form': form,  # Pass the form to the template
+        's3_url': s3_url,  # Pass the S3 pre-signed URL for PDF viewing
+        'gl_level_1': gl_level_1,  # Pass GL Level 1 data for dropdowns
+        'gl_level_2': gl_level_2,  # Pass GL Level 2 data for dropdowns
+        'gl_level_3': gl_level_3,  # Pass GL Level 3 data for dropdowns
+        'previous_line_item_id': previous_line_item_id,  # Pass previous line item ID for navigation
+        'next_line_item_id': next_line_item_id,  # Pass next line item ID for navigation
     }
+
+    # Render the edit_line_item.html template with the provided context
     return render(request, 'invoice/edit_line_item.html', context)
-
-
 
 
 # Product Views
 @login_required(login_url='loginPage')
 def product_enhancement(request):
-    products = Product.objects.all()
+    # Prefetch related models for efficiency
+    # Subquery to get the vendor short name
+    vendor_subquery = ProcessedLineItem.objects.filter(
+        product=OuterRef('pk'),
+        invoice__vendor__vendor_short_name__isnull=False
+    ).order_by('invoice__vendor__vendor_short_name').values('invoice__vendor__vendor_short_name')[:1]
     
+    # Prefetch related models and annotate vendor_short_name
+    products = ProcessedProduct.objects.annotate(
+        vendor_short_name=Subquery(vendor_subquery)
+    ).prefetch_related(
+        'processedlineitem_set__invoice__vendor',
+        'processedlineitem_set__gl3'
+    ).order_by('vendor_short_name', 'item_description')
+
+    # **Update: Get unique vendor short names including 'None' for products without a vendor**
+    vendor_short_names_list = products.values_list('vendor_short_name', flat=True)
+    vendor_short_names_set = set()
+    for vendor in vendor_short_names_list:
+        if vendor and vendor.strip():
+            # Add the trimmed vendor name to the set
+            vendor_short_names_set.add(vendor.strip())
+        else:
+            # If vendor is None or empty, add 'None' to represent missing vendor
+            vendor_short_names_set.add('None')
+
+    vendor_short_names = list(vendor_short_names_set)
+    vendor_short_names.sort()  # Optional: Sort the vendor names alphabetically
+    
+    classifications = ProductClassification.objects.all()
+
+    # Instantiate forms with POST data if available
+    product_form = ProductForm(request.POST or None)
+    classification_form = ProductClassificationForm(request.POST or None)
+
     if request.method == 'POST':
+        # Get product ID from the form
         product_id = request.POST.get('product_id')
-        product = get_object_or_404(Product, pk=product_id)
-        form = ProductForm(request.POST, instance=product)
+
+        if not product_id:
+            # Log error and redirect if product_id is missing
+            messages.error(request, "Product ID is missing!")
+            return redirect('product_enhancement')
         
-        if form.is_valid():
-            form.save()
-            # You can add any additional actions here after saving the form
-    else:
-        form = ProductForm()
-    
+        # Fetch product using the product ID
+        product = get_object_or_404(ProcessedProduct, pk=product_id)
+        print(f"Product selected: {product}")
+
+        # Reinitialize product form with the product instance
+        product_form = ProductForm(request.POST, instance=product)
+
+        # Process product form
+        if product_form.is_valid():
+            product_form.save()  # Save product updates
+            print("Product form is valid and saved successfully!")
+        else:
+            # Log and display specific product form errors
+            print(f"Product form errors: {product_form.errors}")
+            messages.error(request, "Please correct the product form errors.")
+            return render(request, 'invoice/product_enhancement.html', {
+                'products': products,
+                'classifications': classifications,
+                'product_form': product_form,
+                'classification_form': classification_form,
+            })
+
+        # Now handle the classification part
+        classification_id = request.POST.get('classification_id')
+
+        if classification_id:  # If an existing classification is selected
+            classification = get_object_or_404(ProductClassification, pk=classification_id)
+            product.classification = classification  # Link the existing classification to the product
+            product.save()
+            print("Product classification updated with existing classification!")
+        elif classification_form.is_valid():  # If creating a new classification
+            classification = classification_form.save(commit=False)
+            classification.save()  # Save the new classification, generate classification_id
+            product.classification = classification  # Link new classification to the product
+            product.save()
+            print(f"New classification created: {classification.name} with ID: {classification.classification_id}")
+        else:
+            # Log and display classification form errors
+            print(f"Classification form errors: {classification_form.errors}")
+            messages.error(request, "Please correct the classification form errors.")
+            return render(request, 'invoice/product_enhancement.html', {
+                'products': products,
+                'classifications': classifications,
+                'product_form': product_form,
+                'classification_form': classification_form,
+            })
+
+        # Success! Redirect to avoid resubmission
+        messages.success(request, "Product and classification updated successfully!")
+        return redirect('product_enhancement')
+
+    # If GET request, just render the form with current data
     context = {
         'products': products,
-        'form': form,
+        'classifications': classifications,
+        'product_form': product_form,
+        'classification_form': classification_form,
+        'vendor_short_names': vendor_short_names,  # Add vendor short name for Vendor filter
+
     }
     return render(request, 'invoice/product_enhancement.html', context)
+
+@login_required(login_url='loginPage')
+def get_classification_details(request, classification_id):
+    try:
+        classification = ProductClassification.objects.get(pk=classification_id)
+        data = {
+            'name': classification.name,
+            'enhanced_details': classification.enhanced_details,
+            'storage_guidelines': classification.storage_guidelines,
+            'handling_instructions': classification.handling_instructions,
+            'allergens': classification.allergens,
+            'nutritional_info': classification.nutritional_info,
+            'regulatory_compliance': classification.regulatory_compliance,
+            'shelf_life': classification.shelf_life
+        }
+        return JsonResponse(data)
+    except ProductClassification.DoesNotExist:
+        return JsonResponse({'error': 'Product Classification not found'}, status=404)
+
+
 
 @csrf_exempt
 @login_required(login_url='loginPage')
@@ -260,43 +413,37 @@ def generate_product_name(request):
             return JsonResponse({'error': 'Product ID not provided'}, status=400)
 
         try:
-            product = Product.objects.get(product_id=product_id)
-        except Product.DoesNotExist:
+            product = ProcessedProduct.objects.get(product_id=product_id)
+        except ProcessedProduct.DoesNotExist:
             return JsonResponse({'error': 'Product not found'}, status=404)
-        
 
-        # Fetch the related line item information
-        line_item = ProcessedLineItem.objects.filter(product_id=product_id).first()
-        # Generate the prompt
+        # Generate prompt
         prompt = (
-            f"Generate a concise and appealing product name for the following details:\n"
+            f"Generate a concise and accurate product name for the following details:\n"
             f"Item Description: {product.item_description}\n"
             f"Brand: {product.brand}\n"
         )
-        # Add additional information if available
-        if line_item:
-            if line_item.gl3_name:
-                prompt += f"GL3 Name: {line_item.gl3_name}\n"
-            if line_item.expense_row:
-                prompt += f"Expense Row: {line_item.expense_row}\n"
 
-        prompt += "Focus on creating a name that is short, concise and clearly describes the product."
+        try:
+            # Call OpenAI API
+            client = OpenAI(api_key=settings.OPENAI_API_KEY)
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are an assistant skilled in generating product names."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
 
-        # Call OpenAI API
-        client = OpenAI(api_key=settings.OPENAI_API_KEY)
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are an assistant skilled in generating product names."},
-                {"role": "user", "content": prompt}
-            ]
-        )
+            # Log the response for debugging
+            print(f"OpenAI API Response: {response}")
 
-        # Accessing the generated name correctly
-        generated_name = response.choices[0].message.content.strip()
-        
-        return JsonResponse({'generated_product_name': generated_name})
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+            generated_name = response.choices[0].message.content.strip()
+            return JsonResponse({'generated_product_name': generated_name})
+
+        except Exception as e:
+            print(f"OpenAI API Error: {e}")  # Log the error
+            return JsonResponse({'error': 'Error generating product name'}, status=500)
 
 
 @csrf_exempt
@@ -310,50 +457,77 @@ def enhance_product_details(request):
             return JsonResponse({'error': 'Product ID not provided'}, status=400)
 
         try:
-            product = Product.objects.get(product_id=product_id)
+            product = ProcessedProduct.objects.get(product_id=product_id)
             line_items = ProcessedLineItem.objects.filter(product_id=product_id)
-        except Product.DoesNotExist:
+        except ProcessedProduct.DoesNotExist:
             return JsonResponse({'error': 'Product not found'}, status=404)
         
-       # Retrieve related data from ProcessedLineItems and other fields
-        line_items = ProcessedLineItem.objects.filter(product_id=product_id)
-        line_items_description = ", ".join([li.item_description for li in line_items])
+        # Retrieve related data from ProcessedLineItems and other fields
+        line_items_description = ", ".join([li.item_description for li in line_items if li.item_description])
         expense_rows = ", ".join([li.expense_row for li in line_items if li.expense_row])
-        gl3_names = ", ".join([li.gl3_name for li in line_items if li.gl3_name])
+        gl3_names = ", ".join([li.gl3.gl3_name for li in line_items if li.gl3 and li.gl3.gl3_name])
 
-        # Generate the prompt
+        # Build the prompt for OpenAI GPT-4 API
         prompt = (
-            f"Generate a concise and clear enhanced description for the following product. "
-            f"Item descriptions on invoices can often be confusing, and we want to provide users "
-            f"with a clearer understanding of each product. Use the information available including "
-            f"item description, expense rows, and GL3 name (if any) to give a comprehensive description. "
-            f"Explain what any numbers or characters might mean relative to the product. Additionally, "
-            f"estimate the product's expiration range based on its storage requirements and typical shelf life.\n\n"
-            f"Item Description: {product.item_description}\n"
-            f"Brand: {product.brand}\n"
-            f" Make sure to ignore financial details in the expense_row"
-            f"Expense Rows: {expense_rows}\n"
-            f"GL3 Name: {gl3_names}\n"
-            f"Line Items: {line_items_description}\n"
-            f"Please be concise and avoid narrating the product. Focus on essential details only."
-        )
-        # Call OpenAI API
-        client = OpenAI(api_key=settings.OPENAI_API_KEY)
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are an assistant skilled in enhancing product details."},
-                {"role": "user", "content": prompt}
-            ]
+            f"Using the following product information, generate detailed content for the fields: "
+            f"'enhanced_details', 'storage_guidelines', 'handling_instructions', 'allergens', "
+            f"'nutritional_info', 'regulatory_compliance', and 'shelf_life'.\n\n"
+            f"Product Information:\n"
+            f"- Item Description: {product.item_description}\n"
+            f"- Brand: {product.brand or 'None'}\n"
+            f"- Expense Rows: {expense_rows or 'None'}\n"
+            f"- GL3 Name: {gl3_names or 'None'}\n"
+            f"- Additional Line Item Descriptions: {line_items_description or 'None'}\n\n"
+            f"Respond ONLY with a valid JSON object in the following format:\n"
+            f"{{\n"
+            f"  \"enhanced_details\": \"...\",\n"
+            f"  \"storage_guidelines\": \"...\",\n"
+            f"  \"handling_instructions\": \"...\",\n"
+            f"  \"allergens\": \"...\",\n"
+            f"  \"nutritional_info\": \"...\",\n"
+            f"  \"regulatory_compliance\": \"...\",\n"
+            f"  \"shelf_life\": number_of_days\n"
+            f"}}\n"
+            f"Do not include any explanations, apologies, or additional text. Ensure the JSON is valid and properly formatted."
         )
 
-        # Accessing the generated details correctly
-        generated_details = response.choices[0].message.content.strip()
+        try:
+            # Call OpenAI API
+            client = OpenAI(api_key=settings.OPENAI_API_KEY)
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are an assistant that generates detailed product classification data in JSON format."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.2,
+                max_tokens=500
+            )
+
+            # Extract and parse the generated JSON
+            generated_text = response.choices[0].message.content.strip()
+
+            # Extract JSON from the response
+            
+            json_match = re.search(r'\{.*\}', generated_text, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+                try:
+                    generated_data = json.loads(json_str)
+                except json.JSONDecodeError as e:
+                    print(f"JSON Decode Error: {e}\nOpenAI response: {generated_text}")
+                    return JsonResponse({'error': 'Invalid JSON response from OpenAI API'}, status=500)
+            else:
+                print(f"Unable to extract JSON from OpenAI response: {generated_text}")
+                return JsonResponse({'error': 'Invalid response format from OpenAI API'}, status=500)
+
+            return JsonResponse(generated_data)
+
+        except Exception as e:
+            print(f"OpenAI API Error: {e}")
+            return JsonResponse({'error': 'Error generating product details'}, status=500)
         
-        return JsonResponse({'enhanced_product_details': generated_details})
     return JsonResponse({'error': 'Invalid request'}, status=400)
-
-
 
 
 # Add comments, Doc strings; 
@@ -389,9 +563,10 @@ def gl_level_3_by_gl1(request):
     gl1_id = request.GET.get('gl1_id')
     if gl1_id:
         gl3_items = ConsolidatedGL.objects.filter(gl1_id=gl1_id).values('gl1_name', 'gl2_name', 'gl3_name', 'gl3_id')
-        print(f"Data for GL1 ID {gl1_id}: {list(gl3_items)}")  # Debugging line
-        return JsonResponse(list(gl3_items), safe=False)
-    return JsonResponse({"error": "GL Level 1 ID not provided"}, status=400)
+    else:
+        # Return all GL Level 3 items when gl1_id is not provided
+        gl3_items = ConsolidatedGL.objects.all().values('gl1_name', 'gl2_name', 'gl3_name', 'gl3_id')
+    return JsonResponse(list(gl3_items), safe=False)
 
 @login_required(login_url='loginPage')
 def gl_level_3_by_gl2(request):

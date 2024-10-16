@@ -98,7 +98,11 @@
                             <tr data-product-id="{{ product.product_id }}">
                                 <td class="product-cell">
                                     <div class="product-info">
-                                        {{ product.generated_product_name }}
+                                        {% if product.classification %}
+                                            {{ product.classification.name }}
+                                        {% else %}
+                                            No Classification
+                                        {% endif %}
                                         <button class="stage-button" onclick="moveProductToStaging(this); event.stopPropagation();">Stage Product</button>
                                     </div>
                                 </td>
@@ -112,7 +116,6 @@
             <div class="divider"></div>
 
             <!-- Staging Products Section -->
-            <!-- Staging Products Section -->
             <section id="staging-products" class="toggle-section">
                 <h3>Staging Products
                     <button class="unstage-all-button" onclick="unstageAll('staging-products');">Unstage All</button>
@@ -120,13 +123,16 @@
                 <div class="content">
                     <table class="staging-products-table">
                         <tbody>
-                            {% for product in staged_products %}
-                            <tr data-product-id="{{ product.product_id }}">
+                            {% for item in staged_products %}
+                            <tr data-product-id="{{ item.product.product_id }}">
                                 <td class="product-cell">
                                     <div class="product-info">
-                                        {{ product.generated_product_name }}
-                                        <!-- Hidden "+Add Data" button, displayed on hover -->
-                                        <button class="collect-data-button hidden" onclick="collectData({{ product.product_id }}); event.stopPropagation();">+Add Data</button>
+                                        {% if item.product.classification %}
+                                            {{ item.product.classification.name }}
+                                        {% else %}
+                                            No Classification
+                                        {% endif %}
+                                        <button class="collect-data-button hidden" onclick="collectData({{ item.product.product_id }}); event.stopPropagation();">+Add Data</button>
                                     </div>
                                 </td>
                             </tr>
@@ -146,7 +152,20 @@
                 <div class="content">
                     <table class="staged-products-table">
                         <tbody>
-                            <!-- Staged products will be dynamically inserted here -->
+                            {% for item in staged_products %}
+                            <tr data-product-id="{{ item.product.product_id }}">
+                                <td class="product-cell">
+                                    <div class="product-info">
+                                        {% if item.product.classification %}
+                                            {{ item.product.classification.name }}
+                                        {% else %}
+                                            No Classification
+                                        {% endif %}
+                                        <!-- Include any buttons or actions specific to staged products -->
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

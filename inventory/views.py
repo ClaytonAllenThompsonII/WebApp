@@ -18,7 +18,8 @@ Requirements:
 import logging
 import json
 
-from django.db.models import Sum, Subquery, OuterRef, F, FloatField
+from django.db.models import Sum, Subquery, OuterRef, F, FloatField, Value
+from django.db.models.functions import Coalesce
 from django.views.decorators.http import require_POST
 from django.conf import settings
 
@@ -182,7 +183,6 @@ def inventory_view(request):
                 }
     return render(request, 'inventory/training_data.html', context)
 
-
 @login_required(login_url='loginPage')
 def get_gl_level_2(request):
     """
@@ -210,7 +210,6 @@ def get_gl_level_3(request):
     gl3_items = ConsolidatedGL.objects.filter(gl2_id=gl2_id).values('gl3_id', 'gl3_name').distinct()
     gl3_data = [{'id': item['gl3_id'], 'name': item['gl3_name']} for item in gl3_items]
     return JsonResponse(gl3_data, safe=False)
-
 
 @login_required(login_url='loginPage')
 def get_products(request):
@@ -249,10 +248,17 @@ def get_products(request):
     else:
         # Return an error message if gl3_id is not provided
         return JsonResponse({'error': 'GL3 ID not provided'}, status=400)
+################################################## Ver.1 ^ 
+
+
+
+
+
 
 
 @login_required(login_url='loginPage')
 def inventory_queue_view(request):
+    # Subquery to calculate total spend per product
     total_spend_subquery = (
         ProcessedLineItem.objects
         .filter(product_id=OuterRef('product_id'))
@@ -261,46 +267,56 @@ def inventory_queue_view(request):
         .values('total')
     )
 
+    # Fetch products with total spend and related classification
     products_with_spend = (
         ProcessedProduct.objects
         .annotate(total_spend=Subquery(total_spend_subquery))
-        .order_by('-total_spend')  # Order by total spend in descending order
+        .select_related('classification')
+        .order_by('classification_id', '-total_spend')  # First order by classification_id for DISTINCT ON
     )
 
+    # Fetch distinct classifications with a representative product
+    prioritized_products = (
+        products_with_spend
+        .filter(classification__isnull=False)
+        .distinct('classification_id')  # Use classification_id for distinct
+    )
+
+    # Fetch selected product and line items if product_id is provided
     selected_product = None
     line_items = []
     product_id = request.GET.get('product_id')
     if product_id:
-        selected_product = get_object_or_404(Product, pk=product_id)
+        selected_product = get_object_or_404(ProcessedProduct, pk=product_id)
         line_items = ProcessedLineItem.objects.filter(product_id=product_id)
 
     # Get the current user's details
     user = request.user
     profile = user.profile if hasattr(user, 'profile') else None
 
-    # Try to get the active cycle or handle the case where no cycle is active
+    # Get the active inventory cycle
     try:
         active_cycle = InventoryCollectionCycle.objects.filter(user=user).latest('created_at')
     except InventoryCollectionCycle.DoesNotExist:
         active_cycle = None
 
-    staged_products = InventoryQueueItem.objects.filter(inventory_cycle=active_cycle) if active_cycle else []
+    # Fetch staged products with related product and classification
+    staged_products = []
+    if active_cycle:
+        staged_products = InventoryQueueItem.objects.filter(inventory_cycle=active_cycle).select_related('product__classification')
 
     context = {
-        'prioritized_products': products_with_spend,
+        'prioritized_products': prioritized_products,  # Distinct classifications for unstaged products
         'selected_product': selected_product,
         'line_items': line_items,
-        'staged_products': staged_products,  # Pass staged products to the template
+        'staged_products': staged_products,
         'user_name': user.username,
         'user_id': user.id,
         'user_group': profile.group.name if profile and profile.group else 'None',
-        'active_cycle': active_cycle,  # Pass active cycle to the context
+        'active_cycle': active_cycle,
     }
 
     return render(request, 'inventory/inventory_queue.html', context)
-
-
-
 
 @login_required(login_url='loginPage')
 @require_POST

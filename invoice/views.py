@@ -276,13 +276,11 @@ def edit_line_item(request, line_item_id):
 @login_required(login_url='loginPage')
 def product_enhancement(request):
     # Prefetch related models for efficiency
-    # Subquery to get the vendor short name
     vendor_subquery = ProcessedLineItem.objects.filter(
         product=OuterRef('pk'),
         invoice__vendor__vendor_short_name__isnull=False
     ).order_by('invoice__vendor__vendor_short_name').values('invoice__vendor__vendor_short_name')[:1]
-    
-    # Prefetch related models and annotate vendor_short_name
+
     products = ProcessedProduct.objects.annotate(
         vendor_short_name=Subquery(vendor_subquery)
     ).prefetch_related(
@@ -290,49 +288,31 @@ def product_enhancement(request):
         'processedlineitem_set__gl3'
     ).order_by('vendor_short_name', 'item_description')
 
-    # **Update: Get unique vendor short names including 'None' for products without a vendor**
     vendor_short_names_list = products.values_list('vendor_short_name', flat=True)
     vendor_short_names_set = set()
     for vendor in vendor_short_names_list:
-        if vendor and vendor.strip():
-            # Add the trimmed vendor name to the set
-            vendor_short_names_set.add(vendor.strip())
-        else:
-            # If vendor is None or empty, add 'None' to represent missing vendor
-            vendor_short_names_set.add('None')
+        vendor_short_names_set.add(vendor.strip() if vendor and vendor.strip() else 'None')
 
-    vendor_short_names = list(vendor_short_names_set)
-    vendor_short_names.sort()  # Optional: Sort the vendor names alphabetically
-    
+    vendor_short_names = sorted(vendor_short_names_set)
     classifications = ProductClassification.objects.all()
 
-    # Instantiate forms with POST data if available
+    # Instantiate forms
     product_form = ProductForm(request.POST or None)
     classification_form = ProductClassificationForm(request.POST or None)
 
     if request.method == 'POST':
-        # Get product ID from the form
         product_id = request.POST.get('product_id')
-
         if not product_id:
-            # Log error and redirect if product_id is missing
             messages.error(request, "Product ID is missing!")
             return redirect('product_enhancement')
-        
-        # Fetch product using the product ID
-        product = get_object_or_404(ProcessedProduct, pk=product_id)
-        print(f"Product selected: {product}")
 
-        # Reinitialize product form with the product instance
+        product = get_object_or_404(ProcessedProduct, pk=product_id)
         product_form = ProductForm(request.POST, instance=product)
 
         # Process product form
         if product_form.is_valid():
-            product_form.save()  # Save product updates
-            print("Product form is valid and saved successfully!")
+            product_form.save()
         else:
-            # Log and display specific product form errors
-            print(f"Product form errors: {product_form.errors}")
             messages.error(request, "Please correct the product form errors.")
             return render(request, 'invoice/product_enhancement.html', {
                 'products': products,
@@ -341,23 +321,21 @@ def product_enhancement(request):
                 'classification_form': classification_form,
             })
 
-        # Now handle the classification part
+        # Handle classification update
         classification_id = request.POST.get('classification_id')
 
         if classification_id:  # If an existing classification is selected
             classification = get_object_or_404(ProductClassification, pk=classification_id)
-            product.classification = classification  # Link the existing classification to the product
+            product.classification = classification
             product.save()
-            print("Product classification updated with existing classification!")
+            print(f"Product classification updated with existing classification: {classification.name}")
         elif classification_form.is_valid():  # If creating a new classification
             classification = classification_form.save(commit=False)
-            classification.save()  # Save the new classification, generate classification_id
-            product.classification = classification  # Link new classification to the product
+            classification.save()
+            product.classification = classification
             product.save()
-            print(f"New classification created: {classification.name} with ID: {classification.classification_id}")
+            print(f"New classification created: {classification.name}")
         else:
-            # Log and display classification form errors
-            print(f"Classification form errors: {classification_form.errors}")
             messages.error(request, "Please correct the classification form errors.")
             return render(request, 'invoice/product_enhancement.html', {
                 'products': products,
@@ -366,21 +344,18 @@ def product_enhancement(request):
                 'classification_form': classification_form,
             })
 
-        # Success! Redirect to avoid resubmission
         messages.success(request, "Product and classification updated successfully!")
         return redirect('product_enhancement')
 
-    # If GET request, just render the form with current data
+    # Render for GET request
     context = {
         'products': products,
         'classifications': classifications,
         'product_form': product_form,
         'classification_form': classification_form,
-        'vendor_short_names': vendor_short_names,  # Add vendor short name for Vendor filter
-
+        'vendor_short_names': vendor_short_names,
     }
     return render(request, 'invoice/product_enhancement.html', context)
-
 @login_required(login_url='loginPage')
 def get_classification_details(request, classification_id):
     try:

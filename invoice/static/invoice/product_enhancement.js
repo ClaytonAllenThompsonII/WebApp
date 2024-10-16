@@ -34,6 +34,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Add event listener for classification select dropdown
+    document.getElementById('classification-select').addEventListener('change', function () {
+        const classificationId = this.value;
+        const productId = document.getElementById('id_product_id').value;
+
+        if (!productId || !classificationId) {
+            alert('Product ID or Classification not set.');
+            return;
+        }
+
+        // Submit the form to update the product classification
+        const form = document.getElementById('product-classification-form');
+        form.submit();
+    });
+
     // Use AI generated product name for classification name
     document.getElementById('populate-classification-name').addEventListener('click', function () {
         const aiProductName = document.getElementById('ai-product-name').textContent;

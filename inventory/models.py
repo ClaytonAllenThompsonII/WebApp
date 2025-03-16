@@ -1,14 +1,9 @@
 """Update Module Doc String: """
-
-
 from django.db import models
 from django.contrib.auth import get_user_model
 # from django.contrib.auth.models import User use if I switch from get_user_model()
-from invoice.models import ProcessedProduct, GLLevel1, GLLevel2, GLLevel3  # Ensure this import is correct
+from invoice.models import ProcessedProduct, GLLevel1, GLLevel2, GLLevel3
 
-
-
-# Inventory Item Model
 # Inventory Item Model
 class InventoryItem(models.Model):
     inventory_item_id = models.BigAutoField(primary_key=True)  # Custom primary key

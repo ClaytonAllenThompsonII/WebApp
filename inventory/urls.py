@@ -23,7 +23,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('inventory/', views.inventory_view, name='inventory_app'),
+    
     path('get_gl_level_2/', views.get_gl_level_2, name='get_gl_level_2'),
     path('get_gl_level_3/', views.get_gl_level_3, name='get_gl_level_3'),
     path('get_products/', views.get_products, name='get_products'),

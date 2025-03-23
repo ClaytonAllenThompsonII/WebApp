@@ -18,8 +18,8 @@ Requirements:
 import logging
 import json
 
-from django.db.models import Sum, Subquery, OuterRef, F, FloatField, Value
-from django.db.models.functions import Coalesce
+from django.db.models import Sum, Subquery, OuterRef, F, FloatField, Value, CharField
+from django.db.models.functions import Coalesce, Cast, Concat
 from django.views.decorators.http import require_POST
 from django.conf import settings
 
@@ -27,6 +27,8 @@ from django.db.models.functions import Cast
 from django.db import IntegrityError, DatabaseError
 from django.http import JsonResponse
 from django.utils import timezone
+from django.utils.safestring import mark_safe
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -39,7 +41,7 @@ from django.utils.safestring import mark_safe
 from invoice.models import ConsolidatedGL, ProcessedProduct, ProcessedLineItem, ProcessedInvoice, GLLevel1, GLLevel2, GLLevel3
 
 
-from .forms import InventoryDataCollectionForm
+from .forms import InventoryQueueItemForm
 from .storage_backends import AWSStorageBackend
 
 
@@ -268,6 +270,63 @@ def load_line_items(request):
 
 @login_required(login_url='loginPage')
 def product_impact_index(request):
+    # Step 1: Aggregate total spend per product using ProcessedLineItem.
+    product_spend_subquery = (
+        ProcessedLineItem.objects
+        .filter(product_id=OuterRef('product_id'))
+        .values('product_id')
+        .annotate(total_spend=Sum('price'))
+        .values('total_spend')
+    )
+
+    # Step 2: Annotate each ProcessedProduct with its total spend and an associated gl3_id.
+    products = ProcessedProduct.objects.annotate(
+        total_spend=Subquery(product_spend_subquery),
+        gl3_id=Subquery(
+            ProcessedLineItem.objects
+            .filter(product_id=OuterRef('product_id'))
+            .values('gl3_id')[:1]  # Get the first associated gl3_id
+        )
+    ).filter(total_spend__isnull=False)
+
+    # Step 3: Annotate GL details from ConsolidatedGL and convert total_spend to float.
+    products = products.annotate(
+        gl1_name=Subquery(
+            ConsolidatedGL.objects.filter(gl3_id=OuterRef('gl3_id')).values('gl1_name')[:1]
+        ),
+        gl2_name=Subquery(
+            ConsolidatedGL.objects.filter(gl3_id=OuterRef('gl3_id')).values('gl2_name')[:1]
+        ),
+        gl3_name=Subquery(
+            ConsolidatedGL.objects.filter(gl3_id=OuterRef('gl3_id')).values('gl3_name')[:1]
+        ),
+        total_spend_float=Cast('total_spend', output_field=FloatField())
+    )
+
+    # Step 4: Annotate a computed display name (brand + item_description).
+    products = products.annotate(
+        display_name=Concat('brand', Value(' '), 'item_description', output_field=CharField())
+    )
+
+    # Step 5: Order products by total spend in descending order.
+    products = products.order_by('-total_spend')
+
+    # Step 6: Prepare data for the heatmap visualization.
+    product_spend_data = products.values(
+        'product_id',
+        'display_name',       # Computed name field
+        'item_description',
+        'total_spend_float'   # Float version of total spend
+    )
+
+    product_spend_data_json = mark_safe(json.dumps(list(product_spend_data)))
+
+    # Step 7: Render the template with the context.
+    context = {
+        'product_spend': products,
+        'product_spend_data': product_spend_data_json
+    }
+    return render(request, 'inventory/product_impact_index.html', context)
     # Step 1: Aggregate total spend per product_id from ProcessedLineItem
     product_spend_subquery = (
         ProcessedLineItem.objects

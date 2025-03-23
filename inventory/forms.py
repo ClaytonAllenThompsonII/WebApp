@@ -1,31 +1,29 @@
 """
 Forms for inventory data collection.
 
-This module defines the `InventoryDataCollectionForm` based on the `ModelForm` 
-for handling inventory data related to the `InventoryItem` model.
+This module defines the InventoryQueueItemForm based on Django's ModelForm
+for handling inventory data related to the InventoryQueueItem model.
+
+The form collects basic inventory details such as the product reference, size, 
+and unit of measurement. The image file is not included in this form because it 
+is uploaded separately to AWS S3 via our storage backend. Once the image is uploaded, 
+its S3 key is stored in the model record (in the 'filename' field). In addition, 
+classification results from the inference API (e.g., Hugging Face output) will be 
+integrated into the record, simulating what our own model might eventually produce.
 
 Usage:
-    - Import and use this form in views to handle inventory data input.
-    - Render the form in templates to capture inventory data from users.
+    - Import and use this form in views to process inventory data input.
+    - Render the form in templates to capture inventory details from users.
 
 Requirements:
-    - The `InventoryItem` model must be defined in models.py.
+    - The InventoryQueueItem model must be defined in models.py.
 """
 
 from django import forms
-from .models import InventoryItem
+from .models import InventoryQueueItem
 
-
-class InventoryDataCollectionForm(forms.ModelForm):
-    """
-    Form for collecting inventory data related to the InventoryItem model.
-    """
+class InventoryQueueItemForm(forms.ModelForm):
     class Meta:
-        model = InventoryItem
-        fields = [
-            'image',  # Removed 'user' and 'filename'
-            'gl_level_1', 'gl_level_1_name',
-            'gl_level_2', 'gl_level_2_name',
-            'gl_level_3', 'gl_level_3_name',
-            'product', 'product_name', 'size', 'unit'
-        ]
+        model = InventoryQueueItem
+        # Collect only the product, size, and unit fields. The image upload is handled separately.
+        fields = ['product', 'size', 'unit']

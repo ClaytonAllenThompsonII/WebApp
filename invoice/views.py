@@ -16,7 +16,7 @@ from botocore.exceptions import BotoCoreError, ClientError
 from openai import OpenAI
 from django.conf import settings
 
-from inventory.models import InventoryItem
+from inventory.models import InventoryQueueItem
 from .s3_storage_backend import S3StorageBackend
 from .models import Invoice, ProcessedInvoice, ProcessedLineItem, ConsolidatedGL, ProcessedProduct, ProductClassification
 from .forms import ProcessedLineItemForm, InvoiceForm, ProductForm, ProductClassificationForm
@@ -90,11 +90,12 @@ def upload_invoice(request):
     else:
         order_by = '-timestamp'  # Default sorting
 
-    user_uploads = InventoryItem.objects.filter(
+    # IMPORTANT: Use the new InventoryQueueItem model
+    user_uploads = InventoryQueueItem.objects.filter(
         user=request.user,
         timestamp__gte=two_days_ago,
-        filename__isnull=False  # Assuming 'filename' being non-null means successfully uploaded to S3
-        ).order_by('-timestamp')
+        filename__isnull=False  # Files that have been successfully uploaded to S3
+    ).order_by('-timestamp')
 
     invoices = Invoice.objects.all().order_by('-uploaded_at')  # Order by upload date (optional)
 
@@ -356,6 +357,7 @@ def product_enhancement(request):
         'vendor_short_names': vendor_short_names,
     }
     return render(request, 'invoice/product_enhancement.html', context)
+
 @login_required(login_url='loginPage')
 def get_classification_details(request, classification_id):
     try:

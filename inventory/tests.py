@@ -211,7 +211,6 @@ class DirectUploadFileTest(TestCase):
         # Assert that the mock was called with the expected parameters
         mock_upload_file.assert_called_once_with(mock_file, '1', '1', '1')
 
-
 class InventoryQueueItemModelTest(TestCase):
     """
     Test suite for the InventoryQueueItem model.
@@ -306,6 +305,7 @@ class InventoryQueueItemModelTest(TestCase):
         time_diff = now - retrieved_item.timestamp
         # Check that the timestamp is recent (within 5 seconds)
         self.assertTrue(time_diff < datetime.timedelta(seconds=5), "Timestamp is not within the expected time range")
+
 class InventoryQueueItemFormTest(TestCase):
     """
     Provides a suite of tests for the InventoryQueueItemForm to ensure it accurately
@@ -420,10 +420,6 @@ class InventoryQueueItemFormTest(TestCase):
             self.assertEqual(saved_item.unit, "kg")
         else:
             self.fail(f'Form did not validate: {form.errors}')
-
-
-
-
 
 @override_settings(MEDIA_ROOT='/tmp/django_test')
 class FileUploadTests(TestCase):

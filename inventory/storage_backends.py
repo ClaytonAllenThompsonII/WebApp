@@ -26,9 +26,9 @@ logger = logging.getLogger(__name__)
 
 
 class AWSStorageBackend:
-    """Handles interactions with AWS S3 and DynamoDB for image storage and metadata management."""
+    """ Handles interactions with AWS S3 for image storage."""
     def __init__(self) -> None:
-        """Initialize the S3 and DynamoDB clients using environment variables for credentials""" 
+        """Initialize the S3 client using environment variables for credentials""" 
         try:
             self.s3_client = boto3.client(
                 's3',
@@ -39,66 +39,52 @@ class AWSStorageBackend:
                 )
             logger.debug(f"Initialized S3 client with region: {settings.AWS_REGION}")
             
-            self.dynamodb_client = boto3.client(
-                'dynamodb',
-                region_name=settings.AWS_REGION
-                )
-            logger.debug(f"Initialized DynamoDB client with region: {settings.AWS_REGION}")
+    
 
-            #set bucket and table names from environment variables
-            self.bucket_name = os.environ['S3_BUCKET_NAME'] # user image upload bucket  
-            self.table_name = os.environ['DYNAMODB_TABLE_NAME'] # image label bucket
+            # Bucket name from environment or settings
+            self.bucket_name = os.environ['S3_BUCKET_NAME'] # user image upload bucket
+            logger.info("AWS S3 client initialized successfully.")  
 
-            logger.info("AWS clients for S3 and DynamoDB initialized successfully")
         except Exception as e:
             logger.error("Error initializing AWS clients: %s", e)
             raise
 
 
-    def upload_file(self, file, user_id):
-        """Uploads a file to S3 and returns the generated filename"""
-        # Format the current timestamp
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        # Extract the file extension
-        file_extension = os.path.splitext(file.name)[1]
-        # Construct the filename string
-        filename = f"images/user_{user_id}_{timestamp}_{uuid.uuid4()}{file_extension}"
-
-        # Change this filename to represent the storage for the Training Data. This file name will be stored
-        # In S3 and Dynamo and will link the files for training. What is the best pattern to accomidate this
-        # Instead of saving the user_id in the path, we could add user_id and the restaurant group. 
-
-        logger.debug(f"Attempting to upload file {filename} to S3")
-
-        print("Attempting to upload file to S3:", filename) # Debug print
-    
+    def upload_file(self, file, user_id, group_id, cycle_id) -> str:
+        """
+        Uploads a file-like object to S3 and returns the generated S3 key.
+        
+        The S3 key follows the pattern:
+            inventory/group_<group_id>/user_<user_id>/cycle_<cycle_id>/YYYY/MM/DD/<uuid>.<ext>
+        
+        Parameters:
+            file: A file-like object (e.g., from request.FILES).
+            user_id: The ID of the user uploading the file.
+            group_id: The ID of the group (e.g., restaurant business) to which the user belongs.
+            cycle_id: The inventory cycle ID associated with this upload.
+        
+        Returns:
+            The S3 object key (string) for the uploaded file.
+        """
+        # Create a date-based folder (e.g., "2025/03/22")
+        date_str = datetime.now().strftime("%Y/%m/%d")
+        # Get the file extension (e.g., ".jpg")
+        ext = os.path.splitext(file.name)[1] or ''
+        # Generate a unique identifier
+        unique_id = str(uuid.uuid4())
+        
+        # Build the S3 key using the required hierarchy
+        s3_key = f"inventory/group_{group_id}/user_{user_id}/cycle_{cycle_id}/{date_str}/{unique_id}{ext}"
+        
+        logger.debug(f"Attempting to upload file to S3 with key: {s3_key}")
+        
         try:
-            self.s3_client.upload_fileobj(file, self.bucket_name, filename)
-            # Logging successful upload
-            logger.info(f"File {filename} successfully uploaded to S3")
-            print("File successfully uploaded to S3:", filename) # Debug Print
-            return filename
+            self.s3_client.upload_fileobj(file, self.bucket_name, s3_key)
+            logger.info(f"File successfully uploaded to S3: {s3_key}")
+            return s3_key
         except Exception as e:
             logger.error(f"Error occurred during file upload to S3: {e}")
-            print("Error occured during file upload to S3:", e) # Debug print
-            raise Exception(f'Error uploading file to S3: {e}') from e 
-            #will add less generic exception handling eventually. 
+            raise Exception(f"Error uploading file to S3: {e}") from e
     
 
-    def create_inventory_item(self, item_data):
-        """Creates an item in the DynamoDB table with the provided data
-        - Calls the put_item method on the DynamoDB client instance -> responsible for
-        creating or updating single item in DynamoDB table.
-        - Specifies the name of the DynamoDB table where the item should be stored.
-        - This value is retrieved from the environment variable DYNAMO_TABLE_NAME.
-         Provides the actual data to be inserted into the item. It's a dictionary containing
-          the attribute name and values from the new item. 
-        """
-        print("Attempting to successfully upload to dynamoDB:", item_data, self.table_name)
-        try:
-            self.dynamodb_client.put_item(TableName=self.table_name, Item=item_data)
-            print("Item_data successfully uploaded to dynamoDB:", item_data, self.table_name)
-        except Exception as e: 
-            raise Exception(f'Error creating item in DynamopDB: {e}') from e
-            #will add less generic exception handling eventually. 
-
+   

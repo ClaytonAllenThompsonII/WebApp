@@ -18,8 +18,8 @@ Requirements:
 import logging
 import json
 
-from django.db.models import Sum, Subquery, OuterRef, F, FloatField, Value
-from django.db.models.functions import Coalesce
+from django.db.models import Sum, Subquery, OuterRef, F, FloatField, Value, CharField
+from django.db.models.functions import Coalesce, Cast, Concat
 from django.views.decorators.http import require_POST
 from django.conf import settings
 
@@ -27,6 +27,8 @@ from django.db.models.functions import Cast
 from django.db import IntegrityError, DatabaseError
 from django.http import JsonResponse
 from django.utils import timezone
+from django.utils.safestring import mark_safe
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -39,7 +41,7 @@ from django.utils.safestring import mark_safe
 from invoice.models import ConsolidatedGL, ProcessedProduct, ProcessedLineItem, ProcessedInvoice, GLLevel1, GLLevel2, GLLevel3
 
 
-from .forms import InventoryDataCollectionForm
+from .forms import InventoryQueueItemForm
 from .storage_backends import AWSStorageBackend
 
 
@@ -53,135 +55,6 @@ logger = logging.getLogger(__name__)
     #return render(request, 'inventory/inventory.html')
 
 
-@login_required(login_url='loginPage')
-def inventory_view(request):
-    """ 
-    Render and process the inventory data collection form.
-
-    This view handles both GET and POST requests. On GET, it renders the form for
-    inventory data submission. On POST, it processes the form data, including image
-    uploads and classification, and saves the data to the database and AWS services.
-     """
-    print("Entered inventory_view function")  # Debug print
-    if request.method == 'POST':
-        print("POST request received")
-        form = InventoryDataCollectionForm(request.POST, request.FILES) #Include request.FILES for image handling
-        if form.is_valid():
-            print("Form is valid. Processing the form")
-            storage_backend = AWSStorageBackend() # instantiate storage backend.
-            inventory_item = form.save(commit=False) # Create model instance without saving.
-            inventory_item.user = request.user # set the user here
-            print(f"Selected GL Level 1 ID: {inventory_item.gl_level_1_id}")
-            print(f"Selected GL Level 2 ID: {inventory_item.gl_level_2_id}")
-            print(f"Selected GL Level 3 ID: {inventory_item.gl_level_3_id}")
-            print(f"Selected Product ID: {inventory_item.product_id}")
-
-            # Ensure size and unit fields are captured
-            inventory_item.size = form.cleaned_data.get('size')
-            inventory_item.unit = form.cleaned_data.get('unit')
-
-            # Debug prints for size and unit
-            print(f"Size received: {inventory_item.size}")
-            print(f"Unit received: {inventory_item.unit}")
-
-            # Set the name fields based on the selected objects
-            if inventory_item.gl_level_1_id:
-                gl1 = ConsolidatedGL.objects.filter(gl1_id=inventory_item.gl_level_1_id).first()
-                if gl1:
-                    inventory_item.gl_level_1_name = gl1.gl1_name
-
-            if inventory_item.gl_level_2_id:
-                gl2 = ConsolidatedGL.objects.filter(gl2_id=inventory_item.gl_level_2_id).first()
-                if gl2:
-                    inventory_item.gl_level_2_name = gl2.gl2_name
-
-            if inventory_item.gl_level_3_id:
-                gl3 = ConsolidatedGL.objects.filter(gl3_id=inventory_item.gl_level_3_id).first()
-                if gl3:
-                    inventory_item.gl_level_3_name = gl3.gl3_name
-
-            if inventory_item.product_id:
-                product = Product.objects.filter(product_id=inventory_item.product_id).first()
-                if product:
-                    inventory_item.product_name = product.generated_product_name  # Corrected line
-
-            inventory_item.save()
-            
-
-            try:
-                # Upload image to S3 and get filename
-                filename = storage_backend.upload_file(form.cleaned_data['image'], user_id=request.user.id)
-                inventory_item.filename = filename
-
-                # Prepare and store metadata in DynamoDB
-                item_data = {
-                    'inventory_item_id': {'S': str(inventory_item.inventory_item_id)},  # Include inventory_item_id
-                    'filename': {'S': filename},
-                    'gl_level_1_id': {'S': str(inventory_item.gl_level_1_id)},
-                    'gl_level_1_name': {'S': inventory_item.gl_level_1_name},
-                    'gl_level_2_id': {'S': str(inventory_item.gl_level_2_id)},
-                    'gl_level_2_name': {'S': inventory_item.gl_level_2_name},
-                    'gl_level_3_id': {'S': str(inventory_item.gl_level_3_id)},
-                    'gl_level_3_name': {'S': inventory_item.gl_level_3_name},
-                    'product_id': {'S': str(inventory_item.product_id)},
-                    'product_name': {'S': inventory_item.product_name},
-                    'size': {'N': str(inventory_item.size) if inventory_item.size else '0'},
-                    'unit': {'S': inventory_item.unit if inventory_item.unit else ''},
-                    'timestamp': {'S': inventory_item.timestamp.strftime('%Y-%m-%d %H:%M:%S')},
-                    'user_id': {'N': str(inventory_item.user.id)}  # Assuming user ID is a number
-                }
-                print("Attempting to create inventory item in DynamoDB")  # Debug print
-                storage_backend.create_inventory_item(item_data)
-
-                try:
-                    inventory_item.save()  # Save model instance with S3 filename
-                    print("Inventory item created and saved")  # Debug print
-                except IntegrityError:
-                    # This might happen if there's a duplicate entry, for instance
-                    messages.error(request, "This item already exists.")
-                    return redirect('inventory_app')  # Redirect to a safe page
-                except DatabaseError:
-                    # For other database-related issues
-                    messages.error(request, "There was a problem saving the item. Please try again.")
-                    return redirect('inventory_app')  # Redirect to a safe page    
-
-                messages.success(request, f'Inventory item uploaded successfully on {timezone.localtime().strftime("%Y-%m-%d %H:%M:%S")}.')
-                return redirect('inventory_app')  # Redirect back to the form
-                #logger.info("file upload successful: %s", filename)
-            
-            except BotoCoreError as e:
-                # Handle low-level exceptions from botocore
-                logger.error(f"Botocore error during file upload to S3: {e}")
-                messages.error(request, "There was a problem with the file upload. Please try again.")
-                return redirect('inventory_app')  # Redirect back to the inventory form
-
-            except ClientError as e:
-                # Handle client errors from boto3's client methods
-                logger.error(f"Client error during file upload to S3: {e}")
-                messages.error(request, "There was a problem with the file upload service. Please try again.")
-                return redirect('inventory_app')  # Redirect back to the inventory form
-
-            except Exception as e:
-                print(f"Error occurred: {e}")  # Debug print to log the exception
-                messages.error(request, f'Error uploading inventory item: {e}')
-                return redirect('inventory_app')  # Redirect back to the inventory form
-        else:
-            print("Form is invalid")
-            print(form.errors)  # Print errors to debug
-            messages.error(request, 'Invalid form submission. Please correct the errors.')  # Handle invalid form
-    else:
-        form = InventoryDataCollectionForm()
-
-   
-    # Query all GL Level 1 instances to pass to the template
-    gl_level1_objects = ConsolidatedGL.objects.values('gl1_id', 'gl1_name').distinct()
-
-
-    # Update the context to include GL Level 1 objects along with the form
-    context = {'form': form,
-                'gl_level1_objects': gl_level1_objects,
-                }
-    return render(request, 'inventory/training_data.html', context)
 
 @login_required(login_url='loginPage')
 def get_gl_level_2(request):
@@ -249,11 +122,6 @@ def get_products(request):
         # Return an error message if gl3_id is not provided
         return JsonResponse({'error': 'GL3 ID not provided'}, status=400)
 ################################################## Ver.1 ^ 
-
-
-
-
-
 
 
 @login_required(login_url='loginPage')
@@ -402,6 +270,63 @@ def load_line_items(request):
 
 @login_required(login_url='loginPage')
 def product_impact_index(request):
+    # Step 1: Aggregate total spend per product using ProcessedLineItem.
+    product_spend_subquery = (
+        ProcessedLineItem.objects
+        .filter(product_id=OuterRef('product_id'))
+        .values('product_id')
+        .annotate(total_spend=Sum('price'))
+        .values('total_spend')
+    )
+
+    # Step 2: Annotate each ProcessedProduct with its total spend and an associated gl3_id.
+    products = ProcessedProduct.objects.annotate(
+        total_spend=Subquery(product_spend_subquery),
+        gl3_id=Subquery(
+            ProcessedLineItem.objects
+            .filter(product_id=OuterRef('product_id'))
+            .values('gl3_id')[:1]  # Get the first associated gl3_id
+        )
+    ).filter(total_spend__isnull=False)
+
+    # Step 3: Annotate GL details from ConsolidatedGL and convert total_spend to float.
+    products = products.annotate(
+        gl1_name=Subquery(
+            ConsolidatedGL.objects.filter(gl3_id=OuterRef('gl3_id')).values('gl1_name')[:1]
+        ),
+        gl2_name=Subquery(
+            ConsolidatedGL.objects.filter(gl3_id=OuterRef('gl3_id')).values('gl2_name')[:1]
+        ),
+        gl3_name=Subquery(
+            ConsolidatedGL.objects.filter(gl3_id=OuterRef('gl3_id')).values('gl3_name')[:1]
+        ),
+        total_spend_float=Cast('total_spend', output_field=FloatField())
+    )
+
+    # Step 4: Annotate a computed display name (brand + item_description).
+    products = products.annotate(
+        display_name=Concat('brand', Value(' '), 'item_description', output_field=CharField())
+    )
+
+    # Step 5: Order products by total spend in descending order.
+    products = products.order_by('-total_spend')
+
+    # Step 6: Prepare data for the heatmap visualization.
+    product_spend_data = products.values(
+        'product_id',
+        'display_name',       # Computed name field
+        'item_description',
+        'total_spend_float'   # Float version of total spend
+    )
+
+    product_spend_data_json = mark_safe(json.dumps(list(product_spend_data)))
+
+    # Step 7: Render the template with the context.
+    context = {
+        'product_spend': products,
+        'product_spend_data': product_spend_data_json
+    }
+    return render(request, 'inventory/product_impact_index.html', context)
     # Step 1: Aggregate total spend per product_id from ProcessedLineItem
     product_spend_subquery = (
         ProcessedLineItem.objects

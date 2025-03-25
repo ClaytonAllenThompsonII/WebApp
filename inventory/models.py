@@ -8,9 +8,8 @@ from invoice.models import ProcessedProduct, GLLevel1, GLLevel2, GLLevel3
 class InventoryQueueItem(models.Model):
     inventory_item_id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, db_index=True)
-    image = models.ImageField(upload_to='images/')
-    filename = models.CharField(max_length=255)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    filename = models.CharField(max_length=255) # S3 key
+    timestamp = models.DateTimeField(auto_now_add=True) 
     gl_level_1 = models.ForeignKey(GLLevel1, null=True, blank=True, on_delete=models.SET_NULL, related_name='inventory_queue_items')
     gl_level_2 = models.ForeignKey(GLLevel2, null=True, blank=True, on_delete=models.SET_NULL, related_name='inventory_queue_items')
     gl_level_3 = models.ForeignKey(GLLevel3, null=True, blank=True, on_delete=models.SET_NULL, related_name='inventory_queue_items')
@@ -33,6 +32,7 @@ class InventoryCollectionCycle(models.Model):
     cycle_id = models.BigAutoField(primary_key=True)  # Primary key for collection cycle
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)  # Link to user
     created_at = models.DateTimeField(auto_now_add=True)  # Auto-generated timestamp when the cycle is created
+    # add start, end fields, diff to time runs. We want to gamify this app. 
 
     def __str__(self):
         return f'Cycle {self.cycle_id} - {self.user.username} ({self.created_at})'

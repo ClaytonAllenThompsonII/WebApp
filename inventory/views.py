@@ -196,15 +196,38 @@ def save_inventory_data(request):
     user = request.user
 
     # Retrieve the active inventory cycle
-    active_cycle = InventoryCollectionCycle.objects.filter(user=user).latest('created_at')
+    try:
+        active_cycle = InventoryCollectionCycle.objects.filter(user=user).latest('created_at')
+    except InventoryCollectionCycle.DoesNotExist:
+        return JsonResponse({'error': 'No active inventory cycle found.'}, status=400)
 
-    # Create a new InventoryQueueItem
+    # Instantiate the S3 storage backend
+    storage_backend = AWSStorageBackend()
+    
+    # Retrieve group_id from user's profile
+    group_id = user.profile.group.id if hasattr(user, 'profile') and user.profile.group else None
+    if not group_id:
+        return JsonResponse({'error': 'User group information not available.'}, status=400)
+    
+    # Upload image to S3 and get S3 key (passing product_id as well)
+    try:
+        s3_key = storage_backend.upload_file(
+            image, 
+            user_id=user.id, 
+            group_id=group_id, 
+            cycle_id=active_cycle.cycle_id, 
+            product_id=product_id
+        )
+    except (BotoCoreError, ClientError, Exception) as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+    # Create a new InventoryQueueItem, storing the S3 key in the filename field
     inventory_item = InventoryQueueItem.objects.create(
         user=user,
         product_id=product_id,
         size=size,
         unit=unit,
-        image=image,
+        filename=s3_key,  # S3 key is stored here
         inventory_cycle=active_cycle
     )
 
@@ -212,18 +235,19 @@ def save_inventory_data(request):
 
 
 
+
 @login_required(login_url='loginPage')
 @require_POST
-def start_inventory_cycle(request):
+def start_inventory_cycle(request): # need to add timing mechanism, to gamify. 
     if request.method == 'POST':
         new_cycle = InventoryCollectionCycle.objects.create(user=request.user)
         return JsonResponse({'success': True, 'cycle_id': new_cycle.id})
-    return JsonResponse({'success': False}, status=400)
+    return JsonResponse({'success': False}, status=400) 
 
 
 @login_required(login_url='loginPage')
 @require_POST
-def commit_inventory_cycle(request):
+def commit_inventory_cycle(request): # need to have end time, to gamify. 
     user = request.user
     active_cycle = InventoryCollectionCycle.objects.filter(user=user).latest('created_at')
     

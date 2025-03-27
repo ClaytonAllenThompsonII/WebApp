@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(data => {
                     stopLoadingBar();
 
+                    // Save classification results in the hidden input for later submission
+                    document.getElementById('classification_result').value = JSON.stringify(data.results);
+                    
                     resultsList.innerHTML = '';
                     if (data.results && data.results.length > 0) {
                         classificationResults.style.display = 'block';

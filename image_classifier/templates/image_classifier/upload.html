@@ -29,6 +29,8 @@
             <form method="post" enctype="multipart/form-data" class="upload-form">
                 {% csrf_token %}
                 <input type="file" id="id_image" accept="image/*" style="display: none;"> <!-- Hidden input -->
+                <input type="hidden" id="classification_result" name="classification_result" value=""> <!-- Hidden field for classification results -->
+
                 <div class="form-group file-upload" id="file-upload">
                     <span id="upload-text">Drag image file here or click to browse from your device</span>
                 </div>

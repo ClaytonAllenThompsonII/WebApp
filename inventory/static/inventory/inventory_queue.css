@@ -405,3 +405,48 @@ button {
     transform: scale(0.98); /* Slightly compress on click */
 }
 
+
+/* Timer Container Styles */
+#inventory-timer {
+    /* Make it more prominent */
+    display: inline-block;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+
+    /* Layout & Box Model */
+    background-color: #fafafa;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 16px;
+    margin-bottom: 10px;
+    text-align: center;
+
+    /* Subtle Shadow & Transition */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Hover Effect */
+#inventory-timer:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px); /* Slight lift on hover */
+}
+
+/* If you want the clock emoji to animate slightly */
+#inventory-timer .clock-emoji {
+    display: inline-block;
+    margin-right: 6px;
+    animation: gentle-wiggle 2s infinite ease-in-out;
+}
+
+/* Keyframes for a subtle wiggle effect */
+@keyframes gentle-wiggle {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(10deg);
+    }
+}

@@ -1,4 +1,37 @@
 // ===========================
+// Timer Functions
+// ===========================
+
+let timerInterval = null;
+let cycleStartTime = null;
+
+function startTimerFromOffset(startTimeStr) {
+    if (!startTimeStr) return; // No active cycle start provided
+    cycleStartTime = new Date(startTimeStr);
+    const timerElement = document.getElementById('inventory-timer');
+    timerElement.classList.remove('hidden'); // Make sure timer is visible
+    timerInterval = setInterval(() => {
+        const now = new Date();
+        const elapsedMs = now - cycleStartTime;
+        const totalSeconds = Math.floor(elapsedMs / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const displayMinutes = minutes.toString().padStart(2, '0');
+        const displaySeconds = seconds.toString().padStart(2, '0');
+        timerElement.innerHTML = `<span class="clock-emoji">⏱️</span>${displayMinutes}:${displaySeconds}`;
+    }, 1000);
+}
+
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    // Optionally hide the timer:
+    // document.getElementById('inventory-timer').classList.add('hidden');
+}
+
+// ===========================
 // Product Movement Functions
 // ===========================
 
@@ -19,7 +52,6 @@ function moveProductToStaging(button) {
         event.stopPropagation();  // Prevent event bubbling
     };
 }
-
 
 // Global function to move product to Staged Products
 function moveProductToStaged(productRow) {
@@ -45,7 +77,6 @@ function moveProductToUnstaged(productRow) {
 // ===========================
 // Collect and Submit Data
 // ===========================
-
 /**
  * Function to collect product data (size, unit, image) and send it to the server.
  * @param {number} productId - The ID of the product to collect data for.
@@ -103,7 +134,6 @@ function resetFormFields() {
 // ===========================
 // Event Handling for Sections
 // ===========================
-
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle expandable/collapsible sections
     const toggleSections = document.querySelectorAll('.toggle-section h3');
@@ -149,10 +179,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // --- Timer Initialization for Mid-Cycle Refresh ---
+    const timerElement = document.getElementById('inventory-timer');
+    const cycleStartStr = timerElement.dataset.cycleStart; // Should be set by the template if there's an active cycle
+    if (cycleStartStr) {
+        startTimerFromOffset(cycleStartStr);
+    }
+
     console.log('Staging JavaScript initialized.');
 });
-
-
 
 /**
  * Add row click event listeners for product selections in tables.
@@ -171,7 +206,6 @@ function addRowClickListener(tableBody) {
 // ===========================
 // Inventory Cycle Actions
 // ===========================
-
 /**
  * Function to start a new inventory cycle.
  */
@@ -186,7 +220,8 @@ document.getElementById('start-cycle-button').addEventListener('click', function
     .then(data => {
         if (data.success) {
             alert('Cycle started successfully!');
-            // Optionally, refresh the page or update the UI
+            // Reload page so the new cycle_start is injected into the timer element
+            location.reload();
         } else {
             alert('Error starting cycle.');
         }
@@ -208,7 +243,9 @@ document.getElementById('stage-cycle-button').addEventListener('click', function
     .then(data => {
         if (data.success) {
             alert('Cycle committed successfully!');
-            // Optionally, redirect or refresh the page
+            // Stop the timer and refresh the page so staged items are hidden
+            stopTimer();
+            location.reload();
         } else {
             alert('Error committing cycle.');
         }
@@ -233,12 +270,9 @@ function unstageAll(sectionId) {
     });
 }
 
-
-
 // ===========================
 // Loading Line Items
 // ===========================
-
 /**
  * Load line items based on product selection.
  * @param {number} productId - The ID of the selected product.
@@ -270,7 +304,3 @@ function loadLineItems(productId) {
         })
         .catch(error => console.error('Error loading line items:', error));
 }
-
-
-
-

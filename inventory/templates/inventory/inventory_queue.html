@@ -83,8 +83,13 @@
         <div class="collection-queue-column">
             <!-- Start Inventory Cycle -->
              <!-- Timer for Inventory Cycle -->
-            <div id="inventory-timer" class="inventory-timer hidden">⏱️00:00</div> <!-- Starts hidden, becomes visible on start -->
-
+             <div 
+             id="inventory-timer" 
+             class="inventory-timer hidden" 
+             data-cycle-start="{% if active_cycle_start %}{{ active_cycle_start|date:'c' }}{% endif %}"
+           >
+             ⏱️00:00
+           </div>
             <button id="start-cycle-button">Start Inventory Cycle</button>
             <div class="divider"></div>
 

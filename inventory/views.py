@@ -173,6 +173,10 @@ def inventory_queue_view(request):
     if active_cycle:
         staged_products = InventoryQueueItem.objects.filter(inventory_cycle=active_cycle).select_related('product__classification')
 
+    active_cycle_start = None
+    if active_cycle and not active_cycle.committed:
+        active_cycle_start = active_cycle.cycle_start
+
     context = {
         'prioritized_products': prioritized_products,  # Distinct classifications for unstaged products
         'selected_product': selected_product,
@@ -182,6 +186,7 @@ def inventory_queue_view(request):
         'user_id': user.id,
         'user_group': profile.group.name if profile and profile.group else 'None',
         'active_cycle': active_cycle,
+        'active_cycle_start': active_cycle_start,
     }
 
     return render(request, 'inventory/inventory_queue.html', context)
@@ -220,6 +225,13 @@ def save_inventory_data(request):
         )
     except (BotoCoreError, ClientError, Exception) as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+    # Retrieve classification results from the hidden input
+    classification_result_str = request.POST.get('classification_result')
+    try:
+        classification_result = json.loads(classification_result_str) if classification_result_str else None
+    except json.JSONDecodeError:
+        classification_result = None
 
     # Create a new InventoryQueueItem, storing the S3 key in the filename field
     inventory_item = InventoryQueueItem.objects.create(
@@ -228,6 +240,7 @@ def save_inventory_data(request):
         size=size,
         unit=unit,
         filename=s3_key,  # S3 key is stored here
+        classification_result=classification_result,
         inventory_cycle=active_cycle
     )
 
@@ -238,10 +251,13 @@ def save_inventory_data(request):
 
 @login_required(login_url='loginPage')
 @require_POST
-def start_inventory_cycle(request): # need to add timing mechanism, to gamify. 
+def start_inventory_cycle(request):  # Added timing mechanism for gamification.
     if request.method == 'POST':
-        new_cycle = InventoryCollectionCycle.objects.create(user=request.user)
-        return JsonResponse({'success': True, 'cycle_id': new_cycle.id})
+        new_cycle = InventoryCollectionCycle.objects.create(
+            user=request.user,
+            cycle_start=timezone.now()  # Set the start time
+        )
+        return JsonResponse({'success': True, 'cycle_id': new_cycle.cycle_id})
     return JsonResponse({'success': False}, status=400) 
 
 
@@ -253,6 +269,7 @@ def commit_inventory_cycle(request): # need to have end time, to gamify.
     
     # Mark the cycle as committed
     active_cycle.committed = True
+    active_cycle.cycle_end = timezone.now()
     active_cycle.save()
 
     # Optionally, perform other actions here (e.g., generate reports, trigger notifications)

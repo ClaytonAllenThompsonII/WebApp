@@ -183,8 +183,19 @@
                 <h3>Commit Summary</h3>
                 <div class="commit-summary-details">
                     <p><strong>Description:</strong> Inventory cycle completed for the specified products.</p>
-                    <p><strong>Date:</strong> 08/30/2024</p>
-                    <p><strong>User:</strong> {{ user_name }} (ID: {{ user_id }}) <strong>| Group:</strong> {{ user_group }}</p>
+                    {% if active_cycle %}
+                    <p><strong>Cycle ID:</strong> {{ active_cycle.cycle_id }}</p>
+
+                        <p><strong>Cycle Start:</strong> {{ active_cycle.cycle_start|date:"M d, Y h:i A" }}</p>
+                        <p><strong>Cycle End:</strong> {{ active_cycle.cycle_end|date:"M d, Y h:i A" }}</p>
+                    {% else %}
+                        <p><strong>Date:</strong> Not available</p>
+                    {% endif %}
+                    <p><strong> Restaurant |</strong> {{ active_cycle.user.profile.group.name|default:"N/A" }}
+                    </p>
+                    <p>
+                        <strong>User |</strong> {{ active_cycle.user.username }} (ID: {{ active_cycle.user.id }})
+                    </p>
                     <p><strong>Total Value:</strong> $500 (example) ∑ Staged Products</p>
                 </div>
             </section>

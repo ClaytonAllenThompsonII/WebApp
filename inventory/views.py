@@ -164,7 +164,11 @@ def inventory_queue_view(request):
 
     # Get the active inventory cycle
     try:
-        active_cycle = InventoryCollectionCycle.objects.filter(user=user).latest('created_at')
+        active_cycle = (
+            InventoryCollectionCycle.objects
+            .filter(user=user, committed=False)
+            .latest('created_at')
+        )
     except InventoryCollectionCycle.DoesNotExist:
         active_cycle = None
 

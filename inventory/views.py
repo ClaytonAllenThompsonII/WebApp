@@ -1,19 +1,33 @@
 """
 Inventory Data Collection Views
 
-This module provides Django views for handling inventory data collection,
-image uploads, and product classification. Key features include:
-- Rendering and processing inventory data collection forms.
-- Dynamic cascading dropdowns for GL levels and product selection.
-- Integration with AWS services for file storage and metadata management.
+This module provides Django views for handling inventory data collection, image uploads,
+and product classification within the context of an inventory management system. The views support
+inventory cycle management, dynamic product and classification selection, and integration with AWS 
+for file storage and metadata management.
+
+Key Features:
+- Dynamic forms for inventory data collection, including product size, unit, and classification.
+- Cascading dropdowns for GL Level 1, 2, and 3 categories, with AJAX-based population.
+- Integration with AWS S3 for secure image uploads and metadata storage.
+- Management of inventory cycles, including the ability to start, commit, and resume cycles.
+- Tracking and storing inventory items related to active cycles and committed cycles.
 
 Key Views:
-- `inventory_view`: Handles the display and processing of the inventory form.
-- `get_gl_level_2`, `get_gl_level_3`, `get_products`: AJAX views for dynamic dropdown population.
+- `inventory_queue_view`: Displays and manages the inventory queue, allowing users to see prioritized products, staged items, and selected product details.
+- `save_inventory_data`: Saves new inventory data including size, unit, and uploaded images, and associates them with the active inventory cycle.
+- `start_inventory_cycle`: Initializes a new inventory collection cycle for the user.
+- `commit_inventory_cycle`: Marks the inventory cycle as complete and committed, finalizing data entry for the cycle.
+- `manage_inventory_cycles`: Displays all inventory cycles associated with the user, including the ability to resume or delete uncommitted cycles.
+- `get_gl_level_2`, `get_gl_level_3`, `get_products`: AJAX views for dynamically populating dropdowns based on GL level selections.
+- `load_line_items`: Retrieves and displays detailed line items related to a selected product.
+- `product_impact_index`: Calculates and displays the financial impact of products in terms of total spend, with support for visualization.
 
 Requirements:
-- Django's authentication system for user access control.
-- Dependencies on external models (GL levels, products) and storage backends (AWS S3, DynamoDB).
+- Django authentication system for user access control.
+- Integration with external models (ConsolidatedGL, ProcessedProduct, ProcessedLineItem) for GL categorization and product information.
+- AWS S3 for image storage and DynamoDB for metadata handling.
+- Dependencies on models for managing inventory cycles and items (InventoryCollectionCycle, InventoryQueueItem).
 """
 import logging
 import json
@@ -35,17 +49,12 @@ from django.contrib import messages
 from botocore.exceptions import BotoCoreError, ClientError
 from django.utils.safestring import mark_safe
 
-
-
-
 from invoice.models import ConsolidatedGL, ProcessedProduct, ProcessedLineItem, ProcessedInvoice, GLLevel1, GLLevel2, GLLevel3
-
+from .models import InventoryQueueItem, InventoryCollectionCycle
 
 from .forms import InventoryQueueItemForm
 from .storage_backends import AWSStorageBackend
 
-
-from .models import InventoryQueueItem, InventoryCollectionCycle
 
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -251,8 +260,6 @@ def save_inventory_data(request):
     return JsonResponse({'message': 'Data successfully saved.'})
 
 
-
-
 @login_required(login_url='loginPage')
 @require_POST
 def start_inventory_cycle(request):  # Added timing mechanism for gamification.
@@ -315,6 +322,7 @@ def load_line_items(request):
 
 @login_required(login_url='loginPage')
 def product_impact_index(request):
+
     # Step 1: Aggregate total spend per product using ProcessedLineItem.
     product_spend_subquery = (
         ProcessedLineItem.objects
@@ -425,3 +433,42 @@ def product_impact_index(request):
         'product_spend_data': product_spend_data_json
     }
     return render(request, 'inventory/product_impact_index.html', context)
+
+
+
+@login_required(login_url='loginPage')
+def manage_inventory_cycles(request):
+    """
+    Displays all inventory cycles for the current user.
+    Uncommitted cycles are shown with actions to resume or delete them.
+    Committed cycles are listed as read-only.
+    """
+    cycles = InventoryCollectionCycle.objects.filter(user=request.user).order_by('-created_at')
+    context = {
+        'cycles': cycles,
+    }
+    return render(request, 'inventory/manage_inventory_cycles.html', context)
+
+@login_required(login_url='loginPage')
+@require_POST
+def resume_inventory_cycle(request, cycle_id):
+    """
+    Resumes the selected uncommitted cycle.
+    In a single-active approach, this could be stored in the session or a user profile field.
+    For simplicity, we'll store it in the session.
+    """
+    cycle = get_object_or_404(InventoryCollectionCycle, cycle_id=cycle_id, user=request.user, committed=False)
+    request.session['active_cycle_id'] = cycle_id  # Save active cycle id in session
+    return JsonResponse({'success': True, 'message': f'Cycle {cycle_id} resumed.'})
+
+@login_required(login_url='loginPage')
+@require_POST
+def delete_inventory_cycle(request, cycle_id):
+    """
+    Deletes an uncommitted cycle. Only uncommitted cycles can be deleted.
+    """
+    print("delete_inventory_cycle got called!")  # Quick debug
+
+    cycle = get_object_or_404(InventoryCollectionCycle, cycle_id=cycle_id, user=request.user, committed=False)
+    cycle.delete()
+    return JsonResponse({'success': True, 'message': f'Cycle {cycle_id} deleted.'})

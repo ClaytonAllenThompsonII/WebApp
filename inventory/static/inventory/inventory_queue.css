@@ -2,11 +2,11 @@
 .inventory-layout {
     display: flex;
     justify-content: space-between;
-    margin: 20px;
-    gap: 20px; /* Keep to maintain spacing between columns */
-    max-width: 1700px;
-    max-height: 1500px; /* Check if this height constraint is necessary */
-}
+    margin: 20px auto; /* auto left/right to center */
+    padding: 0 20px;   /* horizontal padding for edges */
+    gap: 20px;
+    max-width: 1800px; /* or your preferred max width */
+  }
 /* Header Styles */
 .inventory-header {
     background-color: #f5f5f5; /* Soft neutral background */
@@ -23,7 +23,7 @@
 }
 
 .inventory-header h1 {
-    font-family: 'Helvetica Neue', sans-serif; /* Minimalist, clean font */
+    font-family: sans-serif, 'Helvetica Neue' ; /* Minimalist, clean font */
     font-size: 2rem; /* Larger size but not overwhelming */
     font-weight: 400; /* Lighter weight for elegance */
     color: #333; /* Soft black for readability */
@@ -56,7 +56,7 @@
 
 /* Data Visuals Column */
 .data-visuals-column {
-    flex: 0 0 45%; /* Keep, defines the width of this column */
+    flex: 0 0 40%; /* Keep, defines the width of this column */
     background-color: #ffffff;
     padding: 10px;
     border-radius: 8px;
@@ -76,6 +76,13 @@
     border-radius: 4px;
     border: 1px solid #ddd;
     overflow-y: auto; /* Keep for scrolling within visual sections */
+}
+
+/* Override the default overflow for the bottom section */
+#bottom-section.data-visual-section {
+    overflow-y: visible !important;
+    /* If there's any max-height set, remove or override it as well: */
+    max-height: none !important;
 }
 
 /* Line Items Table Styling */
@@ -106,7 +113,7 @@
 
 /* General Styling for the Collection Queue */
 .collection-queue-column {
-    flex: 0 0 25%; /* Defines 25% of page width */
+    flex: 0 0 30%; /* Defines 25% of page width */
     background-color: #ffffff;
     padding: 10px;
     border-radius: 8px;
@@ -249,36 +256,51 @@ button {
     transition: background-color 0.3s ease, transform 0.3s ease; /* Smooth transition for hover effects */
 }
 
-/* Stage Product Button */
+/* General button styling */
 .stage-button {
-    background-color: #007bff;
-    color: white;
-    display: none; /* Hidden by default in Unstaged Products */
+    display: none;               /* Hidden by default; only shown on row hover */
+    background-color: #e0f4ff;   /* Light blue background */
+    border: 2px solid #0056b3;   /* Solid darker blue border */
+    color: #0056b3;              /* Match border color for text */
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Show the Stage Product button on row hover */
+/* Reveal the button when hovering on the row */
 .unstaged-products-table tr:hover .stage-button {
-    display: inline-block;
-    transform: scale(1.05); /* Slightly increase the button size on hover for better UX */
+    display: inline-block; /* Appear on row hover */
 }
 
-/* Additional Styling for Stage Button Hover Effect */
+/* On button hover, go to a darker blue background, white text, with a subtle glow */
 .stage-button:hover {
-    background-color: #0056b3;
-    transform: scale(1.1); /* Further scale on hover */
+    background-color: #0056b3;            /* Solid darker blue */
+    color: #ffffff;                       /* White text */
+    transform: scale(1.05);               /* Slight pop */
+    box-shadow: 0 0 6px rgba(0, 86, 179, 0.5); /* Soft glow around the button */
 }
 
-/* +Add Data Button */
+/* +Add Data Button  */
 .collect-data-button {
-    background-color: #28a745;
-    color: white;
-    display: inline-block; /* Always visible in Staging Products */
+    display: inline-block;         /* Always visible in Staging Products */
+    background-color: #e6f9e6;       /* Light green background */
+    border: 2px solid #218838;       /* Solid darker green border */
+    color: #218838;                 /* Dark green text matching the border */
+    padding: 5px 10px;              /* Balanced padding for clickability */
+    border-radius: 4px;             /* Smooth, rounded corners */
+    font-size: 0.75rem;             /* Refined font size */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Hover effect for "+Add Data" button */
+/* Hover state: darker background, white text, slight scaling and glow */
 .collect-data-button:hover {
-    background-color: #0a3914;
-    transform: scale(1.1); /* Add a slight scaling effect */
+    background-color: #218838;             /* Dark green background on hover */
+    color: #ffffff;                        /* White text for contrast */
+    transform: scale(1.05);                /* Slight scale for a pop effect */
+    box-shadow: 0 0 6px rgba(33, 136, 56, 0.5); /* Soft green glow */
 }
 
 /* Hidden Unstage and Stage Buttons */
@@ -320,27 +342,7 @@ button {
     margin: 5px 0;
 }
 
-/* Start Inventory Cycle Button */
-#start-cycle-button {
-    margin-top: 10px;
-    padding: 6px 12px;  /* Smaller padding */
-    background-color: #f0f0f0;  /* Subtle, neutral background color */
-    color: #333;  /* Dark gray text for subtlety */
-    border: 1px solid #ccc;  /* Very light border to maintain minimalist design */
-    border-radius: 2px;  /* Minimal border radius */
-    cursor: pointer;
-    font-size: 0.85rem;  /* Smaller font size for a refined look */
-    text-align: left;  /* Align text to the left */
-    display: block;  /* Full width to align with the surrounding layout */
-    width: 100%;  /* Ensure the button takes up the full width */
-    transition: background-color 0.3s ease, color 0.3s ease;  /* Smooth transition for hover effects */
-}
 
-/* Hover effect for Start Inventory Cycle Button */
-#start-cycle-button:hover {
-    background-color: #e0e0e0;  /* Subtle darkening on hover */
-    color: #111;  /* Slightly darker text color on hover */
-}
 
 /* Align Unstage All buttons to the right of the section header */
 .unstage-all-button {
@@ -381,30 +383,39 @@ button {
 
 
 
-/* Stage Cycle Button */
-#stage-cycle-button {
-    margin-top: 10px;
-    padding: 10px 20px;
-    background-color: #e0e0e0; /* Light grey background */
-    color: #333; /* Dark grey text */
-    border: 1px solid #666; /* Dark grey border */
-    border-radius: 4px;
+/* Minimal "Dieter Rams–inspired" button style */
+.dieter-button {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.9rem;
+    color: #333;
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    padding: 8px 16px;
     cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin: 6px 0; /* small vertical spacing */
+  }
+  
+/* Hover effect: slightly darker background & subtle lift */
+.dieter-button:hover {
+    background-color: #efefef;
+    transform: translateY(-1px);
+  }
+  
+/* Active (click) effect: a bit darker background and a small scale for tactile feedback */
+.dieter-button:active {
+    background-color: #e5e5e5;
+    transform: scale(0.98);
+  }
 
-/* Hover effect */
-#stage-cycle-button:hover {
-    background-color: #d4d4d4; /* Slightly darker grey on hover */
-    border-color: #333; /* Even darker grey border */
+  /* If you want both buttons to stack full-width */
+#start-cycle-button,
+#manage-cycles-button {
+  display: block;
+  width: 100%;
+  text-align: center;
 }
-
-#stage-cycle-button:active {
-    background-color: #999; /* Even darker grey for active click */
-    transform: scale(0.98); /* Slightly compress on click */
-}
-
 
 /* Timer Container Styles */
 #inventory-timer {

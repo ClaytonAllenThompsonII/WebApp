@@ -7,18 +7,30 @@ let cycleStartTime = null;
 
 function startTimerFromOffset(startTimeStr) {
     if (!startTimeStr) return; // No active cycle start provided
+
     cycleStartTime = new Date(startTimeStr);
     const timerElement = document.getElementById('inventory-timer');
     timerElement.classList.remove('hidden'); // Make sure timer is visible
+
     timerInterval = setInterval(() => {
         const now = new Date();
         const elapsedMs = now - cycleStartTime;
+        
+        // Convert elapsed milliseconds into total seconds
         const totalSeconds = Math.floor(elapsedMs / 1000);
-        const minutes = Math.floor(totalSeconds / 60);
+
+        // Derive hours, minutes, and seconds
+        const hours   = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
+
+        // Pad each value with leading zeros for a cleaner look
+        const displayHours   = hours.toString().padStart(2, '0');
         const displayMinutes = minutes.toString().padStart(2, '0');
         const displaySeconds = seconds.toString().padStart(2, '0');
-        timerElement.innerHTML = `<span class="clock-emoji">⏱️</span>${displayMinutes}:${displaySeconds}`;
+
+        // Update the timer text, e.g. "⏱️01:05:07"
+        timerElement.innerHTML = `<span class="clock-emoji">⏱️</span>${displayHours}:${displayMinutes}:${displaySeconds}`;
     }, 1000);
 }
 

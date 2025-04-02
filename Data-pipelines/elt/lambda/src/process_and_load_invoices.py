@@ -1,3 +1,5 @@
+""" Old Lambda function decide what to do with this. Currently not needed. """
+
 import os
 import logging
 import json

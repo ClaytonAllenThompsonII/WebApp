@@ -126,19 +126,23 @@ header h1::after {
     margin-top: 20px; /* Add space between the scale and button */
 }
 
-#inventory-size button {
-    background-color: #007bff;
-    color: #fff;
-    padding: 6px 10px;
-    border: none;
-    border-radius: 5px;
+/* IoT Scale Button (similar to .stage-button) */
+.iot-scale-button {
+    background-color: #007bff; /* Same as .stage-button default */
+    color: #fff;              /* White text */
+    font-size: 0.90rem;       /* Matches .stage-button font-size */
+    border-radius: 3px;
     cursor: pointer;
-    font-size: 12px;
-    transition: background-color 0.3s ease;
+    border: none;
+    padding: 5px 10px;        /* Same spacing as .stage-button */
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    display: inline-block;    /* Always visible */
 }
 
-#inventory-size button:hover {
-    background-color: #0056b3;
+/* Hover effect for the IoT Scale button */
+.iot-scale-button:hover {
+    background-color: #0056b3; /* Darker shade on hover, same as .stage-button:hover */
+    transform: scale(1.2);    /* Slight zoom on hover */
 }
 
 /* Digital Scale Display */

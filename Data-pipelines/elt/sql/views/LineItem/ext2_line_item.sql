@@ -10,7 +10,38 @@ SELECT
     line_item_index,
     
     -- Extract product code
-    MAX(CASE WHEN type_text = 'PRODUCT_CODE' THEN vd_text ELSE NULL END) AS product_code,
+
+    COALESCE(
+    -- Primary: use PRODUCT_CODE if it’s non-empty
+    NULLIF(MAX(CASE WHEN type_text = 'PRODUCT_CODE' THEN vd_text END), ''),
+    
+    -- Check first for "fuel" in the expense row (case-insensitive)
+    CASE 
+        WHEN lower(MAX(CASE WHEN type_text = 'EXPENSE_ROW' THEN vd_text END)) LIKE '%fuel%' 
+        THEN 'FUEL_CHARGE'
+        ELSE NULL
+    END,
+    
+    -- Secondary: if not fuel, attempt to extract digits following "ITEM#:" from EXPENSE_ROW
+    CASE 
+        WHEN MAX(CASE WHEN type_text = 'EXPENSE_ROW' THEN vd_text END) ~* E'ITEM#:\\s*\\d+' 
+        THEN regexp_replace(
+                MAX(CASE WHEN type_text = 'EXPENSE_ROW' THEN vd_text END),
+                E'.*ITEM#:\\s*(\\d+).*',
+                E'\\1',
+                'i'
+             )
+        ELSE NULL
+    END,
+    
+    -- Tertiary: check for type_text = OTHER and ld_text = 'SARASO 21 Item ID'
+    NULLIF(MAX(CASE WHEN type_text = 'OTHER' AND ld_text = 'SARASO 21 Item ID' THEN vd_text END), ''),
+    
+    -- Final fallback: if nothing else produced a value, mark as TEXTRACT_FAILURE.
+    'TEXTRACT_FAILURE'
+) AS product_code,
+
+
     -- Extract item description, prioritizing 'ITEM' over 'EXPENSE_ROW'
       COALESCE(
         MAX(CASE WHEN type_text = 'ITEM' THEN regexp_replace(vd_text, '(.*)(ITEM#:.*)', '\1') ELSE NULL END), 

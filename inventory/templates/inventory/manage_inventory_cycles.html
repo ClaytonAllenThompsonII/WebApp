@@ -1,0 +1,142 @@
+{% extends 'users/main.html' %}
+{% load static %}
+{% block content %}
+<!-- Make sure csrf_token is rendered on the page -->
+<form style="display:none;">
+    {% csrf_token %}
+</form>
+
+<div class="manage-cycles-container">
+    <h1>Manage Inventory Cycles</h1>
+    <table class="cycles-table">
+        <thead>
+            <tr>
+                <th>Cycle ID</th>
+                <th>Cycle Start</th>
+                <th>Cycle End</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cycle in cycles %}
+            <tr>
+                <td>{{ cycle.cycle_id }}</td>
+                <td>
+                    {% if cycle.cycle_start %}
+                        {{ cycle.cycle_start|date:"SHORT_DATETIME_FORMAT" }}
+                    {% else %}
+                        Not Started
+                    {% endif %}
+                </td>
+                <td>
+                    {% if cycle.cycle_end %}
+                        {{ cycle.cycle_end|date:"SHORT_DATETIME_FORMAT" }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>
+                    {% if cycle.committed %}
+                        Committed
+                    {% else %}
+                        Uncommitted
+                    {% endif %}
+                </td>
+                <td>
+                    {% if not cycle.committed %}
+                        <button onclick="resumeCycle({{ cycle.cycle_id }});">Resume</button>
+                        <button onclick="deleteCycle({{ cycle.cycle_id }});">Delete</button>
+                    {% else %}
+                        <span>—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function resumeCycle(cycleId) {
+    fetch(`/inventory/cycles/${cycleId}/resume/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            // Redirect to the main inventory queue view so the resumed cycle is active.
+            window.location.href = '/inventory/queue';
+        } else {
+            alert('Error resuming cycle.');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function deleteCycle(cycleId) {
+    if (confirm("Are you sure you want to delete this uncommitted cycle?")) {
+        fetch(`/inventory/cycles/${cycleId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                // Reload the page to update the list
+                location.reload();
+            } else {
+                alert('Error deleting cycle.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+</script>
+
+<style>
+/* Basic styles for the cycles management page */
+.manage-cycles-container {
+    margin: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.cycles-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.cycles-table th, .cycles-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.cycles-table th {
+    background-color: #f2f2f2;
+}
+
+.cycles-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.cycles-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+button {
+    margin-right: 5px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+</style>
+{% endblock %}

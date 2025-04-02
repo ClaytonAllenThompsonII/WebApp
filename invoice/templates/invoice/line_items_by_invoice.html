@@ -150,9 +150,9 @@
                         {% else %}
                             <!-- Unmapped State -->
                             <button class="status-button unmapped product-button"
-                                    onclick="window.location.href='{% url 'edit_line_item' line_item.line_item_id %}'"
-                                    title="Map Product">
-                                Map Product
+                            onclick="window.location.href='{% url 'product_enhancement' %}?product_id={{ line_item.product.product_id }}'"
+                            title="Map Product">
+                            Map Product
                             </button>
                         {% endif %}
                     </td>

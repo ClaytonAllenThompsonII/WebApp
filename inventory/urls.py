@@ -39,4 +39,9 @@ urlpatterns = [
 
     # Example for product impact index
     path('product-impact-index/', views.product_impact_index, name='product_impact_index'),
+
+    # Inventory Cycle Management URLs
+    path('inventory/cycles/', views.manage_inventory_cycles, name='manage_inventory_cycles'),
+    path('inventory/cycles/<int:cycle_id>/resume/', views.resume_inventory_cycle, name='resume_inventory_cycle'),
+    path('inventory/cycles/<int:cycle_id>/delete/', views.delete_inventory_cycle, name='delete_inventory_cycle'),
 ]

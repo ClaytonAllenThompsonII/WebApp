@@ -53,24 +53,27 @@
     pointer-events: none;
 }
 
+/* Ensure the left column uses flex and has a max-height */
 .left-column {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    max-height: 100%; /* Use full height of the container */
-}
+    gap: 15px;
+    max-height: calc(100vh - 80px); /* adjust this value as needed */
+    overflow-y: auto;
+  }
 
 .static-section {
     margin-bottom: 20px; /* Add space between sections */
 }
 
+/* Set a fixed height for the PDF viewer */
 .pdf-viewer {
-    flex: 1;
-    height: 70%; /* Increase height for better viewing */
+    width: 100%;
+    height: 1900px; /* fixed height – adjust as needed */
     border: 1px solid #ddd;
     border-radius: 8px;
     overflow: hidden;
-}
+  }
 
     
 .pdf-viewer iframe {

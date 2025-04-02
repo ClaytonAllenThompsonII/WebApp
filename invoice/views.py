@@ -6,7 +6,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db.models import F
-from django.db.models import OuterRef, Subquery
+from django.db.models import OuterRef, Subquery, Sum
+from django.db.models.functions import Lower
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -276,31 +277,56 @@ def edit_line_item(request, line_item_id):
 # Product Views
 @login_required(login_url='loginPage')
 def product_enhancement(request):
-    # Prefetch related models for efficiency
+    # Build a subquery to retrieve the vendor short name from related line items
     vendor_subquery = ProcessedLineItem.objects.filter(
         product=OuterRef('pk'),
         invoice__vendor__vendor_short_name__isnull=False
     ).order_by('invoice__vendor__vendor_short_name').values('invoice__vendor__vendor_short_name')[:1]
 
+    # Annotate each product with its vendor short name and prefetch related data
     products = ProcessedProduct.objects.annotate(
         vendor_short_name=Subquery(vendor_subquery)
     ).prefetch_related(
         'processedlineitem_set__invoice__vendor',
         'processedlineitem_set__gl3'
-    ).order_by('vendor_short_name', 'item_description')
+    )
 
-    vendor_short_names_list = products.values_list('vendor_short_name', flat=True)
-    vendor_short_names_set = set()
-    for vendor in vendor_short_names_list:
-        vendor_short_names_set.add(vendor.strip() if vendor and vendor.strip() else 'None')
+    # --- Filtering Logic ---
+    # Filter by vendor if provided in GET parameters
+    vendor_filter = request.GET.get('vendor')
+    if vendor_filter:
+        products = products.filter(vendor_short_name=vendor_filter)
 
+    # Filter by classification status if provided
+    classification_filter = request.GET.get('classification_status')
+    if classification_filter == "classified":
+        products = products.filter(classification__isnull=False)
+    elif classification_filter == "unclassified":
+        products = products.filter(classification__isnull=True)
+    # (If classification_status is not provided or is "all", no filtering on classification is applied)
+
+    # --- Ordering Logic ---
+    # Default ordering is by vendor_short_name (ascending) and then item_description
+    order_by_field = request.GET.get('order_by', 'vendor_short_name')
+    order_direction = request.GET.get('direction', 'asc')
+    if order_direction == 'desc':
+        order_by_field = '-' + order_by_field
+    products = products.order_by(order_by_field, 'item_description')
+
+    # Build a list of vendor names for the filter dropdown
+    vendor_short_names_set = set(
+        vendor.strip() if vendor else 'None' for vendor in products.values_list('vendor_short_name', flat=True)
+    )
     vendor_short_names = sorted(vendor_short_names_set)
+
+    # Retrieve all product classifications for the classification select dropdown
     classifications = ProductClassification.objects.all()
 
-    # Instantiate forms
+    # Instantiate forms for editing the product and classification data
     product_form = ProductForm(request.POST or None)
     classification_form = ProductClassificationForm(request.POST or None)
 
+    # Process POST submissions (i.e. when a product is updated)
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
         if not product_id:
@@ -310,7 +336,6 @@ def product_enhancement(request):
         product = get_object_or_404(ProcessedProduct, pk=product_id)
         product_form = ProductForm(request.POST, instance=product)
 
-        # Process product form
         if product_form.is_valid():
             product_form.save()
         else:
@@ -320,17 +345,18 @@ def product_enhancement(request):
                 'classifications': classifications,
                 'product_form': product_form,
                 'classification_form': classification_form,
+                'vendor_short_names': vendor_short_names,
             })
 
-        # Handle classification update
+        # Process classification update: either update an existing classification...
         classification_id = request.POST.get('classification_id')
-
-        if classification_id:  # If an existing classification is selected
+        if classification_id:
             classification = get_object_or_404(ProductClassification, pk=classification_id)
             product.classification = classification
             product.save()
             print(f"Product classification updated with existing classification: {classification.name}")
-        elif classification_form.is_valid():  # If creating a new classification
+        # ...or create a new classification if the form validates
+        elif classification_form.is_valid():
             classification = classification_form.save(commit=False)
             classification.save()
             product.classification = classification
@@ -343,18 +369,23 @@ def product_enhancement(request):
                 'classifications': classifications,
                 'product_form': product_form,
                 'classification_form': classification_form,
+                'vendor_short_names': vendor_short_names,
             })
 
         messages.success(request, "Product and classification updated successfully!")
         return redirect('product_enhancement')
 
-    # Render for GET request
+    # Pass current filter and order values to the template for UI state maintenance
     context = {
         'products': products,
         'classifications': classifications,
         'product_form': product_form,
         'classification_form': classification_form,
         'vendor_short_names': vendor_short_names,
+        'current_vendor_filter': vendor_filter,
+        'current_classification_filter': classification_filter,
+        'current_order_by': request.GET.get('order_by', 'vendor_short_name'),
+        'current_direction': order_direction,
     }
     return render(request, 'invoice/product_enhancement.html', context)
 

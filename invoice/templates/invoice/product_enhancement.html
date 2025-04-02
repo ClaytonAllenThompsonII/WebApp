@@ -165,8 +165,15 @@
             <select id="vendor-filter">
                 <option value="">All Vendors</option>
                 {% for vendor_name in vendor_short_names %}
-                    <option value="{{ vendor_name|escape }}">{{ vendor_name }}</option>
+                    <option value="{{ vendor_name|escape }}" {% if vendor_name == current_vendor_filter %}selected{% endif %}>{{ vendor_name }}</option>
                 {% endfor %}
+            </select>
+        
+            <label for="classification-filter">Filter by Classification:</label>
+            <select id="classification-filter">
+                <option value="">All</option>
+                <option value="classified" {% if current_classification_filter == "classified" %}selected{% endif %}>Classified</option>
+                <option value="unclassified" {% if current_classification_filter == "unclassified" %}selected{% endif %}>Unclassified</option>
             </select>
         </div>
 
@@ -191,10 +198,8 @@
                         data-item-description="{{ product.item_description|default:''|escape }}"
                         data-brand="{{ product.brand|default:''|escape }}"
                         data-classification-id="{% if product.classification %}{{ product.classification.classification_id }}{% else %}null{% endif %}"
-                        data-classification-name="{% if product.classification %}{{ product.classification.name|default:'Not Classified'|escape }}{% else %}Not Classified{% endif %}"
                         data-vendor-short-name="{{ product.vendor_short_name|default:'None'|escape }}"
-                        data-shelf-life="{% if product.classification and product.classification.shelf_life %}{{ product.classification.shelf_life }}{% else %}0{% endif %}">
-                        <!-- Table cells -->
+                        data-classification-status="{% if product.classification %}classified{% else %}unclassified{% endif %}">
                         <td>{{ product.product_id }}</td>
                         <td>{{ product.product_code }}</td>
                         <td>{{ product.item_description }}</td>

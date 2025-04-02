@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('ai-enhanced-product-details').textContent = data.enhanced_details;
                     // Populate form with fetched classification details
                     document.getElementById('classification-select').value = classificationId;
+                    document.getElementById('classification_display').textContent = data.name;
                 })
                 .catch(error => console.error('Error fetching classification details:', error));
         }
@@ -219,22 +220,37 @@ document.addEventListener('DOMContentLoaded', function () {
         filterTableByVendor();
     });
 
-    function filterTableByVendor() {
-        const selectedVendor = vendorFilter.value.trim();
+    function filterTable() {
+        const vendorFilter = document.getElementById('vendor-filter').value.trim();
+        const classificationFilter = document.getElementById('classification-filter').value.trim();
         const table = document.getElementById('product-table');
         const rows = table.querySelectorAll('tbody tr');
-
+    
         rows.forEach(row => {
             const vendorShortName = row.dataset.vendorShortName ? row.dataset.vendorShortName.trim() : '';
-
-            if (!selectedVendor || vendorShortName === selectedVendor) {
+            // Let's assume you add a data attribute like data-classification-status on each row.
+            const classificationStatus = row.dataset.classificationStatus || '';
+    
+            let vendorMatch = !vendorFilter || vendorShortName === vendorFilter;
+            let classificationMatch = true;
+            if (classificationFilter === 'classified') {
+                classificationMatch = classificationStatus === 'classified';
+            } else if (classificationFilter === 'unclassified') {
+                classificationMatch = classificationStatus === 'unclassified';
+            }
+            
+            if (vendorMatch && classificationMatch) {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';
             }
         });
     }
-
-    // Call filterTableByVendor on page load
-    filterTableByVendor();
+    
+    // Attach event listeners for both filters:
+    document.getElementById('vendor-filter').addEventListener('change', filterTable);
+    document.getElementById('classification-filter').addEventListener('change', filterTable);
+    
+    // Call filterTable on page load
+    filterTable();
 });
